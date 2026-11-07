@@ -5,7 +5,7 @@
  * Run by .github/workflows/readme-screenshots.yml.
  */
 import { chromium } from "playwright";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const BASE = "http://127.0.0.1:8765";
@@ -105,15 +105,10 @@ try {
 
   // Capture the updated portfolio with the current app as its hero screenshot.
   // The website itself is updated to use this newly captured asset after review.
-  let html = await readFile(join(SITE, "index.html"), "utf8");
-  if (!html.includes('src="assets/keystoria-home-desktop-v024.png"')) {
-    throw new Error("Portfolio hero changed; review before replacing imagery");
+  const html = await readFile(join(SITE, "index.html"), "utf8");
+  if (!html.includes('src="assets/keystoria-browser-home-current.png"')) {
+    throw new Error("The portfolio should display the current browser-edition screenshot");
   }
-  html = html.replace(
-    'src="assets/keystoria-home-desktop-v024.png"',
-    'src="assets/keystoria-browser-home-current.png"'
-  );
-  await writeFile(join(SITE, "index.html"), html, "utf8");
   page = await openPage("/", 1440, 1000);
   await page.locator(".hero-art img").waitFor({ timeout: 15000 });
   await page.waitForFunction(() =>
