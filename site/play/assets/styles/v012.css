@@ -1,0 +1,46 @@
+/* Story-camera only. All menus, Academy, Speed Lab and the cockpit grid remain unchanged. */
+.gameplay .cinema-art .story-depth { pointer-events:none; }
+@keyframes story-float { to { transform:translateY(-12px); } }
+@keyframes story-drift { to { transform:translate(13px,-11px); opacity:.75; } }
+@keyframes story-spin { to { transform:rotate(360deg); } }
+@keyframes story-signal { 0% { opacity:.14; transform:scale(.78); } 60% {opacity:.7;} 100% { opacity:0; transform:scale(1.65); } }
+@keyframes story-sweep { 0% {transform:translateX(-35px);} 100% {transform:translateX(440px);} }
+@keyframes story-boat { 0% {transform:translateY(4px) rotate(-2deg);} 100% {transform:translateY(-3px) rotate(2deg);} }
+@keyframes story-flicker { 0%,100% {opacity:.88;} 27% {opacity:.57;} 32% {opacity:1;} 70% {opacity:.65;} }
+@keyframes story-bus { from {transform:translateX(-4px);} to {transform:translateX(14px);} }
+@keyframes story-cloud { from {transform:translateX(-16px);} to {transform:translateX(28px);} }
+@keyframes story-plane { from { transform:translate(145px,72px) scale(.34); opacity:0;} to {transform:translate(365px,44px) scale(.55);opacity:.9;} }
+.gameplay .story-particle {animation:story-drift 3.1s linear infinite alternate;animation-delay:var(--delay,0s);}
+.gameplay .story-character,.gameplay .story-fish,.gameplay .story-ghost {animation:story-float 2.5s ease-in-out infinite alternate;}
+.gameplay .story-ghost {animation-duration:4s;}
+.gameplay .story-pulse {transform-box:fill-box;transform-origin:center;animation:story-signal 2.3s ease-out infinite;animation-delay:var(--delay,0s);}
+.gameplay .story-light-sweep {animation:story-sweep 8s ease-in-out infinite;}
+.gameplay .story-rescue-boat {transform-box:fill-box;transform-origin:center;animation:story-boat 1.9s ease-in-out infinite alternate;}
+.gameplay .story-sparks {animation:story-flicker .85s ease-in-out infinite;}
+.gameplay .story-laser,.gameplay .story-trace {animation:shot-drift 2.2s linear infinite alternate;}
+.gameplay .polar-window {animation:story-flicker 3.5s linear infinite;}
+.gameplay .polar-plane {animation:story-plane 6s ease-out infinite alternate;}
+.gameplay .polar-beacon {transform-box:fill-box;transform-origin:center;animation:story-signal 2s ease-out infinite;}
+.gameplay .ashfall-bus {animation:story-bus 2s ease-in-out infinite alternate;}
+.gameplay .ember-fire {animation:story-float 1.15s ease-in-out infinite alternate;}
+.gameplay .sky-cloud {animation:story-cloud 9s ease-in-out infinite alternate;animation-delay:var(--cloud-delay,0s);}
+.gameplay .sky-airship {transition:transform .5s ease-out;}
+.gameplay .sky-propeller {transform-box:fill-box;transform-origin:center;animation:story-spin .24s linear infinite;}
+.gameplay .scene-snow,.gameplay .scene-embers {animation:story-drift 4s ease-in-out infinite alternate;}
+/* The close-up work area reacts to real typing prefixes, never to mistakes. */
+.gameplay .shot-antenna .shot-signal,.gameplay .shot-ritual .shot-ring {filter:drop-shadow(0 0 calc(1px + 11px * var(--typing-progress,0)) currentColor);}
+.gameplay .shot-machine .shot-led {opacity:calc(.25 + .75 * var(--typing-progress,0));}
+.gameplay .shot-lock {transform:translateY(calc(-7px * var(--typing-progress,0)));transition:transform .12s linear;}
+.gameplay .shot-files {transform:rotate(calc(5deg * var(--typing-progress,0)));transform-box:fill-box;transform-origin:center;transition:transform .12s linear;}
+.gameplay .shot-antenna {transform:scale(calc(.9 + .1 * var(--typing-progress,0)));transform-box:fill-box;transform-origin:bottom;transition:transform .12s linear;}
+.gameplay .shot-sonar-sweep .shot-radar {animation-duration:calc(10s - 6s * var(--typing-progress,0));}
+/* Accessibility preference overrides scene animation without hiding story beats. */
+@media(prefers-reduced-motion:reduce) { .gameplay .story-depth *, .gameplay .scene-world-whiteout *, .gameplay .scene-world-ashfall *, .gameplay .scene-world-carnival * {animation:none!important;transition:none!important;} }
+body.reduced-motion .gameplay .story-depth *, body.reduced-motion .gameplay .scene-world-whiteout *, body.reduced-motion .gameplay .scene-world-ashfall *, body.reduced-motion .gameplay .scene-world-carnival * {animation:none!important;transition:none!important;}
+body[data-theme=whiteout]{--accent:#b7eafa;--accent-rgb:183,234,250;}
+body[data-theme=ashfall]{--accent:#ffd19a;--accent-rgb:255,209,154;}
+body[data-theme=carnival]{--accent:#d7b8f4;--accent-rgb:215,184,244;}
+
+/* Ferris wheel stays grounded; rider cabins are carried through the story beats. */
+.gameplay .carnival-wheel {transition:transform .65s ease-out;transform-box:fill-box;transform-origin:center;}
+.gameplay .carnival-light {animation:story-flicker 2.1s ease-in-out infinite;}

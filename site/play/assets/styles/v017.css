@@ -1,0 +1,69 @@
+/* v0.17 — Original genre adventures and tactile in-story motion.
+   Scoped entirely to the existing mission camera; cockpit, Academy and Speed Lab stay intact. */
+.gameplay .cinema-art{background:#071624;}
+.gameplay .cinema-art::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:radial-gradient(ellipse at 46% 44%,transparent 47%,rgba(3,9,20,.4) 100%),
+             linear-gradient(180deg,rgba(212,244,255,.055),transparent 35%,rgba(3,8,18,.2));
+  box-shadow:inset 0 0 22px rgba(0,0,0,.2);mix-blend-mode:normal;}
+.gameplay .cinema-art .legend-world{isolation:isolate;}
+.gameplay .cinema-art .legend-world .legend-spark{animation:legend-twinkle 3.5s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-rain{animation:legend-storm 1.7s linear infinite;}
+.gameplay .cinema-art .legend-world .legend-rescue-party{animation:legend-people 3s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-ghost{animation:legend-ghost 6s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-floating-sign{animation:legend-ghost 4.7s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-rift{stroke-dasharray:25 9;animation:legend-rift 4s linear infinite;filter:drop-shadow(0 0 12px #b99ef1);}
+.gameplay .cinema-art .legend-world .legend-stone-pillars{filter:drop-shadow(0 8px 10px rgba(0,0,0,.38));}
+.gameplay .cinema-art .legend-world .legend-clouds{animation:legend-drift 16s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-water{stroke-dasharray:43 23;animation:legend-water 4.5s linear infinite;}
+.gameplay .cinema-art .legend-world .legend-wind-turbine{transform-box:fill-box;transform-origin:50% 36%;animation:legend-rock 3.2s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-fire{animation:legend-fire 2.6s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-lava{stroke-dasharray:40 13;animation:legend-water 2.8s linear infinite;}
+.gameplay .cinema-art .legend-world .legend-solar-gear{transform-box:fill-box;transform-origin:center;animation:legend-gear 26s linear infinite;}
+.gameplay .cinema-art .legend-world .legend-chain{animation:legend-chain 4s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-arena-lights{animation:legend-twinkle 2.8s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-glass-floor{animation:legend-floor 5s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-trap{opacity:calc(.07 + var(--world-pressure,0) * .47);transition:opacity .25s;}
+.gameplay .cinema-art .legend-world .legend-canopy{animation:legend-rock 5.5s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-skyfox{animation:legend-people 4s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-seeds{opacity:calc(.17 + var(--typing-progress,0) * .8);transition:opacity .13s;}
+.gameplay .cinema-art .legend-world .legend-portal-light{animation:legend-pulse 3.8s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-orbits{transform-box:fill-box;transform-origin:center;animation:legend-gear 24s linear infinite;}
+.gameplay .cinema-art .legend-world .legend-crystal{animation:legend-ghost 4s ease-in-out infinite alternate;}
+/* Only the drawn reality reverses: typed text and nearby HUD remain upright. */
+.gameplay .cinema-art .legend-mirror-world{transform-box:view-box;transform-origin:205px 130px;}
+.gameplay .cinema-art .legend-mirror-world.legend-inverted{transform:rotate(180deg);}
+.gameplay .cinema-art .legend-mirror-world.legend-inverted[data-mirror-step="5"]{animation:legend-cross 1.05s cubic-bezier(.25,.7,.2,1) both;}
+.gameplay .cinema-art .legend-mirror-world.legend-restored[data-mirror-step="10"]{animation:legend-return 1.05s cubic-bezier(.25,.7,.2,1) both;}
+.gameplay .cinema-art .legend-director-star .director-rotor{transform-box:fill-box;transform-origin:center;animation:legend-gear 22s linear infinite;}
+.gameplay .cinema-art .legend-danger{animation:legend-warning 1.1s ease-in-out infinite alternate;}
+.gameplay .cinema-art .legend-world .legend-screens{filter:drop-shadow(0 0 5px rgba(255,221,148,.3));}
+/* A decode is one actual changing string, never a text popup above the picture. */
+.gameplay .cinematic-closeup .shot-story-message{font-variant-ligatures:none;font-family:monospace;letter-spacing:0;}
+.gameplay .cinematic-closeup .shot-story-message.is-decoding{filter:drop-shadow(0 0 3px rgba(193,255,223,.3));}
+.gameplay .cinema-art .act-message-panel{filter:drop-shadow(0 5px 12px rgba(0,0,0,.4));}
+.gameplay .cinema-art .act-decode-encoded{opacity:calc(.96 - .9 * var(--typing-progress,0));}
+.gameplay .cinema-art .act-decode-decoded{opacity:calc(.05 + .95 * var(--typing-progress,0));}
+@keyframes legend-twinkle{from{opacity:.15}to{opacity:.9}}
+@keyframes legend-storm{to{transform:translate(-16px,28px)}}
+@keyframes legend-people{from{transform:translateY(1px)}to{transform:translateY(-5px)}}
+@keyframes legend-ghost{from{transform:translateY(5px)}to{transform:translateY(-10px)}}
+@keyframes legend-rift{to{stroke-dashoffset:-102}}
+@keyframes legend-drift{to{transform:translateX(22px)}}
+@keyframes legend-water{to{stroke-dashoffset:-126}}
+@keyframes legend-rock{from{transform:rotate(-1.8deg)}to{transform:rotate(2deg)}}
+@keyframes legend-fire{from{opacity:.45;transform:translateY(2px)}to{opacity:1;transform:translateY(-8px)}}
+@keyframes legend-gear{to{transform:rotate(360deg)}}
+@keyframes legend-chain{from{opacity:.4}to{opacity:1}}
+@keyframes legend-floor{from{opacity:.5}to{opacity:1}}
+@keyframes legend-pulse{from{opacity:.08}to{opacity:.5}}
+@keyframes legend-cross{from{transform:rotate(0deg);filter:brightness(1)}45%{filter:brightness(2.1)}to{transform:rotate(180deg);filter:brightness(1)}}
+@keyframes legend-return{from{transform:rotate(180deg);filter:brightness(1)}45%{filter:brightness(1.9)}to{transform:rotate(360deg);filter:brightness(1)}}
+@keyframes legend-warning{from{opacity:.2}to{opacity:.9}}
+body[data-theme="mirrorfall"]{--accent:#c9b5ff;--accent-rgb:201,181,255;--danger:#ff8ba3;}
+body[data-theme="four_winds"]{--accent:#b4ffe5;--accent-rgb:180,255,229;--danger:#ffaf76;}
+body[data-theme="dawnforge"]{--accent:#ffce91;--accent-rgb:255,206,145;--danger:#ff867c;}
+body[data-theme="glass_trials"]{--accent:#ffe1a2;--accent-rgb:255,225,162;--danger:#ff747b;}
+body[data-theme="wildbond"]{--accent:#bbffd2;--accent-rgb:187,255,210;--danger:#ff957e;}
+body[data-theme="stardoor"]{--accent:#d5c7ff;--accent-rgb:213,199,255;--danger:#ff92bc;}
+@media(prefers-reduced-motion:reduce){.gameplay .cinema-art .legend-world *, .gameplay .cinema-art .legend-mirror-world{animation:none!important;transition:none!important}}
+body.reduced-motion .gameplay .cinema-art .legend-world *,body.reduced-motion .gameplay .cinema-art .legend-mirror-world{animation:none!important;transition:none!important}

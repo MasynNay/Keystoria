@@ -1,10 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" >
-
-<defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#262340"/><stop offset="1" stop-color="#0d1625"/></linearGradient><linearGradient id="page" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e3d1ff"/><stop offset="1" stop-color="#9debcf"/></linearGradient></defs>
-<rect x="2" y="2" width="92" height="92" rx="23" fill="url(#bg)" stroke="#6d6c8e" stroke-width="2"/>
-<path d="M15 61V29c11-2 22 1 33 10 11-9 22-12 33-10v32c-10-2-21 1-33 10-12-9-23-12-33-10Z" fill="none" stroke="url(#page)" stroke-width="4" stroke-linejoin="round"/>
-<path d="M48 39v32" stroke="#b2a5df" stroke-width="3" stroke-linecap="round"/>
-<rect x="33" y="34" width="30" height="30" rx="8" fill="#eafd91" stroke="#111b27" stroke-width="3"/>
-<path d="M42 41v16m0-7 11-9m-11 9 11 8" stroke="#1c2530" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="m73 13 2.5 6.5L82 22l-6.5 2.5L73 31l-2.5-6.5L64 22l6.5-2.5Z" fill="#e3d1ff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+<title id="title">Keystoria logo</title><desc id="desc">An illuminated K monogram opening into a digital portal.</desc>
+<defs><linearGradient id="rim" x1=".08" y1="0" x2=".95" y2="1"><stop stop-color="#b3b4ff"/><stop offset=".56" stop-color="#d7a9fa"/><stop offset="1" stop-color="#73e5d6"/></linearGradient><linearGradient id="face" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1d203d"/><stop offset="1" stop-color="#101524"/></linearGradient></defs>
+<rect x="4" y="4" width="88" height="88" rx="23" fill="url(#face)" stroke="#595c85" stroke-width="2"/>
+<path d="M23 68V29c0-5 4-9 9-9h32c5 0 9 4 9 9v39c0 5-4 9-9 9H32c-5 0-9-4-9-9Z" fill="none" stroke="url(#rim)" stroke-width="2.4" opacity=".65"/>
+<path d="M39 31v35M39 50l19-19M42 49l19 17" fill="none" stroke="url(#rim)" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M70 17v8M66 21h8" fill="none" stroke="#e1c0ff" stroke-width="2.2" stroke-linecap="round"/>
+<rect x="62" y="66" width="15" height="4" rx="2" fill="#76e9d2"/>
 </svg>

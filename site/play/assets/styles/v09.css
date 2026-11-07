@@ -1,0 +1,86 @@
+/* v0.9 — World controls, scene feedback, and a responsive illustrated HUD.
+   This layer is scoped to mission surfaces; Academy and Speed Lab retain their
+   existing positions and keyboard behavior. */
+.field-console {padding:0 14px 14px;border-top:1px solid #344b55;background:linear-gradient(180deg,#111e2a,#0d1923);}
+.field-console-header {display:flex;flex-wrap:wrap;align-items:center;gap:5px 18px;padding:13px 0 10px;color:#a4c7c9;font:700 10px/1.4 var(--mono);letter-spacing:.065em;}
+.field-console-header span {color:var(--accent)}
+.field-console-header strong {margin-left:auto;color:#e8f6f6;font:800 12px var(--display);letter-spacing:.06em;}
+.field-locked {padding:11px 14px;background:#15232d;border:1px dashed #486473;}
+.field-locked span {color:#d7e7e8;font:700 11px var(--mono);letter-spacing:.06em;}
+.field-locked p,.field-choices>p,.field-done p {margin:7px 0 0;color:#c0d1d7;font:12px/1.55 var(--body);}
+.field-call {display:flex;gap:8px;align-items:center;color:#9bffd9;font:800 11px var(--mono);letter-spacing:.065em;animation:field-available 2.7s ease-in-out infinite;}
+.field-choices {padding:12px 0 0;border-top:1px solid #334753;}
+.field-choice-grid {margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.field-choice-grid button {min-height:106px;display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-align:left;padding:15px;cursor:pointer;border:1px solid #537782;border-radius:3px;background:linear-gradient(145deg,#19323c,#13252e);color:#e7f9f8;transition:transform .15s,border-color .15s,background .15s;}
+.field-choice-grid button:hover:not(:disabled),.field-choice-grid button:focus-visible {border-color:#a4f5d2;background:#21444b;transform:translateY(-2px);outline:2px solid var(--accent);outline-offset:2px;}
+.field-choice-grid button:disabled {opacity:.55;cursor:not-allowed;}
+.field-choice-grid button span {color:#8ed9bd;font:800 10px var(--mono);letter-spacing:.09em;}
+.field-choice-grid button strong {font:800 14px/1.2 var(--display);letter-spacing:.03em;}
+.field-choice-grid button small {color:#c4d3d7;font:12px/1.5 var(--body);}
+.field-done {position:relative;padding:12px 15px;border-left:3px solid #79e7b3;background:linear-gradient(90deg,rgba(95,215,154,.13),rgba(47,104,96,.05));}
+.field-done span {color:#9ffbd0;font:800 11px var(--mono);letter-spacing:.06em;}
+.field-done strong {display:block;margin-top:6px;color:#f0fff5;font:800 16px var(--display);}
+.field-done p {color:#e1ecea;}
+.field-reveal .field-done {animation:field-confirm .6s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes field-confirm {from {filter:brightness(2);transform:translateY(-6px)}to{filter:brightness(1);transform:translateY(0)}}
+@keyframes field-available {50%{opacity:.53}}
+.scene-effects .scene-electric {animation:scene-sparks 1.5s ease-in-out infinite;}
+.scene-effects .scene-mist {animation:scene-mist-drift 5s ease-in-out infinite;}
+.scene-effects .scene-rain {animation:scene-rain-drift 1.8s linear infinite;}
+.scene-effects .scene-motion {animation:scene-fast-motion .65s linear infinite;}
+.scene-effects .scene-good {animation:scene-success-wave 2.8s ease-in-out infinite;}
+.scene-effects .scene-risk {animation:scene-risk-flash .9s ease-in-out infinite;}
+@keyframes scene-sparks {50%{opacity:.25}}
+@keyframes scene-mist-drift {50%{transform:translateX(12px);opacity:.5}}
+@keyframes scene-rain-drift {to{transform:translate(-9px,18px)}}
+@keyframes scene-fast-motion {to{transform:translateX(-29px)}}
+@keyframes scene-success-wave {50%{opacity:.45}}
+@keyframes scene-risk-flash {50%{opacity:.16}}
+.field-history article {padding:12px 0;border-bottom:1px solid #344852;}
+.field-history article strong {color:#9becd1;font:700 12px var(--mono);letter-spacing:.05em;}
+.field-history article p {margin:7px 0;color:#d6e4e7;}
+.field-history article small {color:#91aeb8;font:10px var(--mono);}
+.academy-shuffle-tools {display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:6px 0 16px;}
+.academy-shuffle-tools p {margin:0;}
+.academy-shuffle-tools button {font-size:11px;padding:10px 12px;}
+@media(max-width:650px) {
+  .field-choice-grid {grid-template-columns:1fr;}
+  .field-choice-grid button {min-height:0;padding:12px 13px;}
+  .field-console {padding:0 10px 12px;}
+  .field-console-header strong {margin-left:0;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .scene-effects *, .field-call, .field-reveal .field-done {animation:none!important;}
+  .field-choice-grid button {transition:none;}
+}
+body.reduced-motion .scene-effects *,body.reduced-motion .field-call,body.reduced-motion .field-reveal .field-done {animation:none!important;}
+
+.scene-effects .scene-intervention {animation:scene-intervention-entry .45s ease-out both;}
+.scene-effects .scene-coolant {animation:scene-success-wave 1.8s ease-in-out infinite;}
+.scene-effects .scene-power {animation:scene-sparks .75s ease-in-out infinite;}
+.scene-effects .scene-signal-dot {animation:scene-success-wave 1.2s ease-in-out infinite;}
+@keyframes scene-intervention-entry {from {opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Immediate and persistent cause-and-effect: the environment, intervention,
+   and previous act decisions remain visible beside the illustrated scene. */
+.scene-operations-bar {display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 15px;border-top:1px solid #344b55;background:#0b1a25;}
+.scene-environment {min-width:160px;flex:1 1 160px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px 9px;}
+.scene-environment span {font:700 10px var(--mono);color:#9bbcc9;letter-spacing:.08em;}
+.scene-environment strong {font:700 12px var(--mono);color:#e4f6eb;}
+.scene-env-track {grid-column:1/-1;background:#2e4e54;border-radius:3px;height:6px;overflow:hidden;}
+.scene-env-track i {display:block;height:100%;background:#6adfae;transition:width .22s linear;}
+.scene-env-track.environment-danger i {background:#ff7887;}
+.field-jump {border:1px solid #3c5c62;background:#182e36;color:#c9e0dd;padding:11px 13px;font:800 11px var(--mono);letter-spacing:.045em;}
+.field-jump.ready {border-color:#a6f5c8;color:#deffec;cursor:pointer;background:#205342;animation:field-jump-call 1.5s ease-in-out infinite;}
+.field-jump.ready:hover,.field-jump.ready:focus-visible {outline:2px solid #d2ffe2;outline-offset:2px;}
+@keyframes field-jump-call {50%{background:#2a6d50;box-shadow:inset 0 0 14px #4ad99b44;}}
+.field-story-log:not(:empty) {border-top:1px solid #365047;}
+.field-history-inline {display:grid;gap:0;background:#14252b;}
+.field-history-inline>div {padding:10px 15px;border-bottom:1px solid #31514e;}
+.field-history-inline span {display:block;color:#9fe4c5;font:700 10px var(--mono);letter-spacing:.05em;}
+.field-history-inline strong {display:block;margin-top:5px;font:800 13px var(--display);color:#f0f8f0;}
+.field-history-inline p {font:12px/1.45 var(--body);color:#cad8dc;margin:5px 0 0;}
+@media(max-width:650px){.scene-operations-bar {gap:10px;padding:10px;}.field-jump{width:100%;}.scene-environment {flex-basis:100%;}}
+@media(prefers-reduced-motion:reduce){.field-jump.ready{animation:none;}.scene-env-track i{transition:none;}}
+body.reduced-motion .field-jump.ready {animation:none;}
+body.reduced-motion .scene-env-track i {transition:none;}

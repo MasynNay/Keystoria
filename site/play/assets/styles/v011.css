@@ -1,0 +1,89 @@
+/* v0.11: nine locally animated storyboards. No changes to Academy or Speed Lab. */
+.gameplay .cinema-art { isolation:isolate; }
+.gameplay .cinema-art .cinematic-closeup { filter:drop-shadow(0 0 7px rgba(21,35,52,.55)); }
+.gameplay .cinema-art svg { overflow:hidden; }
+.gameplay .cinema-shot-dialogue {
+  position:absolute;bottom:0;left:0;right:0;z-index:2;
+  padding:16px 15px 8px;
+  background:linear-gradient(0deg,rgba(5,13,22,.96),rgba(5,13,22,.73) 68%,transparent);
+  display:flex;justify-content:space-between;align-items:flex-end;gap:8px;
+  pointer-events:none;
+}
+.gameplay .cinema-shot-dialogue p { color:#f6f6eb;font:600 11px/1.3 var(--body);margin:0;max-width:87%;text-shadow:0 1px 2px #07131c; }
+.gameplay .cinema-shot-dialogue span { color:var(--accent);font:700 9px var(--mono);letter-spacing:.07em;white-space:nowrap; }
+.gameplay .cinema-storyline { display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #3c4a58;padding:7px 14px;background:rgba(19,34,46,.9); }
+.gameplay .cinema-storyline strong { font:700 10px var(--mono);color:#deeced;letter-spacing:.03em; }
+.gameplay .cinema-storyline span {font:700 10px var(--mono);color:var(--accent);}
+.gameplay .cinema-art:has(.cinematic-closeup) {background:#081b27;}
+.gameplay .cinema-change .cinema-art > svg { animation: shot-cut .48s cubic-bezier(.16,.8,.2,1) both; }
+@keyframes shot-cut {from{opacity:.2;filter:brightness(3);transform:scale(1.035) translateX(10px)}to{opacity:1;filter:brightness(1);transform:scale(1) translateX(0)}}
+@keyframes shot-ping {0%,100%{opacity:.5}50%{opacity:1;filter:drop-shadow(0 0 9px currentColor)}}
+@keyframes shot-spin {to{transform:rotate(360deg)}}
+@keyframes shot-wave {0%,100%{transform:scaleY(.7)}50%{transform:scaleY(1.35)}}
+@keyframes shot-eq {0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1.14)}}
+@keyframes shot-drift {0%{transform:translateX(-14px)}100%{transform:translateX(19px)}}
+@keyframes shot-up {from{transform:translateY(5px);opacity:.2}to{transform:translateY(-24px);opacity:.8}}
+@keyframes shot-signal {0%{opacity:.1}45%{opacity:.9}100%{opacity:.1}}
+@keyframes shot-shuttle {0%{transform:translate(0,0)}50%{transform:translate(22px,-14px)}100%{transform:translate(0,0)}}
+.gameplay .shot-ping,.gameplay .shot-led {animation:shot-ping 2s ease-in-out infinite;}
+.gameplay .shot-radar,.gameplay .shot-ring { transform-box:fill-box;transform-origin:center;animation:shot-spin 11s linear infinite; }
+.gameplay .shot-eq {transform-box:fill-box;transform-origin:bottom;animation:shot-eq .7s ease-in-out infinite alternate;}
+.gameplay .shot-eq:nth-child(2n) {animation-delay:-.29s;}
+.gameplay .shot-wave {animation:shot-wave 1.3s ease-in-out infinite;transform-box:fill-box;transform-origin:center;}
+.gameplay .shot-motion,.gameplay .scene-drone {animation:shot-drift 2.1s ease-in-out infinite alternate;}
+.gameplay .scene-bubble,.gameplay .shot-bubble {animation:shot-up 3.2s ease-in-out infinite alternate;}
+.gameplay .scene-dust,.gameplay .scene-rain {animation:shot-drift 2.2s ease-in-out infinite alternate;}
+.gameplay .shot-signal {animation:shot-signal 2.1s ease-in-out infinite;}
+.gameplay .shot-signal:nth-child(2n) {animation-delay:-.65s;}
+.gameplay .scene-shuttle {animation:shot-shuttle 4s ease-in-out infinite;}
+.gameplay .shot-leaves {transform-box:fill-box;transform-origin:bottom;animation:shot-wave 4s ease-in-out infinite alternate;}
+.gameplay .cinema-art svg .shot-door-left {animation:shot-drift 2.5s ease-in-out infinite alternate;}
+.gameplay .cinema-art svg .shot-door-right {animation:shot-drift 2.5s ease-in-out infinite alternate-reverse;}
+.gameplay #shot-completion-fill {transition:width .075s ease-out;}
+.gameplay .story-acts-caption {font:600 10px var(--mono);color:#a9cbd2;line-height:1.3;}
+body[data-theme="abyss"]{--accent:#8cf1dc;--accent-rgb:140,241,220;--danger:#ff9a8e;}
+body[data-theme="neon"]{--accent:#f4a6e9;--accent-rgb:244,166,233;--danger:#ff888e;}
+body[data-theme="red_horizon"]{--accent:#ffb58f;--accent-rgb:255,181,143;--danger:#ff777d;}
+/* Compact subtitles preserve the cockpit's complete input visibility at 900px. */
+.gameplay .cinema-summary {padding:8px 13px;}
+.gameplay .cinema-summary>p {line-height:1.3;}
+@media(max-width:780px){
+ .gameplay .cinema-shot-dialogue {padding:12px 9px 5px;}
+ .gameplay .cinema-shot-dialogue p {font-size:10px;}
+ .gameplay .cinema-shot-dialogue span {font-size:8px;}
+}
+@media(prefers-reduced-motion:reduce){.gameplay .cinema-art svg *, .gameplay .cinema-change .cinema-art>svg {animation:none!important;transition:none!important;}}
+body.reduced-motion .gameplay .cinema-art svg *,body.reduced-motion .gameplay .cinema-change .cinema-art>svg{animation:none!important;transition:none!important;}
+
+/* Physical scene feedback, beyond the progress strip. Incorrect prefixes stop
+   the actuator until the operator fixes the character. */
+.gameplay .shot-map .shot-route {stroke-dasharray:350;stroke-dashoffset:calc(350 - 350 * var(--typing-progress,0));transition:stroke-dashoffset .12s linear;}
+.gameplay .shot-door .shot-door-left {transform:translateX(calc(-26px * var(--typing-progress,0)));transition:transform .14s linear;animation:none;}
+.gameplay .shot-door .shot-door-right {transform:translateX(calc(26px * var(--typing-progress,0)));transition:transform .14s linear;animation:none;}
+.gameplay .shot-vial .shot-liquid {transform-box:fill-box;transform-origin:bottom;transform:scaleY(calc(.25 + .75 * var(--typing-progress,0)));transition:transform .14s linear;}
+.gameplay .shot-vehicle {transform:translateX(calc(28px * var(--typing-progress,0)));transition:transform .14s linear;}
+.gameplay .shot-plant .shot-leaves {transform:scale(calc(.6 + .4 * var(--typing-progress,0)));transform-box:fill-box;transform-origin:bottom;transition:transform .12s linear;animation:none;}
+.gameplay .shot-power .shot-ping {opacity:calc(.35 + .65 * var(--typing-progress,0));filter:drop-shadow(0 0 calc(2px + 10px * var(--typing-progress,0)) currentColor);}
+.gameplay .shot-signal {opacity:calc(.3 + .7 * var(--typing-progress,0));}
+
+.story-reel {margin:26px auto;max-width:980px;border:1px solid #536678;background:#101c2c;padding:15px;display:grid;gap:13px;}
+.story-reel-heading {display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+.story-reel-heading span {font:700 10px var(--mono);color:var(--accent);letter-spacing:.08em;}
+.story-reel-heading h2 {font:800 clamp(20px,3vw,27px)/1.1 var(--display);margin:6px 0;color:#f0f6f7;}
+.story-reel-heading p {font:12px/1.5 var(--body);color:#b2c3d3;margin:0;}
+.story-reel-heading>strong {white-space:nowrap;color:var(--accent);font:700 11px var(--mono);}
+.story-reel-camera {height:clamp(190px,33vw,310px);background:#0c1d2c;overflow:hidden;border:1px solid #36546c;}
+.story-reel-camera svg {height:100%;width:100%;display:block;}
+.story-reel-camera.reel-cut svg {animation:shot-cut .48s ease-out;}
+.story-reel-text {display:grid;gap:5px;}
+.story-reel-text strong {font:800 22px var(--display);color:#faf8f2;}
+.story-reel-text p {font:13px/1.5 var(--body);color:#c5d8db;}
+.story-reel-text small {font:12px var(--mono);color:var(--accent);}
+.story-reel-navigation {display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.story-reel-navigation span {font:700 10px var(--mono);color:#b9ced4;text-align:center;}
+.story-reel-navigation button {background:#213441;border:1px solid #607786;color:#f1f8f7;padding:10px 14px;font:700 11px var(--mono);}
+.story-reel-navigation button:hover:not(:disabled) {background:#30566a;border-color:var(--accent);}
+.story-reel-navigation button:disabled {opacity:.4;}
+@media(max-width:600px){.story-reel{padding:10px;}.story-reel-navigation button{font-size:10px;padding:9px 7px;}}
+@media(prefers-reduced-motion:reduce){.story-reel-camera.reel-cut svg{animation:none;}}
+body.reduced-motion .story-reel-camera.reel-cut svg{animation:none;}

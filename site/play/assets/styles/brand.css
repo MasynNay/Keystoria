@@ -1,0 +1,22 @@
+/* Keystoria v0.24 - brand layer. In-world mission themes keep their colors. */
+:root {--brand-lilac:#d6c0ff;--brand-mint:#b8f6d0;--brand-lime:#eaff91;}
+.brand{gap:11px;letter-spacing:0;transition:opacity .2s ease;}
+.brand:hover{opacity:.9}
+.brand-symbol{width:43px;height:43px;clip-path:none;background:transparent;flex:0 0 auto;}
+.brand-symbol img{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 11px #ad94dd22)}
+.brand-name{font-size:25px;font-weight:900;letter-spacing:-.5px;line-height:1}
+.brand-name span{color:var(--brand-lilac)}
+.brand-ver{color:#9f98bb;align-self:flex-end;font-size:8px;line-height:1.3;max-width:130px;margin-bottom:3px;white-space:normal;letter-spacing:.02em}
+.topbar{border-image:linear-gradient(90deg,#483b5b,#566e64,#27323b) 1}
+body:not(:has(.gameplay)) .hero{background:radial-gradient(ellipse 53% 68% at 3% 19%,#50426022,transparent 75%),radial-gradient(ellipse 50% 62% at 100% 80%,#507d6d14,transparent 90%)}
+.hero-kicker{color:#d8c6ec}
+.hero h1{font-size:clamp(59px,5.35vw,91px);line-height:.94;letter-spacing:-2.3px;white-space:normal}
+.hero h1 em{color:var(--brand-lime)}
+.hero-lede{max-width:560px}
+.hero-visual{border-color:#62587d;background:radial-gradient(ellipse at center,#24253d 0,#0e181e 55%,#0b121b 100%);box-shadow:0 24px 75px #00000055,0 0 48px #c2b0ff0b}
+.visual-top .mini-label{color:var(--brand-lilac)}
+body:not(:has(.gameplay)) .ticker{border-top-color:#48405e;border-bottom-color:#48405e}
+.footer{color:#a8abc3}
+@media(max-width:1050px){.brand-ver{display:none}.hero h1{font-size:clamp(54px,7vw,76px)}}
+@media(max-width:590px){.brand-symbol{width:35px;height:35px}.brand-name{font-size:22px}.hero h1{font-size:clamp(48px,11.2vw,66px);letter-spacing:-1.7px}.hero-kicker{letter-spacing:.25px}}
+@media(prefers-reduced-motion:reduce){.brand{transition:none}}

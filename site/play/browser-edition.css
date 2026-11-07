@@ -1,0 +1,8 @@
+/* Static browser edition: uses the original Keystoria frontend, not a substitute minigame. */
+.browser-edition-note{position:relative;z-index:20;background:#172035;border-bottom:1px solid #4c5479;color:#eee7ff;font-family:Inter,system-ui,sans-serif;font-size:12px}
+.edition-wrap{max-width:1240px;margin:auto;padding:11px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.edition-wrap strong{letter-spacing:.08em;font-size:11px;color:#bcacf4}
+.edition-wrap span{flex:1 1 350px;color:#d5daea;line-height:1.45}
+.edition-wrap a{color:#c7f3df;text-decoration:underline;text-underline-offset:3px;font-weight:700}
+.browser-edition-note+ .topbar{margin-top:0}
+@media(max-width:760px){.edition-wrap{gap:8px;align-items:flex-start}.edition-wrap span{flex:1 1 100%;order:2}.edition-wrap a{margin-left:auto}}

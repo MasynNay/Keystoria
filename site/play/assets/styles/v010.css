@@ -1,0 +1,164 @@
+/* v0.10 — Action-first cockpit. This file intentionally affects only story
+   gameplay and deployment, leaving Academy and Speed Lab layout untouched. */
+
+/* Keep the scene, the next command, and the input visible at the same time. */
+.gameplay.game-shell { padding:14px clamp(18px,3vw,44px) 48px; max-width:1600px; }
+.gameplay .game-topline { margin:0 0 9px; gap:16px; }
+.gameplay .game-topline h1 { font-size:clamp(24px,2.7vw,38px); margin-top:3px; }
+.gameplay .game-topline .section-tag { font-size:9px; }
+.gameplay .mission-now {
+  margin:0 0 10px; padding:9px 15px; gap:12px;
+  border-radius:4px; min-height:0;
+}
+.gameplay .mission-now strong { font:800 clamp(18px,1.75vw,24px)/1.08 var(--display); margin:4px 0; }
+.gameplay .mission-now small { font-size:11px; line-height:1.4; }
+.gameplay .mission-now button { padding:9px 11px; white-space:nowrap; }
+.gameplay .game-hud { min-height:57px; }
+.gameplay .hud-item { padding:9px 18px; gap:4px; }
+.gameplay .hud-item strong { font-size:23px; }
+.gameplay .hud-timer strong { font-size:26px; }
+.gameplay .game-columns {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:14px;margin-top:10px;align-items:stretch;
+}
+.gameplay .typing-zone { grid-column:1/-1;min-height:0; }
+.gameplay .typing-top { min-height:43px;height:auto;padding:9px 16px; }
+.gameplay .typing-main { padding:12px; }
+.gameplay .mission-workspace {
+  display:grid;grid-template-columns:minmax(0,1.07fr) minmax(360px,.93fr);
+  gap:13px; align-items:stretch; min-width:0;
+}
+.gameplay .mission-visual-pane {
+  min-width:0; max-height:clamp(420px,60vh,550px);overflow-y:auto;
+  overscroll-behavior:contain;scrollbar-color:#45676e #12212c;
+  border:1px solid #314b56;background:#0d1a26;
+}
+.gameplay .mission-cinema { margin:0;border:0; }
+.gameplay .cinema-art { height:clamp(200px,25vh,245px); }
+.gameplay .cinema-summary { min-height:0;padding:10px 14px 11px;gap:5px; }
+.gameplay .cinema-summary>strong { font-size:clamp(16px,1.4vw,20px); }
+.gameplay .cinema-summary>p { font-size:12px;line-height:1.4; }
+.gameplay .cinema-progress-track { padding-bottom:9px; }
+.gameplay .scene-operations-bar { padding:8px 12px; }
+.gameplay .field-locked { padding:9px 11px; }
+.gameplay .field-locked p { margin-top:4px;font-size:11px;line-height:1.35; }
+.gameplay .field-console { padding:0 12px 10px; }
+.gameplay .field-console-header { padding:8px 0 7px; }
+.gameplay .mission-input-pane {
+  display:flex;flex-direction:column;min-width:0;
+  padding:12px 15px 10px;border:1px solid #3d565c;
+  background:linear-gradient(160deg,rgba(var(--accent-rgb),.065),#101d25 48%);
+}
+.gameplay .mission-type-ready {
+  display:flex;align-items:center;flex-wrap:wrap;gap:7px 10px;
+  padding:8px 10px;margin-bottom:10px;
+  border:1px solid rgba(var(--accent-rgb),.32);
+  background:rgba(var(--accent-rgb),.08);
+}
+.gameplay .mission-type-ready strong { color:var(--accent);font:800 11px var(--mono);letter-spacing:.06em; }
+.gameplay .mission-type-ready span:last-child {color:#d2e6e3;font:11px/1.4 var(--body);}
+.gameplay .mission-type-beacon {
+  flex:none;width:7px;height:7px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 9px rgba(var(--accent-rgb),.8);
+  animation:mission-ready-pulse 2s ease-in-out infinite;
+}
+.gameplay .mission-input-pane>.task-stamp {font-size:9px;}
+.gameplay .mission-input-pane>h2 { font-size:clamp(23px,2vw,31px);line-height:1.05;margin:4px 0 8px;text-align:left; }
+.gameplay .step-context-label {margin:4px 0 0;}
+.gameplay .step-explanation {font-size:12px;line-height:1.5;text-align:left;margin:6px 0 12px;color:#cee0e0;}
+.gameplay .command-card {margin-top:auto;}
+.gameplay .target-text {min-height:80px;font-size:clamp(16px,1.7vw,24px);padding:12px;}
+.gameplay .input-label {margin:14px 0 7px;}
+.gameplay .typing-input {height:54px;}
+.gameplay .input-hint {text-align:left;margin:8px 0 0;}
+.gameplay .typing-footer {min-height:34px;padding:7px 15px;}
+.gameplay .mission-sidebar,.gameplay .team-sidebar { min-height:0;padding:19px; }
+.gameplay .mission-goal {margin-top:12px;}
+.gameplay .mission-goal strong {font-size:23px;}
+.gameplay .progress-header {margin-top:18px;}
+.gameplay .threat-visual {min-height:80px;}
+/* The full report is below the action, not above the camera. It's never hidden. */
+.gameplay .game-intelligence {margin:17px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.gameplay .intelligence-heading {
+  grid-column:1/-1;padding:12px 15px;background:#16242d;
+  border:1px solid #3b5358;display:flex;align-items:center;flex-wrap:wrap;gap:9px 16px;
+}
+.gameplay .intelligence-heading span {font:800 11px var(--mono);color:var(--accent);letter-spacing:.07em;}
+.gameplay .intelligence-heading p {font:12px/1.4 var(--body);color:#b0c4cb;flex:1;margin:0;}
+.gameplay .intelligence-heading button {padding:9px 12px;border:1px solid var(--accent);color:var(--accent);background:#11292c;font:700 10px var(--mono);cursor:pointer;}
+.gameplay .mission-tracker {margin:0;}
+.gameplay .world-console {margin:0;}
+.gameplay .mission-beat:not(.beat-show):empty {display:none;}
+.gameplay .mission-beat.beat-show {position:fixed;z-index:8;top:95px;left:50%;transform:translateX(-50%);}
+/* A dedicated preparation period precedes the actual 3, 2, 1 countdown. */
+.countdown-orientation {gap:12px;padding:20px;}
+.countdown-orientation h1 {font-size:clamp(38px,6vw,76px);line-height:1;}
+.countdown-assignment {z-index:1;display:grid;gap:8px;width:min(100%,710px);background:#14232d;border:1px solid rgba(var(--accent-rgb),.52);padding:17px 22px;}
+.countdown-assignment>span {font:800 11px var(--mono);color:var(--accent);letter-spacing:.08em;}
+.countdown-assignment>strong {font:800 clamp(16px,2.5vw,24px)/1.22 var(--display);color:#f4faf7;}
+.countdown-assignment>small {color:#c1d9dd;font:13px/1.5 var(--body);}
+.countdown-orientation .countdown-number {font-size:clamp(80px,13vw,140px);line-height:1;}
+.countdown-orientation .countdown-number.is-preparing {font-size:clamp(46px,9vw,94px);}
+.countdown-orientation .countdown-role {color:#e1f3ea;letter-spacing:.08em;font-weight:700;}
+.countdown-orientation>p {font-size:12px;line-height:1.4;}
+@keyframes mission-ready-pulse {50%{opacity:.45;box-shadow:0 0 2px rgba(var(--accent-rgb),.25);}}
+@media(max-width:1020px) {
+  .gameplay .mission-workspace {grid-template-columns:minmax(0,1fr) minmax(330px,.9fr);}
+  .gameplay .game-shell {padding:14px;}
+  .gameplay .cinema-art {height:195px;}
+  .gameplay .scene-live-stats {font-size:9px;gap:4px;}
+}
+@media(max-width:780px) {
+  .gameplay.game-shell {padding:10px 13px 45px;}
+  .gameplay .game-topline h1 {font-size:29px;}
+  .gameplay .game-hud {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .gameplay .mission-workspace {grid-template-columns:minmax(0,1fr);}
+  .gameplay .mission-visual-pane {max-height:none;overflow:visible;}
+  .gameplay .cinema-art {height:clamp(165px,32vw,240px);}
+  .gameplay .mission-input-pane {padding:12px;}
+  .gameplay .game-columns {grid-template-columns:1fr;}
+  .gameplay .typing-zone {grid-column:1;}
+  .gameplay .game-intelligence {grid-template-columns:1fr;}
+  .gameplay .intelligence-heading {grid-column:1;}
+  .gameplay .mission-now {align-items:flex-start;}
+}
+@media(max-width:520px) {
+  .gameplay .mission-now {flex-direction:column;gap:8px;}
+  .gameplay .mission-now button {align-self:flex-start;}
+  .gameplay .game-topline {flex-direction:column;align-items:flex-start;gap:6px;}
+  .gameplay .hud-item {padding:9px 11px;}
+  .gameplay .mission-input-pane>h2 {font-size:24px;}
+  .gameplay .target-text {min-height:74px;}
+  .gameplay .scene-live-stats {grid-template-columns:1fr auto;}
+  .gameplay .scene-live-stats span {grid-column:1/-1;}
+}
+@media(prefers-reduced-motion:reduce){.gameplay .mission-type-beacon {animation:none;}}
+body.reduced-motion .gameplay .mission-type-beacon {animation:none;}
+/* Tighten the mission-only masthead and avoid vertical dead space that could
+   push the keyboard below the fold on a typical laptop display. */
+body:has(.gameplay) .topbar {height:67px;}
+.gameplay .game-topline {margin-bottom:7px;}
+.gameplay .game-topline h1 {font-size:clamp(24px,2.45vw,34px);}
+.gameplay .mission-now {padding:7px 13px;}
+.gameplay .mission-now strong {font-size:clamp(17px,1.6vw,22px);}
+.gameplay .mission-now small {font-size:10px;}
+.gameplay .game-hud {min-height:51px;}
+.gameplay .hud-item {padding:7px 14px;}
+.gameplay .typing-main {padding:9px;}
+.gameplay .mission-input-pane {padding:9px 12px;}
+.gameplay .mission-type-ready {padding:6px 9px;margin-bottom:7px;}
+.gameplay .mission-input-pane>h2 {margin:2px 0 6px;}
+.gameplay .step-explanation {margin:4px 0 10px;}
+.gameplay .command-card {margin-top:2px;}
+.gameplay .target-text {min-height:66px;}
+.gameplay .input-label {margin:9px 0 6px;}
+.gameplay .typing-input {height:49px;}
+/* Laptop-height cockpit: the actual Enter field must fit, not merely its label. */
+@media (max-height:830px) and (min-width:781px) {
+  body:has(.gameplay) .topbar {height:55px;}
+  .gameplay .game-topline h1 {font-size:27px;}
+  .gameplay .mission-now strong {font-size:18px;}
+  .gameplay .mission-input-pane {padding-top:7px;padding-bottom:7px;}
+  .gameplay .mission-type-ready {margin-bottom:4px;}
+  .gameplay .input-label {margin-top:7px;}
+}

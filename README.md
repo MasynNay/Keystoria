@@ -8,7 +8,7 @@ A story-driven typing game where every keystroke moves the adventure forward.
 
 **24 cooperative adventures · Lyric Lab · Speed Lab · Field Academy**
 
-[Portfolio website](https://keystoria.masynnay.com/) · [Features](#features) · [Get started](#get-started) · [How it works](#how-it-works)
+[Portfolio website](https://keystoria.masynnay.com/) · [Play in browser](https://keystoria.masynnay.com/play/) · [Features](#features) · [Get started](#get-started) · [How it works](#how-it-works)
 
 </div>
 
@@ -28,6 +28,8 @@ The project began as *Panic Protocol* and evolved into a broader collection of t
 
 ![Keystoria game homepage](site/assets/keystoria-home-desktop-v024.png)
 
+**Browser edition:** [Launch Lyric Lab, Speed Lab, and Field Academy](https://keystoria.masynnay.com/play/). The 24 cooperative story missions require the locally hosted Python server.
+
 Explore the [portfolio showcase](https://keystoria.masynnay.com/) for an overview of the game and its development.
 
 ## Features
@@ -41,13 +43,17 @@ Explore the [portfolio showcase](https://keystoria.masynnay.com/) for an overvie
 
 ## Portfolio experience
 
-The [Keystoria portfolio website](https://keystoria.masynnay.com/) is a static product showcase hosted using GitHub Pages. It introduces the project, its game modes, design, and technical implementation.
+The [Keystoria portfolio website](https://keystoria.masynnay.com/) is a static product showcase hosted using GitHub Pages, and its **Explore the Experience** button opens [the real browser interface](https://keystoria.masynnay.com/play/) for Lyric Lab, Speed Lab, and Field Academy. It introduces the project, its game modes, design, and technical implementation.
 
-The full playable application is included under `app/`. It requires a running Python backend for its real-time features; the static portfolio page is **not** presented as a playable multiplayer demo.
+The full playable application is included under `app/`. The hosted practice modes reuse its actual JavaScript frontend; story campaigns and room-based multiplayer still require the Python backend. The public site does **not** claim to offer hosted co-op.
 
-GitHub Actions deploys **only `site/`**. The complete application source is available for inspection but is not executed by GitHub Pages.
+GitHub Actions deploys **only `site/`**, including `site/play/` and its browser-compatible application modules. The Python engine under `app/` remains available for local play and development.
 
 ## Get started
+
+### Play in your browser
+
+Open **https://keystoria.masynnay.com/play/** for Lyric Lab, Speed Lab, and Field Academy. The story mission gallery is a preview until a Python server is available. Music/video lookup requires accessible third-party services; original timed-lyrics practice works offline.
 
 ### Run the game locally
 
@@ -99,7 +105,8 @@ Keystoria/
 ├── site/                     Static portfolio published to GitHub Pages
 │   ├── assets/               Portfolio images and logo
 │   ├── index.html            Portfolio homepage
-│   └── styles.css            Portfolio styling
+│   ├── styles.css            Portfolio styling
+│   └── play/                 Original browser interface, adapted for static hosting
 ├── docs/                     Publishing and DNS instructions
 ├── .gitignore
 ├── LICENSE
