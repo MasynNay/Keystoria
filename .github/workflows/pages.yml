@@ -1,0 +1,44 @@
+name: Deploy Keystoria portfolio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keystoria-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Verify portfolio assets
+        run: |
+          test -f site/index.html
+          test -f site/styles.css
+          test -f site/.nojekyll
+          test -f site/assets/keystoria-mark.svg
+          test -f site/assets/keystoria-home-desktop-v024.png
+          test -f site/assets/lyric-next-key-desktop-v023.png
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static portfolio
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Publish GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

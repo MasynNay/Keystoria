@@ -26,7 +26,7 @@ The project began as *Panic Protocol* and evolved into a broader collection of t
 
 **Game homepage** — the main entry point to Keystoria's typing experiences.
 
-![Keystoria game homepage](assets/keystoria-home-desktop-v024.png)
+![Keystoria game homepage](site/assets/keystoria-home-desktop-v024.png)
 
 Explore the [portfolio showcase](https://keystoria.masynnay.com/) for an overview of the game and its development.
 
@@ -41,9 +41,11 @@ Explore the [portfolio showcase](https://keystoria.masynnay.com/) for an overvie
 
 ## Portfolio experience
 
-The public [Keystoria website](https://keystoria.masynnay.com/) is a static product showcase, suitable for GitHub Pages. It introduces the project, its game modes, design, and technical implementation.
+The [Keystoria portfolio website](https://keystoria.masynnay.com/) is a static product showcase hosted using GitHub Pages. It introduces the project, its game modes, design, and technical implementation.
 
 The full playable application is included under `app/`. It requires a running Python backend for its real-time features; the static portfolio page is **not** presented as a playable multiplayer demo.
+
+GitHub Actions deploys **only `site/`**. The complete application source is available for inspection but is not executed by GitHub Pages.
 
 ## Get started
 
@@ -63,11 +65,11 @@ python -m server.app
 
 Then open **http://127.0.0.1:8080** in your browser.
 
-### View the portfolio website
+### Publish the portfolio
 
-The static site is published from the repository root using GitHub Pages, with the intended custom domain `keystoria.masynnay.com`.
+The static site source is in `site/`. The GitHub Actions workflow at `.github/workflows/pages.yml` publishes this folder when changes are pushed to `main`.
 
-For setup instructions, see [GitHub Desktop and domain deployment](DEPLOY_GITHUB_DESKTOP.md).
+To enable the hosting source and configure `keystoria.masynnay.com`, follow [GitHub Pages and Cloudflare deployment](docs/DEPLOY_GITHUB_DESKTOP.md).
 
 ## How it works
 
@@ -88,18 +90,20 @@ Keystoria combines a vanilla JavaScript frontend with a Python `aiohttp` backend
 
 ```text
 Keystoria/
-├── index.html                 Static portfolio homepage
-├── styles.css                 Portfolio styling
-├── assets/                    Screenshots and visual assets
-├── app/                       Complete playable game
-│   ├── server/                Python backend and WebSocket logic
-│   ├── web/                   Browser game interface
-│   ├── tests/                 Automated tests
-│   └── docs/                  Game documentation and screenshots
-├── CNAME                      GitHub Pages custom domain
-├── DEPLOY_GITHUB_DESKTOP.md   Publishing and DNS instructions
-├── LICENSE                    Project license
-└── README.md                  Project overview
+├── .github/workflows/        Automatic GitHub Pages publishing
+├── app/                      Complete playable game and automated tests
+│   ├── server/               Python backend and WebSocket logic
+│   ├── web/                  Interactive browser interface
+│   ├── tests/                Automated test suite
+│   └── docs/                 Game documentation and screenshots
+├── site/                     Static portfolio published to GitHub Pages
+│   ├── assets/               Portfolio images and logo
+│   ├── index.html            Portfolio homepage
+│   └── styles.css            Portfolio styling
+├── docs/                     Publishing and DNS instructions
+├── .gitignore
+├── LICENSE
+└── README.md
 ```
 
 ## Development and testing
@@ -113,7 +117,7 @@ For the latest development handoff, see [CONTINUE_HERE.md](app/CONTINUE_HERE.md)
 - **Frontend:** HTML, CSS, vanilla JavaScript
 - **Backend:** Python, aiohttp
 - **Real-time communication:** WebSockets
-- **Portfolio hosting:** GitHub Pages
+- **Portfolio hosting:** GitHub Pages with GitHub Actions
 - **Version control:** Git and GitHub
 
 ## Project notes
