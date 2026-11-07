@@ -107,7 +107,7 @@ function modalTemplate() {
 ${BROWSER_EDITION ? `      <div class="welcome-ways">
         <article><span>01 / MUSIC</span><strong>${ico("headphones",17)} LYRIC LAB</strong><p>Type along with synchronized lyrics and get live, letter-by-letter feedback. Start with the original offline practice track or explore available songs.</p></article>
         <article><span>02 / SPEED</span><strong>${ico("keyboard",17)} SPEED LAB</strong><p>Practice typing in timed 15-, 30-, 60-, or 120-second rounds. Track speed, accuracy, and personal bests as you improve.</p></article>
-        <article><span>03 / SKILLS</span><strong>${ico("terminal",17)} FIELD ACADEMY</strong><p>Practice Linux, Windows PowerShell, and macOS commands in a safe simulation. Nothing runs on your device.</p></article>
+        <article><span>03 / SKILLS</span><strong>${ico("keyboard",17)} FIELD ACADEMY</strong><p>Practice Linux, Windows PowerShell, and macOS commands in a safe simulation. Nothing runs on your device.</p></article>
       </div>` : `      <div class="welcome-ways">
         <article><span>01 / MOST POPULAR</span><strong>${ico("play",17)} SINGLE PLAYER</strong><p>Take on twenty-four short story missions with ECHO, your built-in automated teammate. Switch roles, respond to threats, and help the characters reach the ending.</p></article>
         <article><span>02 / TOGETHER</span><strong>${ico("users",17)} TWO PLAYER CO-OP</strong><p>Invite a friend with a private room code. One player advances the mission while the other keeps danger away. Halfway through, you switch.</p></article>

@@ -173,7 +173,7 @@ Keystoria is an evolving project. The [public roadmap](docs/ROADMAP.md) document
 
 The project includes automated tests under `app/tests/`, along with development notes and checkpoints. The source includes the v0.24 Keystoria rebrand and the Lyric Lab next-key typing indicator.
 
-For the latest development handoff, see [CONTINUE_HERE.md](app/CONTINUE_HERE.md).
+For the latest development handoff, see [CONTINUE_HERE.md](app/CONTINUE_HERE.md). For the latest copy, layout, and deployment validation, see [Editorial QA](docs/EDITORIAL_QA.md).
 
 ## Technology
 
