@@ -18,8 +18,8 @@
 
 ## Validation evidence
 
-- [GitHub Pages workflow — successful publication](https://github.com/MasynNay/Keystoria/actions/runs/42422916426)
-- [Chromium screenshots — successful desktop and mobile capture](https://github.com/MasynNay/Keystoria/actions/runs/42422916432)
+- [GitHub Pages workflow — successful publication](https://github.com/MasynNay/Keystoria/actions/runs/42423119256)
+- [Chromium screenshots — successful desktop and mobile capture](https://github.com/MasynNay/Keystoria/actions/runs/42423119309)
 - [Source and rendered README](https://github.com/MasynNay/Keystoria#screenshots)
 - [GitHub Issues and roadmap](https://github.com/MasynNay/Keystoria/issues)
 
