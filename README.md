@@ -8,7 +8,7 @@ A story-driven typing game where every keystroke moves the adventure forward.
 
 **24 cooperative adventures · Lyric Lab · Speed Lab · Field Academy**
 
-[Portfolio website](https://keystoria.masynnay.com/) · [Play in browser](https://keystoria.masynnay.com/play/) · [Features](#features) · [Get started](#get-started) · [How it works](#how-it-works)
+[Portfolio website](https://keystoria.masynnay.com/) · [Play in browser](https://keystoria.masynnay.com/play/) · [Roadmap](docs/ROADMAP.md) · [Features](#features) · [Get started](#get-started) · [How it works](#how-it-works)
 
 </div>
 
@@ -107,11 +107,17 @@ Keystoria/
 │   ├── index.html            Portfolio homepage
 │   ├── styles.css            Portfolio styling
 │   └── play/                 Original browser interface, adapted for static hosting
-├── docs/                     Publishing and DNS instructions
+├── docs/                     Roadmap, publishing and DNS instructions
 ├── .gitignore
 ├── LICENSE
 └── README.md
 ```
+
+## Development roadmap
+
+Keystoria is an evolving project, with [a public roadmap](docs/ROADMAP.md) documenting shipped milestones, near-term work, and longer-term ideas. Every planned item has an open [GitHub Issue](https://github.com/MasynNay/Keystoria/issues) with acceptance criteria; a plan is not the same as a completed feature.
+
+**Current priorities:** automated browser regression checks ([#1](https://github.com/MasynNay/Keystoria/issues/1)) and robust Lyric Lab failure handling ([#2](https://github.com/MasynNay/Keystoria/issues/2)). Later work includes accessibility, safe co-op hosting research, and meaningful practice progression. See [the roadmap on the portfolio](https://keystoria.masynnay.com/#roadmap) for a quick overview.
 
 ## Development and testing
 

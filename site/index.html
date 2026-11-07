@@ -13,7 +13,7 @@
   <a class="skip" href="#main">Skip to content</a>
   <header class="bar wrap">
     <a class="logo" href="#top" aria-label="Keystoria, back to top"><img src="assets/keystoria-mark.svg" width="48" height="48" alt=""><span>KEY<span class="logo-accent">STORIA</span><small>EVERY KEY OPENS A WORLD</small></span></a>
-    <nav aria-label="Primary navigation"><a href="play/">Play the game</a><a href="#build">Behind the build</a><a class="nav-cta" href="play/">Open app <span aria-hidden="true">↗</span></a></nav>
+    <nav aria-label="Primary navigation"><a href="play/">Play the game</a><a href="#roadmap">Roadmap</a><a href="#build">Behind the build</a><a class="nav-cta" href="play/">Open app <span aria-hidden="true">↗</span></a></nav>
   </header>
   <main id="main">
     <section class="hero wrap" id="top" aria-labelledby="hero-heading">
@@ -45,8 +45,37 @@
       <div class="spotlight-copy"><p class="eyebrow">02 / THE LITTLE DETAILS</p><h2 id="spotlight-heading">BUILT FOR<br><em>THE NEXT KEY.</em></h2><p>When a word is active in Lyric Lab, the current letter flashes in place. Correct input turns green, mistakes become red, and the yellow word highlight stays visible. It's a small detail that makes the whole experience easier to follow.</p><div class="note"><span>LIVE INPUT</span><span>PROGRESSIVE FEEDBACK</span><span>ACCESSIBLE MOTION</span></div></div>
     </section>
     <section class="section wrap" id="build" aria-labelledby="build-heading"><div class="section-header"><div><p class="eyebrow">03 / ENGINEERING</p><h2 id="build-heading">MORE THAN<br><em>A PRETTY SCREEN.</em></h2></div><p>An original browser experience backed by a real-time game server, authored content, and testable interactions.</p></div><div class="tech"><div><strong>WebSocket multiplayer</strong><p>Real-time asymmetric roles, a server-authoritative game engine, and reconnect handling.</p></div><div><strong>Vanilla JavaScript</strong><p>Modular UI controllers, responsive CSS, no frontend build step, and local save state.</p></div><div><strong>Python + aiohttp</strong><p>Mission logic, timed room updates, optional video matching, and local development launchers.</p></div><div><strong>Automated tests</strong><p>Python and JavaScript regressions plus Chromium browser checks for important gameplay flows.</p></div></div></section>
-    <section class="callout wrap" id="play" aria-labelledby="play-heading"><div><p class="eyebrow">04 / GETTING HANDS ON</p><h2 id="play-heading">READY TO<br><em>OPEN A WORLD?</em></h2><p>Play the real Keystoria interface directly in your browser. Lyric Lab, Speed Lab, and Field Academy run on this site, with no account or installation required. The 24 cooperative story missions still need the Python/WebSocket game server and can be played locally.</p><p><a class="primary" href="play/">OPEN PLAYABLE EXPERIENCE ↗</a></p></div><div class="steps"><span>LOCAL PLAY</span><p><strong>Mac:</strong> Extract the project and run <code>run_mac.command</code>.</p><p><strong>Windows:</strong> Extract the project and run <code>run_windows.bat</code>.</p><p><strong>Browser:</strong> Open <code>http://localhost:8080</code> after starting the server.</p><small>The hosted practice modes are the original application UI, not a substitute demo. Story-mode multiplayer requires a hosted Python server. Full source is on <a href="https://github.com/MasynNay/Keystoria" target="_blank" rel="noopener noreferrer">GitHub</a>.</small></div></section>
+
+    <section class="section wrap roadmap-section" id="roadmap" aria-labelledby="roadmap-heading">
+      <div class="section-header"><div><p class="eyebrow">04 / WHAT COMES NEXT</p><h2 id="roadmap-heading">BUILT TO<br><em>KEEP GROWING.</em></h2></div><p>A public record of what has shipped, what's planned, and the engineering work behind each improvement.</p></div>
+      <div class="roadmap-release" aria-label="Recently shipped">
+        <div><span class="roadmap-kicker">SHIPPED · NOVEMBER 2026</span><h3>From concept to playable portfolio</h3><p>Keystoria v0.24 brought the rebrand and public GitHub Pages deployment. The browser edition then opened Lyric Lab, Speed Lab, and Field Academy with the original game interface.</p></div>
+        <a href="https://github.com/MasynNay/Keystoria/commit/9b4362c448fdb3b87befc61738ec2a85f6011a0a" target="_blank" rel="noopener noreferrer" aria-label="View the browser edition release commit">VIEW RELEASE COMMIT ↗</a>
+      </div>
+      <div class="roadmap-grid">
+        <article class="roadmap-card">
+          <div class="roadmap-top"><span class="roadmap-phase">01 / NOW</span><span class="roadmap-state">PLANNED</span></div>
+          <h3>Make every session reliable.</h3>
+          <p>Expand automated browser testing and strengthen Lyric Lab's handling of unavailable lyrics, media, and network errors.</p>
+          <div class="roadmap-links"><a href="https://github.com/MasynNay/Keystoria/issues/1" target="_blank" rel="noopener noreferrer">CI browser tests ↗</a><a href="https://github.com/MasynNay/Keystoria/issues/2" target="_blank" rel="noopener noreferrer">Lyric Lab resilience ↗</a></div>
+        </article>
+        <article class="roadmap-card">
+          <div class="roadmap-top"><span class="roadmap-phase">02 / NEXT</span><span class="roadmap-state">PLANNED</span></div>
+          <h3>Remove friction. Design for scale.</h3>
+          <p>Audit keyboard accessibility and investigate secure, sustainable hosting for the 24 cooperative story missions.</p>
+          <div class="roadmap-links"><a href="https://github.com/MasynNay/Keystoria/issues/3" target="_blank" rel="noopener noreferrer">Accessibility ↗</a><a href="https://github.com/MasynNay/Keystoria/issues/4" target="_blank" rel="noopener noreferrer">Co-op feasibility ↗</a></div>
+        </article>
+        <article class="roadmap-card">
+          <div class="roadmap-top"><span class="roadmap-phase">03 / LATER</span><span class="roadmap-state">CONCEPT</span></div>
+          <h3>Make practice meaningful.</h3>
+          <p>Explore opt-in personal goals and useful progress insights, with privacy-first local storage and clear export controls.</p>
+          <div class="roadmap-links"><a href="https://github.com/MasynNay/Keystoria/issues/5" target="_blank" rel="noopener noreferrer">Practice progression ↗</a></div>
+        </article>
+      </div>
+      <div class="roadmap-bottom"><span>Transparent priorities, no invented deadlines. Each work item has acceptance criteria and a public GitHub issue.</span><a href="https://github.com/MasynNay/Keystoria/blob/main/docs/ROADMAP.md" target="_blank" rel="noopener noreferrer">READ THE FULL DEVELOPMENT ROADMAP ↗</a></div>
+    </section>
+    <section class="callout wrap" id="play" aria-labelledby="play-heading"><div><p class="eyebrow">05 / GETTING HANDS ON</p><h2 id="play-heading">READY TO<br><em>OPEN A WORLD?</em></h2><p>Play the real Keystoria interface directly in your browser. Lyric Lab, Speed Lab, and Field Academy run on this site, with no account or installation required. The 24 cooperative story missions still need the Python/WebSocket game server and can be played locally.</p><p><a class="primary" href="play/">OPEN PLAYABLE EXPERIENCE ↗</a></p></div><div class="steps"><span>LOCAL PLAY</span><p><strong>Mac:</strong> Extract the project and run <code>run_mac.command</code>.</p><p><strong>Windows:</strong> Extract the project and run <code>run_windows.bat</code>.</p><p><strong>Browser:</strong> Open <code>http://localhost:8080</code> after starting the server.</p><small>The hosted practice modes are the original application UI, not a substitute demo. Story-mode multiplayer requires a hosted Python server. Full source is on <a href="https://github.com/MasynNay/Keystoria" target="_blank" rel="noopener noreferrer">GitHub</a>.</small></div></section>
   </main>
-  <footer class="wrap footer"><div class="logo"><img src="assets/keystoria-mark.svg" width="32" height="32" alt=""><span>KEY<span class="logo-accent">STORIA</span></span></div><p>AN ORIGINAL TYPING EXPERIENCE · 2026</p><a href="#top">BACK TO TOP ↑</a></footer>
+  <footer class="wrap footer"><div class="logo"><img src="assets/keystoria-mark.svg" width="32" height="32" alt=""><span>KEY<span class="logo-accent">STORIA</span></span></div><p>AN ORIGINAL TYPING EXPERIENCE · 2026</p><a href="#roadmap">ROADMAP ↗</a><a href="#top">BACK TO TOP ↑</a></footer>
 </body>
 </html>
