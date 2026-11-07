@@ -20,17 +20,69 @@ Keystoria brings together cooperative story missions, music-inspired typing chal
 
 The project began as *Panic Protocol* and evolved into a broader collection of typing experiences. Keystoria is the new name for that expanded vision.
 
-> **Portfolio project:** The public website showcases the design and development of Keystoria. The complete interactive game runs locally using a Python server. GitHub Pages does not host the multiplayer server or a playable online version.
+> **Portfolio project:** The public website showcases Keystoria and links to the playable browser edition for Lyric Lab, Speed Lab, and Field Academy. The full 24-mission cooperative story experience requires the local Python/WebSocket server.
 
 ## Screenshots
 
-**Game homepage** — the main entry point to Keystoria's typing experiences.
+A closer look at the **actual Keystoria experience**, from the public portfolio to the typing interface. These images are captured from the project rather than promotional mockups.
 
-![Keystoria game homepage](site/assets/keystoria-home-desktop-v024.png)
+### Explore the experience
 
-**Browser edition:** [Launch Lyric Lab, Speed Lab, and Field Academy](https://keystoria.masynnay.com/play/). The 24 cooperative story missions require the locally hosted Python server.
+The portfolio introduces Keystoria's worlds and opens the playable browser edition.
 
-Explore the [portfolio showcase](https://keystoria.masynnay.com/) for an overview of the game and its development.
+[![Keystoria portfolio homepage, desktop view](app/docs/screenshots/keystoria-portfolio-1440-v024.png)](https://keystoria.masynnay.com/)
+
+<sub>Portfolio homepage · [Open website](https://keystoria.masynnay.com/)</sub>
+
+### Inside the game
+
+The main game interface brings together the story adventures and typing modes.
+
+![Keystoria game interface on desktop](app/docs/screenshots/keystoria-home-desktop-v024.png)
+
+<sub>Game interface · [Open playable browser edition](https://keystoria.masynnay.com/play/)</sub>
+
+### Lyric Lab — type with the music
+
+Lyric Lab highlights the current word and provides a next-character cue to make it easier to follow along.
+
+![Lyric Lab next-character typing indicator on desktop](app/docs/screenshots/lyric-next-key-desktop-v023.png)
+
+<sub>Lyric Lab · Next-key feedback and word highlighting</sub>
+
+### Music experience
+
+The music-focused interface also includes artwork and synchronized video presentation.
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="app/docs/screenshots/music-artwork-v020.png" alt="Lyric Lab music artwork interface" width="100%"></td>
+    <td width="50%" align="center"><img src="app/docs/screenshots/music-video-sync-v020.png" alt="Lyric Lab synchronized video interface" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Artwork and song presentation</sub></td>
+    <td align="center"><sub>Video synchronization interface</sub></td>
+  </tr>
+</table>
+
+### Responsive layouts
+
+Keystoria includes layouts for smaller screens as well as desktop browsers.
+
+<table>
+  <tr>
+    <td width="33%" align="center"><img src="app/docs/screenshots/keystoria-portfolio-390-v024.png" alt="Keystoria portfolio on a mobile-sized screen" width="100%"></td>
+    <td width="33%" align="center"><img src="app/docs/screenshots/keystoria-home-mobile-v024.png" alt="Keystoria game homepage on a mobile-sized screen" width="100%"></td>
+    <td width="33%" align="center"><img src="app/docs/screenshots/lyric-next-key-mobile-v023.png" alt="Lyric Lab next-key indicator on a mobile-sized screen" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Portfolio</sub></td>
+    <td align="center"><sub>Game interface</sub></td>
+    <td align="center"><sub>Lyric Lab</sub></td>
+  </tr>
+</table>
+
+**Want to try it?** [Play Lyric Lab, Speed Lab, and Field Academy in your browser](https://keystoria.masynnay.com/play/). The 24 cooperative story missions still require the local Python server.
 
 ## Features
 
