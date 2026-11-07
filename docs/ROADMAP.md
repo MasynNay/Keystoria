@@ -22,7 +22,7 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 
 ### 1. Browser practice regression testing
 **Tracking:** [Issue #1 — Headless browser testing in CI](https://github.com/MasynNay/Keystoria/issues/1)  
-**Why:** The portfolio opens the real practice UI. A deployment should fail if buttons, keyboard input, or expected routes break.  
+**Why:** The portfolio opens the real practice UI. A deployment should fail if key buttons, typing inputs, or required routes break.  
 **Exit criteria:** Automated Chromium tests verify homepage-to-app navigation, Speed Lab typing, Lyric Lab local demo and next-letter cue, and Field Academy command submission at desktop/mobile widths. CI blocks broken releases.
 
 ### 2. Lyric Lab reliability and graceful offline behavior

@@ -1,0 +1,3 @@
+# GitHub Linguist: exclude build and launch helpers from language statistics; preserve the files.
+app/Makefile linguist-detectable=false
+app/run_mac.command linguist-detectable=false

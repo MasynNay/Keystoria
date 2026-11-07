@@ -1,6 +1,8 @@
 # Publish Keystoria with GitHub Pages and Cloudflare
 
-Keystoria's public portfolio is intended for **https://keystoria.masynnay.com**. It is a static showcase, not the Python multiplayer game. The existing Aftertone site and DNS settings should remain unchanged.
+Keystoria's public portfolio is available at **https://keystoria.masynnay.com/**, with three practice modes at **https://keystoria.masynnay.com/play/**. The 24 story missions and co-op rooms still require the local Python server.
+
+> **Current setup:** The repository is public, GitHub Actions hosts the website, and the custom domain is configured. The steps below are retained for future maintenance and troubleshooting. Do not change the existing Aftertone DNS record.
 
 ## 1. Make the existing repository public (GitHub Free)
 
@@ -46,7 +48,7 @@ Do not modify or delete the existing `aftertone` DNS record. Multiple subdomains
 - Revisit **Settings → Pages** for a successful DNS check and the published URL.
 - Enable **Enforce HTTPS** once GitHub has provisioned the certificate.
 - Open https://keystoria.masynnay.com in a private browser window.
-- Check the logo, homepage art, Lyric Lab screenshot, and navigation.
+- Check the current K logo, portfolio preview, Lyric Lab screenshot, and browser-app navigation.
 - Confirm https://aftertone.masynnay.com still works.
 
 On macOS, you can check DNS resolution with:

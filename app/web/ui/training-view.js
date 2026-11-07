@@ -10,7 +10,7 @@ export function trainingLibrary() {
   return `<section class="academy shell" id="academy">
     <div class="academy-heading">${tag("THE FIELD ACADEMY / NO TIMER, NO PRESSURE")}
       <h2>LEARN THE <em>REAL COMMANDS.</em></h2>
-      <p>Three hands-on practice terminals. Type everyday commands, consult the optional side reference, and keep a complete command guide when you finish. <strong>Everything is simulated — nothing runs on your machine.</strong></p></div>
+      <p>Three hands-on practice terminals. Type everyday commands, consult the optional reference panel, and review a complete command guide when you finish. <strong>Everything is simulated — nothing runs on your machine.</strong></p></div>
     <div class="academy-grid">${Object.entries(LESSONS).map(([id,lesson]) => `<button class="academy-card" data-action="learn" data-os="${id}"><span class="academy-number">COURSE ${lesson.number} ${completed[id] ? "· COMPLETED ✓" : "· 14 COMMANDS"}</span><span class="academy-icon">${lesson.icon}</span><strong>${safe(lesson.name)}</strong><small>${safe(lesson.objective)}</small><span class="academy-open">OPEN TERMINAL ${ico("arrow", 16)}</span></button>`).join("")}</div>
   </section>`;
 }

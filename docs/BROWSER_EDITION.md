@@ -1,4 +1,4 @@
-# Keystoria browser edition (v0.24.1)
+# Keystoria Browser Edition (v0.24.1)
 
 The GitHub Pages portfolio at `/` now links to `/play/` with the original Keystoria app interface. It reuses the JavaScript gameplay controllers and styles copied from `app/web`.
 
@@ -10,6 +10,6 @@ The GitHub Pages portfolio at `/` now links to `/play/` with the original Keysto
 
 **Published layout:** GitHub Actions uploads only `site/`. The app copy under `site/play/assets/` is explicitly adapted for GitHub Pages; it never repeatedly tries to connect to an unavailable WebSocket server.
 
-**Rebrand:** The key+book icon has been replaced with a clean illuminated K portal mark across the portfolio, playable browser version, and local app branding assets.
+**Rebrand:** The earlier book-and-key icon has been replaced with an illuminated K mark across the portfolio, playable browser version, and local app branding assets.
 
 **Validation:** Desktop and mobile offline Chromium smoke checks exercised the real Speed Lab typing input, Lyric Lab original demo/next-key indicator, Field Academy command input, initial modal, and status labels. Live external API and hosted DNS checks are separate.

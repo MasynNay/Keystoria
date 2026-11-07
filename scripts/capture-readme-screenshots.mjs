@@ -36,6 +36,10 @@ async function appPage(width = 1440, height = 1000) {
     await welcome.click({ timeout: 15000 });
   }
   await page.locator("#app .brand-name").first().waitFor();
+  const viewportOverflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  if (viewportOverflow > 2) {
+    throw new Error(`App overflows the ${width}px viewport by ${viewportOverflow}px`);
+  }
   const brand = await page.locator("#app .brand-symbol img").first().getAttribute("src");
   if (!brand || !brand.includes("keystoria-mark.svg")) {
     throw new Error("Expected the current K logo. Actual: " + brand);

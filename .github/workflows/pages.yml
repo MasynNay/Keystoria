@@ -28,6 +28,11 @@ jobs:
       - name: Verify portfolio assets
         run: |
           test -f docs/ROADMAP.md
+          test -f .gitattributes
+          test -f docs/screenshots/current/browser-home-desktop.png
+          test -f docs/screenshots/current/lyric-lab-desktop.png
+          test -f docs/screenshots/current/speed-lab-desktop.png
+          test -f docs/screenshots/current/field-academy-desktop.png
           test -f site/index.html
           grep -q 'id="roadmap"' site/index.html
           grep -q 'docs/ROADMAP.md' README.md

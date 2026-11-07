@@ -24,11 +24,11 @@ The project began as *Panic Protocol* and evolved into a broader collection of t
 
 ## Screenshots
 
-These are **real Chromium captures of Keystoria's current browser edition**—not design mockups or screenshots from its earlier branding. The [screenshot capture workflow](.github/workflows/readme-screenshots.yml) uses the actual site files and exercises the UI before taking each image.
+These are **Chromium captures of the current Keystoria browser edition**, not mockups or screenshots from an earlier design. The [screenshot capture workflow](.github/workflows/readme-screenshots.yml) uses the actual site files and exercises the UI before taking each image.
 
 ### The playable experience
 
-The current Keystoria browser app, featuring the updated **K logo**, original mission gallery, and links into the three playable practice modes.
+The Keystoria browser app, with the current **K logo**, story gallery, and entry points to all three playable practice modes.
 
 [![Keystoria browser edition, current desktop interface](docs/screenshots/current/browser-home-desktop.png)](https://keystoria.masynnay.com/play/)
 
@@ -87,7 +87,7 @@ The original built-in song, timed lyric display, playback controls, live typing 
 
 ## Portfolio experience
 
-The [Keystoria portfolio website](https://keystoria.masynnay.com/) is a static product showcase hosted using GitHub Pages, and its **Explore the Experience** button opens [the real browser interface](https://keystoria.masynnay.com/play/) for Lyric Lab, Speed Lab, and Field Academy. It introduces the project, its game modes, design, and technical implementation.
+The [Keystoria portfolio website](https://keystoria.masynnay.com/) is a GitHub Pages showcase introducing the game modes, design, and technical implementation. Select **Explore the Experience** to open the [playable browser edition](https://keystoria.masynnay.com/play/) featuring Lyric Lab, Speed Lab, and Field Academy.
 
 The full playable application is included under `app/`. The hosted practice modes reuse its actual JavaScript frontend; story campaigns and room-based multiplayer still require the Python backend. The public site does **not** claim to offer hosted co-op.
 
@@ -97,7 +97,7 @@ GitHub Actions deploys **only `site/`**, including `site/play/` and its browser-
 
 ### Play in your browser
 
-Open **https://keystoria.masynnay.com/play/** for Lyric Lab, Speed Lab, and Field Academy. The story mission gallery is a preview until a Python server is available. Music/video lookup requires accessible third-party services; original timed-lyrics practice works offline.
+Open **https://keystoria.masynnay.com/play/** for Lyric Lab, Speed Lab, and Field Academy. The hosted story mission gallery is a preview only. To play story missions and co-op, run the Python server locally. External song and video availability varies; the built-in lyric practice track works offline.
 
 ### Run the game locally
 
@@ -124,23 +124,28 @@ To enable the hosting source and configure `keystoria.masynnay.com`, follow [Git
 ## How it works
 
 ```text
-Browser interface
-    |
-    +-- Story missions / multiplayer ---+
-    +-- Lyric Lab                       |
-    +-- Speed Lab                       +--> Python aiohttp server
-    +-- Field Academy                   |        |
-    |                                   |        +--> Game state and sessions
-    +-- Live typing feedback -----------+        +--> WebSocket updates
+Keystoria
+├── Public website · GitHub Pages (site/)
+│   ├── Portfolio homepage
+│   └── Browser practice (site/play/)
+│       ├── Lyric Lab
+│       ├── Speed Lab
+│       └── Field Academy
+└── Full local game (app/)
+    ├── JavaScript frontend
+    └── Python · aiohttp + WebSockets
+        ├── 24 story missions
+        ├── ECHO solo teammate
+        └── Private co-op rooms
 ```
 
-Keystoria combines a vanilla JavaScript frontend with a Python `aiohttp` backend. WebSockets support real-time gameplay, while the browser handles responsive presentation and immediate typing feedback.
+The browser practice modes run directly on GitHub Pages. The full story campaign uses a local Python `aiohttp` server and WebSockets to coordinate sessions, mission state, and cooperative gameplay. The browser handles the interface and immediate typing feedback.
 
 ## Repository structure
 
 ```text
 Keystoria/
-├── .github/workflows/        Automatic GitHub Pages publishing
+├── .github/workflows/        GitHub Pages and screenshot capture workflows
 ├── app/                      Complete playable game and automated tests
 │   ├── server/               Python backend and WebSocket logic
 │   ├── web/                  Interactive browser interface
@@ -152,6 +157,7 @@ Keystoria/
 │   ├── styles.css            Portfolio styling
 │   └── play/                 Original browser interface, adapted for static hosting
 ├── docs/                     Roadmap, publishing and DNS instructions
+├── .gitattributes               GitHub Linguist settings for build helpers
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -159,7 +165,7 @@ Keystoria/
 
 ## Development roadmap
 
-Keystoria is an evolving project, with [a public roadmap](docs/ROADMAP.md) documenting shipped milestones, near-term work, and longer-term ideas. Every planned item has an open [GitHub Issue](https://github.com/MasynNay/Keystoria/issues) with acceptance criteria; a plan is not the same as a completed feature.
+Keystoria is an evolving project. The [public roadmap](docs/ROADMAP.md) documents shipped milestones, near-term work, and longer-term ideas. Every planned item has an open [GitHub Issue](https://github.com/MasynNay/Keystoria/issues) with acceptance criteria; a plan is not the same as a completed feature.
 
 **Current priorities:** automated browser regression checks ([#1](https://github.com/MasynNay/Keystoria/issues/1)) and robust Lyric Lab failure handling ([#2](https://github.com/MasynNay/Keystoria/issues/2)). Later work includes accessibility, safe co-op hosting research, and meaningful practice progression. See [the roadmap on the portfolio](https://keystoria.masynnay.com/#roadmap) for a quick overview.
 
