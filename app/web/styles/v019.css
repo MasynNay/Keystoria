@@ -1,0 +1,39 @@
+/* v0.19 — Compact campaign gallery and accessible expansion. */
+.mission-gallery-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 19px;padding:16px 20px;border:1px solid #3b4b50;background:linear-gradient(120deg,#17232c,#101b23);border-radius:8px}
+.mission-gallery-toolbar>div{display:flex;flex-direction:column;gap:6px}
+.mission-gallery-toolbar strong{color:var(--accent);font:800 12px var(--mono);letter-spacing:.13em}
+.mission-gallery-toolbar span{color:var(--muted);font:12px/1.5 var(--body)}
+.mission-gallery-toggle{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:13px 18px;min-height:44px;background:#d9f767;color:#111b20;border:1px solid #f1ffb1;border-radius:6px;font:800 11px var(--mono);letter-spacing:.07em;white-space:nowrap;cursor:pointer;transition:filter .15s,transform .15s}
+.mission-gallery-toggle:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.mission-gallery-toggle:focus-visible{outline:3px solid white;outline-offset:3px}
+.mission-grid .mission-card[hidden]{display:none!important}
+.operations.missions-collapsed{padding-bottom:20px}
+.operations.missions-collapsed .section-head{margin-bottom:20px}
+.operations.missions-collapsed .section-head h2{font-size:clamp(30px,3.2vw,48px);margin-top:11px}
+.operations.missions-collapsed .mission-card{min-height:375px}
+@media(max-width:640px){.mission-gallery-toolbar{flex-direction:column;align-items:stretch;padding:16px}.mission-gallery-toggle{width:100%}.operations.missions-collapsed .section-head h2{font-size:clamp(30px,8vw,43px)}}
+
+/* Music practice: speed controls always sit next to the player; lyrics use video time. */
+.lyric-speed-options{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 14px;padding:12px 14px;border:1px solid #594970;border-radius:8px;background:linear-gradient(100deg,#28223d,#18233b)}
+.lyric-speed-options>span{color:#dfc3ff;font:800 11px var(--mono);letter-spacing:.09em}
+.lyric-speed-controls{display:flex;align-items:center;gap:7px}
+.lyric-speed-controls button{min-width:36px;min-height:36px;padding:5px 10px;border-radius:6px;border:1px solid #856aa3;background:#32284a;color:#f9d9ff;font:900 19px var(--display);cursor:pointer}
+.lyric-speed-controls button:hover{border-color:#e7b7ff;background:#4d3665}
+.lyric-speed-controls button:focus-visible{outline:2px solid white;outline-offset:2px}
+.lyric-speed-controls strong{min-width:65px;text-align:center;font:850 19px var(--mono);color:#fff3b0;font-variant-numeric:tabular-nums}
+.lyric-speed-controls button.lyric-speed-reset{font:800 10px var(--mono);min-width:64px}
+.lyric-no-video{height:100%;min-height:200px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:20px;text-align:center;background:radial-gradient(circle at 50% 42%,#3a2e5b,#0d1a2b 75%)}
+.lyric-no-video>span{font:800 62px var(--display);color:#e2b0ff}
+.lyric-no-video strong{font:900 19px var(--display);color:#f3e4ff}
+.lyric-no-video small{max-width:290px;font:12px/1.6 var(--body);color:#bfc9d6}
+.lyric-video-linker{margin:12px 0;padding:12px 14px;border:1px solid #594970;border-radius:8px;background:#161e32}
+.lyric-video-linker summary{cursor:pointer;color:#eac7ff;font:800 11px var(--mono);letter-spacing:.05em;list-style-position:inside}
+.lyric-video-linker p{color:#c0cbd8;font:12px/1.6 var(--body);margin:12px 0}
+.lyric-find-video{display:inline-flex;align-items:center;padding:10px 13px;color:#111826!important;background:#d9b7ff;border-radius:5px;font:800 11px var(--mono);text-decoration:none!important}
+.lyric-find-video:hover{background:#f1dcff}
+.lyric-video-form{display:grid;gap:7px;margin-top:15px}
+.lyric-video-form label{color:#aeb9cc;font:800 10px var(--mono);letter-spacing:.1em}
+.lyric-video-form>div{display:flex;gap:8px}
+.lyric-video-form input{flex:1;min-width:0;padding:10px 12px;border:1px solid #555674;border-radius:6px;background:#091727;color:white;font:14px var(--body)}
+.lyric-video-form .btn{white-space:nowrap;padding:10px 13px;font-size:11px}
+@media(max-width:680px){.lyric-speed-options{flex-direction:column;align-items:stretch}.lyric-speed-controls{justify-content:space-between}.lyric-video-form>div{flex-direction:column}.lyric-video-form .btn{width:100%}}

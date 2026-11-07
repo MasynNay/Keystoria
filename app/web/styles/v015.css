@@ -1,0 +1,108 @@
+/* v0.15: story-only action stage and a readable homepage orientation.
+   No layout rules here change the Academy or Speed Lab. */
+.welcome-backdrop {z-index:1500;overflow-y:auto;align-items:center;padding:18px;}
+.welcome-modal {width:min(760px,calc(100vw - 32px));max-width:760px;max-height:min(90vh,900px);overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:clamp(22px,4vw,39px);border-color:rgba(var(--accent-rgb),.5);box-shadow:0 30px 100px rgba(0,0,0,.75);}
+.welcome-modal-scroll{min-height:0;overflow:auto;scrollbar-width:thin;}
+.welcome-modal h2 {font:900 clamp(34px,5.4vw,61px)/.98 var(--display);letter-spacing:-.01em;margin:13px 0 15px;}
+.welcome-modal h2 em{font-style:normal;color:var(--accent);}
+.welcome-modal #welcome-description {max-width:660px;font:400 14px/1.8 var(--body);color:#e8efeb;margin:0 0 22px;}
+.welcome-ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.welcome-ways article{background:linear-gradient(145deg,#172530,#0d1821);border:1px solid #40515b;border-radius:9px;padding:15px;min-width:0;}
+.welcome-ways article>span{color:var(--accent);font:700 10px/1.5 var(--mono);letter-spacing:.05em;}
+.welcome-ways article strong{display:flex;align-items:center;gap:7px;color:#f4f5ee;font:800 16px/1.25 var(--display);margin:12px 0 6px;}
+.welcome-ways article p{font:12px/1.55 var(--body);color:#afc3ca;margin:0;}
+.welcome-modal .welcome-footnote{color:#b9c9ca;font:11px/1.6 var(--body);margin:19px 0;}
+.welcome-modal .welcome-continue{flex:0 0 auto;min-height:51px;}
+body.modal-open{overflow:hidden;}
+@media(max-width:680px){.welcome-ways{grid-template-columns:1fr;gap:8px}.welcome-ways article{padding:12px}.welcome-ways article strong{margin:5px 0}.welcome-modal{max-height:94dvh;}}
+
+/* All actors are foreground SVG shapes clipped to the left-hand story camera.
+   Their movement is visual only: server progress continues to own the game. */
+.action-stage { pointer-events:none; }
+.action-stage .action-world-props {opacity:.93;filter:drop-shadow(0 6px 10px rgba(0,0,0,.3));}
+/* Defender typing raises a distinct visible protective barrier, rather than
+   falsely appearing to complete the hacker's objective. */
+.action-stage .action-defense-layer{display:none;}
+.action-stage[data-operator-role="defender"] .action-defense-layer{display:block;}
+.action-stage[data-operator-role="defender"] .action-world-props{opacity:.35;}
+.action-stage .act-defense-ring{stroke-dasharray:358;stroke-dashoffset:calc(358 * (1 - var(--defense-progress,0)));transition:stroke-dashoffset .13s linear;}
+.action-stage .act-defense-check{opacity:var(--defense-progress,0);transition:opacity .13s linear;}
+.action-stage .act-defense-scanner{animation:act-indicator 1.1s ease-in-out infinite;}
+.action-stage .act-danger-frame{opacity:0;}
+.mission-cinema[data-danger="true"] .act-danger-frame{opacity:.7;animation:act-danger .9s ease-in-out infinite alternate;}
+.cinema-art[data-typing-phase="finalizing"] .action-world-props{filter:drop-shadow(0 0 8px rgba(223,255,238,.3));}
+.action-stage .act-indicator{animation:act-indicator 1.4s ease-in-out infinite;}
+.action-stage .act-draw{stroke-dasharray:360;stroke-dashoffset:calc(360 * (1 - var(--typing-progress,0)));transition:stroke-dashoffset .18s ease-out;}
+.action-stage .act-route,.action-stage .act-trace,.action-stage .act-tether,.action-stage .act-case-link,.action-stage .act-conduit{stroke-dasharray:360;stroke-dashoffset:calc(360 * (1 - var(--typing-progress,0)));transition:stroke-dashoffset .18s linear;}
+/* Cues are staged inside the scene and change for each completed command. */
+.action-stage .act-gate-leaf{transform:translateX(calc(-21px * var(--typing-progress,0)));transition:transform .18s ease-out;}
+.action-stage .act-gate-leaf-right{transform:translateX(calc(21px * var(--typing-progress,0)));}
+.action-stage .act-radar-sweep{transform-box:fill-box;transform-origin:center;animation:act-ferris 3s linear infinite;}
+.action-stage .act-route-tip{transform:translateX(calc(30px * var(--typing-progress,0)));transition:transform .18s linear;}
+.action-stage .act-decode-encoded{opacity:calc(.98 - var(--typing-progress,0) * .88);transition:opacity .18s linear;}
+.action-stage .act-decode-decoded{opacity:calc(.06 + var(--typing-progress,0) * .94);transition:opacity .18s linear;}
+.action-stage .act-action-cue text{user-select:none;letter-spacing:.04em;}
+.action-stage .act-message-panel,.action-stage .act-route-map,.action-stage .act-access,.action-stage .act-power-grid,.action-stage .act-lab,.action-stage .act-evidence,.action-stage .act-ritual-panel,.action-stage .act-vehicle{filter:drop-shadow(0 7px 12px rgba(0,0,0,.22));}
+
+.action-stage .act-fill,.action-stage .act-signal-fill{transform-box:fill-box;transform-origin:left center;transform:scaleX(var(--typing-progress,0));transition:transform .18s linear;}
+.action-stage .act-liquid{transform-box:fill-box;transform-origin:bottom center;transform:scaleY(calc(.1 + var(--typing-progress,0) * .9));transition:transform .18s;}
+.action-stage .act-power,.action-stage .act-engine,.action-stage .act-brakes,.action-stage .act-oxygen{opacity:calc(.18 + .82 * var(--typing-progress,0));transition:opacity .16s;}
+.action-stage .act-ritual{stroke-dasharray:280;stroke-dashoffset:calc(280 * (1 - var(--typing-progress,0)));transition:stroke-dashoffset .16s;}
+.action-stage .act-broadcast{transform-box:fill-box;transform-origin:center;animation:act-broadcast 3s ease-out infinite;}
+.action-stage .act-sail{animation:act-sail 4s ease-in-out infinite alternate;}
+.action-stage .act-ghost{animation:act-ghost 4.3s ease-in-out infinite alternate;}
+.action-stage .act-runner{animation:act-runner 2.2s ease-in-out infinite alternate;}
+.action-stage .act-slide{animation:act-slide 5.5s ease-in-out infinite alternate;}
+.action-stage .act-wheel{transform-box:fill-box;transform-origin:center;animation:act-wheel 1.5s linear infinite;}
+.action-stage .act-train{animation:act-train .28s linear infinite alternate;}
+.action-stage .act-helicopter{animation:act-helicopter 4.5s ease-in-out infinite alternate;}
+.action-stage .act-blizzard{animation:act-blizzard 2.2s linear infinite;}
+.action-stage .act-embers{animation:act-embers 2.9s ease-in-out infinite alternate;}
+.action-stage .act-bubble{animation:act-bubble 3.9s ease-in-out infinite;}
+.action-stage .act-laser{animation:act-laser 2.9s linear infinite alternate;}
+.action-stage .act-case-link{filter:drop-shadow(0 0 4px rgba(255,207,126,.7));}
+.action-stage .act-magnifier{animation:act-magnifier 4s ease-in-out infinite alternate;}
+.action-stage .act-rover{animation:act-rover 3.8s ease-in-out infinite alternate;}
+.action-stage .act-bus{animation:act-bus 2.5s ease-in-out infinite alternate;}
+.action-stage .act-ferris{transform-box:fill-box;transform-origin:180px 143px;animation:act-ferris 28s linear infinite;}
+.action-stage .act-flood{animation:act-flood 4s ease-in-out infinite alternate;}
+.action-stage .act-ekg{stroke-dasharray:130 160;animation:act-ekg 2.4s linear infinite;}
+.action-stage .act-decrypt{stroke-dasharray:50 6;animation:act-decrypt 1.8s linear infinite;}
+.action-stage .act-cable{stroke-dasharray:110;stroke-dashoffset:calc(110 * (1 - var(--typing-progress,0)));}
+.action-stage .act-particle{animation:act-bubble 3s ease-in-out infinite;}
+
+/* The game camera should stay visual-first. Text popups were removed and
+   replaced with integrated closeup HUDs plus a brief light pulse on success. */
+.cinema-impact{display:none;}
+.cinema-art:has(.action-stage) .scene-camera-glow{opacity:calc(.15 + var(--world-pressure,0) * .25);}
+.cinema-art.cinema-scene-complete .scene-camera-glow{opacity:.82;filter:drop-shadow(0 0 12px rgba(var(--accent-rgb),.42));animation:scene-complete .9s ease-out 1;}
+.cinematic-closeup .shot-story-progress{transform-box:fill-box;transform-origin:left center;transform:scaleX(var(--typing-progress,0));transition:transform .18s linear;}
+.cinematic-closeup .shot-story-encoded{opacity:calc(.96 - var(--typing-progress,0) * .82);transition:opacity .18s linear;}
+.cinematic-closeup .shot-story-decoded{opacity:calc(.1 + var(--typing-progress,0) * .9);transition:opacity .18s linear;}
+.cinematic-closeup .shot-story-ui{filter:drop-shadow(0 10px 18px rgba(0,0,0,.22));}
+.cinematic-closeup text{user-select:none}
+
+@keyframes scene-complete{0%{transform:scale(1);filter:brightness(1)}45%{transform:scale(1.012);filter:brightness(1.45)}100%{transform:scale(1);filter:brightness(1)}}
+@keyframes act-danger{from{opacity:.25}to{opacity:1}}
+@keyframes act-indicator{50%{opacity:.25;filter:brightness(1.5)}}
+@keyframes act-broadcast{0%{opacity:.7;transform:scale(.35)}100%{opacity:0;transform:scale(1.4)}}
+@keyframes act-sail{to{transform:translateX(33px) translateY(-3px)}}
+@keyframes act-ghost{to{transform:translateY(-18px);opacity:.35}}
+@keyframes act-runner{to{opacity:.72}}
+@keyframes act-slide{to{transform:translateX(16px) translateY(-4px)}}
+@keyframes act-wheel{to{transform:rotate(360deg)}}
+@keyframes act-train{to{transform:translateX(2px)}}
+@keyframes act-helicopter{to{transform:translate(30px,-13px)}}
+@keyframes act-blizzard{to{transform:translate(-17px,16px)}}
+@keyframes act-embers{to{transform:translateY(-16px);opacity:.5}}
+@keyframes act-bubble{to{transform:translateY(-38px);opacity:.1}}
+@keyframes act-laser{to{transform:translateX(-35px);opacity:.4}}
+@keyframes act-magnifier{to{transform:translate(-28px,-12px)}}
+@keyframes act-rover{to{transform:translateX(30px)}}
+@keyframes act-bus{to{transform:translateX(15px)}}
+@keyframes act-ferris{to{transform:rotate(360deg)}}
+@keyframes act-flood{to{transform:translateX(19px)}}
+@keyframes act-ekg{to{stroke-dashoffset:-290}}
+@keyframes act-decrypt{to{stroke-dashoffset:-112}}
+@media(prefers-reduced-motion:reduce){.action-stage *,.cinematic-closeup .shot-story-progress,.cinematic-closeup .shot-story-encoded,.cinematic-closeup .shot-story-decoded,.cinema-art.cinema-scene-complete .scene-camera-glow{animation:none!important;transition:none!important}.cinema-impact{transition:none!important}}
+body.reduced-motion .action-stage *,body.reduced-motion .cinematic-closeup .shot-story-progress,body.reduced-motion .cinematic-closeup .shot-story-encoded,body.reduced-motion .cinematic-closeup .shot-story-decoded,body.reduced-motion .cinema-art.cinema-scene-complete .scene-camera-glow,body.reduced-motion .cinema-impact{animation:none!important;transition:none!important}

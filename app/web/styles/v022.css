@@ -1,0 +1,19 @@
+/* PANIC PROTOCOL 0.22: original chapter 19–24 artwork motion.
+   Animation stays in the story camera. Respect reduced motion. */
+@keyframes frontierDrift {0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes frontierPulse {0%,100%{opacity:.38}50%{opacity:.88}}
+@keyframes frontierSlowSpin {from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes frontierFlight {0%,100%{transform:translate(0,0)}50%{transform:translate(13px,-7px)}}
+@keyframes frontierBubble {0%{transform:translateY(5px);opacity:0}45%{opacity:.5}100%{transform:translateY(-23px);opacity:0}}
+@keyframes frontierDash {from{stroke-dashoffset:150}to{stroke-dashoffset:0}}
+.frontier-scene .frontier-particle {animation:frontierPulse 3s ease-in-out infinite}
+.frontier-scene .frontier-time-hand {animation:frontierSlowSpin 30s linear infinite}
+.frontier-scene .frontier-lantern {animation:frontierDrift 2.4s ease-in-out infinite}
+.frontier-scene .frontier-dragon {animation:frontierFlight 4.5s ease-in-out infinite}
+.frontier-scene .frontier-bubbles circle {animation:frontierBubble 3.6s ease-in-out infinite}
+.frontier-scene .frontier-aurora-band {animation:frontierPulse 3.4s ease-in-out infinite}
+.frontier-scene .frontier-reactor, .frontier-scene .frontier-dream-glow {animation:frontierPulse 2.1s ease-in-out infinite}
+.frontier-scene .frontier-drawn-route {stroke-dasharray:15 9;animation:frontierDash 3s linear infinite}
+.frontier-scene .frontier-ink-drop {animation:frontierDrift 3.5s ease-in-out infinite}
+.frontier-scene .frontier-danger {animation:frontierPulse 1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.frontier-scene * {animation:none!important;transition:none!important}}

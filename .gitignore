@@ -1,0 +1,14 @@
+# Local environments and generated files
+.DS_Store
+Thumbs.db
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+coverage/
+*.log
+.env
+.env.*
+!.env.example

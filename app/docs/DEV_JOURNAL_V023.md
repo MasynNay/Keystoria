@@ -1,0 +1,9 @@
+# PANIC PROTOCOL v0.23 engineering journal (append-only)
+
+2026-11-07: Restored the last available v0.22 Mac release archive from the user Library (24-mission Frontier Update). No Panic Protocol repository was found in MasynNay's visible GitHub repositories; work was carried out as a portable local source update, not pushed to an unknown remote.
+
+2026-11-07: Identified the Lyric Lab defect: `renderLyrics()` only rerendered on word progress/line changes; `handleInput()` only changed the error border. Added `renderLyricWordFeedback()` using the same `type-char` correct/incorrect/pending/current tokens as the other typing modes. Maintained existing yellow word highlight; flashing next-key indicator and explicit NEXT KEY keycap. Handled relaxed Unicode accent/case normalization, optional punctuation, strict literal matching, and untrusted lyric HTML escaping. Input events now trigger redraw; seek/jump clears stale input and toggling strict mode refreshes the cue. Reduced-motion CSS supported.
+
+2026-11-07: Dedicated Node tests passed 7/7. Full Python `unittest discover -s tests -q` passed 93/93. Full selected JS suite `node --test --test-concurrency=1 tests/test_*.mjs` passed 93/93; the broader `tests/*.mjs` pattern includes three fixture *generator* scripts that require preview environment variables and must not be counted as failed regression tests. Dedicated Chromium lyric cursor smoke passed including actual UI keyboard input, animation CSS, green/red letter state, Space/Enter, seek/restart and 390px mobile horizontal overflow check. Screenshots in `docs/screenshots/lyric-next-key-*-v023.png`.
+
+2026-11-07: No assertion about real YouTube/LRCLIB live transport; provider availability is outside offline browser tests. Full live deploy of multiplayer needs aiohttp/WebSocket server; a static-only GitHub Pages site can showcase the project but cannot run the full server-backed application. See `docs/PORTFOLIO_DEPLOYMENT.md`.

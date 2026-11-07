@@ -1,0 +1,43 @@
+/* PANIC PROTOCOL v0.20 — visual song identities and honest video-synced lyric UI. */
+.lyric-album.lyric-has-art{isolation:isolate;background:#0d1725;border-color:color-mix(in srgb,var(--lyric-album) 53%,transparent)}
+.lyric-album.lyric-has-art:before{display:none}
+.lyric-album-art{position:absolute;inset:0;z-index:-1;background-position:center center;background-size:cover;background-repeat:no-repeat;opacity:.98;transform:scale(1);transition:transform .5s ease,filter .5s ease}
+.lyric-album.lyric-has-art:hover .lyric-album-art{transform:scale(1.075);filter:saturate(1.2)}
+.lyric-album.lyric-has-art:after{content:"";pointer-events:none;position:absolute;z-index:-1;inset:0;background:linear-gradient(180deg,rgba(4,12,23,.08) 12%,rgba(4,12,23,.36) 48%,rgba(4,11,23,.96) 100%)}
+.lyric-album.lyric-has-art .lyric-album-icon{color:#fff;background:rgba(12,18,35,.62);border-color:#ffffffaa;box-shadow:0 2px 14px #0009}
+.lyric-album.lyric-has-art strong{font-size:21px;text-shadow:0 2px 12px #000,0 1px 2px #000}
+.lyric-album.lyric-has-art small{color:#f0e8ff;text-shadow:0 2px 8px #000}
+.lyric-song-result{flex-direction:row;align-items:center;gap:14px;min-height:100px}
+.lyric-result-art,.lyric-track-cover{display:block;flex:none;aspect-ratio:1/1;border-radius:7px;background-position:center center;background-size:cover;background-color:#2e2448;box-shadow:0 5px 18px #0006;border:1px solid #ffffff24}
+.lyric-result-art{width:75px}
+.lyric-result-info{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;overflow-wrap:anywhere}
+.lyric-result-info strong{color:#fff;font:800 19px/1.1 var(--display)}
+.lyric-result-info>span{color:#c4cdde;font:13px var(--body)}
+.lyric-result-info small{font:10px/1.4 var(--mono);color:#a7dcce}
+.lyric-song-identity{display:flex;align-items:center;gap:21px;min-width:0}
+.lyric-track-cover{width:102px;flex-shrink:0}
+.lyric-song-identity>div{min-width:0}
+.lyric-song-identity h1{overflow-wrap:anywhere}
+.lyric-score-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+.lyric-score-grid strong{font-size:clamp(18px,2vw,26px)}
+.lyric-score-grid>div:last-child strong{color:#ffbaa9}
+.lyric-now-singing{margin:16px 0 12px;padding:17px 19px;border-radius:11px;background:radial-gradient(ellipse at 90% 0,#284d50a8,transparent 67%),linear-gradient(115deg,#122f36,#111d2b);border:1px solid #43756e;min-width:0}
+.lyric-live-heading{display:flex;justify-content:space-between;gap:10px;font:800 11px var(--mono);letter-spacing:.12em;color:#8de8c3}
+.lyric-now-singing p{margin:15px 0 12px;font:800 clamp(19px,2vw,26px)/1.35 var(--display);letter-spacing:.01em;color:#f7ffeb;min-height:32px;overflow-wrap:anywhere}
+.lyric-live-progress{height:4px;background:#365457;border-radius:9px;overflow:hidden}
+.lyric-live-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#9df9c5,#e4ed8b);border-radius:9px;transition:width .12s linear}
+#lyric-lag-status{display:block;margin-top:10px;font:11px/1.45 var(--body);color:#a7c7c3}
+.lyric-stage{margin-top:12px}
+.lyric-skip-button{display:block;margin-top:12px;width:100%;padding:11px 13px;background:linear-gradient(110deg,#312238,#352b37);color:#f9dac8;border:1px solid #9d6778;border-radius:7px;font:800 11px var(--mono);letter-spacing:.07em;cursor:pointer}
+.lyric-skip-button:hover{background:#553146;border-color:#eaa7a5}
+.lyric-skip-button:focus-visible,.lyric-calibrate:focus-visible{outline:2px solid white;outline-offset:2px}
+.lyric-sync-tip{font:11px/1.5 var(--body);color:#acbfcd;margin:3px 0 13px}
+.lyric-sync-tip b{color:#a9f4c6}
+.lyric-sync-options button{padding:7px 9px}
+.lyric-sync-options button:last-child{color:#c4f2df;border-color:#5b9583}
+.lyric-line-row{display:grid;grid-template-columns:minmax(0,1fr) 57px;gap:5px;min-width:0}
+.lyric-line-row .lyric-line{width:100%;min-width:0}
+.lyric-calibrate{border:1px solid #4f8a7b;color:#bceedd;background:#1e393d;border-radius:6px;font:800 10px var(--mono);cursor:pointer}
+.lyric-calibrate:hover{background:#31635c;color:#fff}
+@media(max-width:680px){.lyric-track-cover{width:72px}.lyric-song-identity{gap:12px}.lyric-score-grid{gap:4px}.lyric-score-grid>div{padding:8px 2px}.lyric-score-grid span{font-size:8px}.lyric-score-grid strong{font-size:20px}.lyric-album.lyric-has-art strong{font-size:18px}.lyric-result-art{width:54px}.lyric-song-result{gap:10px;padding:11px}.lyric-result-info strong{font-size:16px}.lyric-now-singing{padding:13px 15px}}
+@media(prefers-reduced-motion:reduce){.lyric-album-art,.lyric-live-progress span{transition:none}}

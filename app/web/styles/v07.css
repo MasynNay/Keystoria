@@ -1,0 +1,57 @@
+/* v0.7: original multi-line passage behavior, without horizontal word movement. */
+.speed-letters {
+  display: block;
+  height: 208px !important;
+  min-height: 208px !important;
+  max-height: 208px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  line-height: 1.72 !important;
+  white-space: pre-wrap;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  font-variant-ligatures: none;
+  position: relative;
+}
+.speed-letters::-webkit-scrollbar { display: none; }
+.speed-letters .type-char { font-weight: 500; letter-spacing: 0; }
+.speed-letters .type-end-caret[hidden] { display: none; }
+.speed-page-indicator { letter-spacing: .035em; }
+@media (max-width: 650px) {
+  .speed-letters { height: 194px !important; min-height: 194px !important; max-height: 194px !important; }
+}
+
+/* Every completed command moves a genuinely illustrated mission forward. */
+.mission-cinema { margin:12px 0 17px; overflow:hidden; border:1px solid #546473; background:#101c27; }
+.cinema-topline { padding:9px 13px; display:flex; justify-content:space-between;gap:12px; align-items:center; border-bottom:1px solid #354453; color:#bdced9; font:700 10px var(--mono); letter-spacing:.055em; }
+.cinema-topline span:first-child { color:var(--accent); }
+.cinema-topline .cinema-alert { color:#ff858c; animation:cinema-beacon 1.4s ease-in-out infinite; }
+.cinema-art { height:192px; overflow:hidden; position:relative; background:#0d1b2b; }
+.cinema-art svg { width:100%;height:100%;display:block; }
+.cinema-art svg text { user-select:none; }
+.cinema-summary { display:grid;gap:7px;padding:12px 15px 13px; min-height:108px; background:linear-gradient(90deg,rgba(var(--accent-rgb),.07),transparent); }
+.cinema-summary>span { color:var(--accent);font:700 10px var(--mono);letter-spacing:.07em; }
+.cinema-summary>strong { font:800 clamp(15px,1.3vw,20px)/1.13 var(--display); color:#f0f5f6; }
+.cinema-summary>p { margin:0;color:#c5d3dc;font:12px/1.55 var(--body); }
+.cinema-progress-track { display:grid;grid-template-columns:repeat(11,1fr);gap:3px;padding:0 15px 13px; }
+.cinema-progress-track span { height:4px; background:#3c4a57; }
+.cinema-progress-track span.seen { background:var(--accent); }
+.cinema-change .cinema-summary { animation:cinema-arrival .42s ease-out; }
+@keyframes cinema-arrival { from { opacity:.25;transform:translateY(6px); } to { opacity:1;transform:translateY(0); } }
+@keyframes cinema-beacon { 50% { opacity:.4; } }
+/* Keep the artwork visible beside the prompt, not above a second page of widgets. */
+.typing-zone .typing-main { padding-top:12px; }
+.typing-zone .role-emblem { display:none; }
+.typing-zone .typing-main>h2 { font-size:clamp(23px,2vw,34px);margin:6px 0 8px; }
+.typing-zone .step-context-label { margin-top:10px; }
+@media(max-width:650px) {
+  .cinema-art { height:148px; }
+  .cinema-summary { min-height:0; }
+  .cinema-summary>strong { font-size:17px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .cinema-topline .cinema-alert,.cinema-change .cinema-summary { animation:none; }
+}
+body.reduced-motion .cinema-topline .cinema-alert,body.reduced-motion .cinema-change .cinema-summary { animation:none; }

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Keystoria: Every key opens a world. A portfolio project combining 24 cooperative typing adventures, rhythm typing, speed practice, and an interactive command academy.">
+  <title>Keystoria — Every Key Opens a World</title>
+  <link rel="icon" href="assets/keystoria-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="bar wrap">
+    <a class="logo" href="#top" aria-label="Keystoria, back to top"><img src="assets/keystoria-mark.svg" width="48" height="48" alt=""><span>KEY<span class="logo-accent">STORIA</span><small>EVERY KEY OPENS A WORLD</small></span></a>
+    <nav aria-label="Primary navigation"><a href="#worlds">Experiences</a><a href="#build">Behind the build</a><a class="nav-cta" href="#play">How to play <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main id="main">
+    <section class="hero wrap" id="top" aria-labelledby="hero-heading">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="star">✦</span> ORIGINAL TYPING GAME COLLECTION <span class="pill">PORTFOLIO PROJECT</span></p>
+        <h1 id="hero-heading">EVERY KEY<br><em>OPENS A WORLD.</em></h1>
+        <p class="intro">A keyboard becomes an escape route, a rhythm instrument, a challenge, and a new skill. <strong>Keystoria</strong> turns typing into something worth coming back for.</p>
+        <div class="hero-buttons"><a class="primary" href="#worlds">Explore the experiences <span aria-hidden="true">↗</span></a><a class="secondary" href="#build">See how it works</a></div>
+        <div class="facts" aria-label="Project highlights"><span><strong>24</strong> original adventures</span><span><strong>4</strong> experiences</span><span><strong>1–2</strong> players</span></div>
+      </div>
+      <div class="hero-art">
+        <div class="frame-label"><span>01 / FIELD NOTES</span><span><i class="dot"></i> IN-GAME SCREENSHOT</span></div>
+        <img src="assets/keystoria-home-desktop-v024.png" alt="Keystoria home screen showing the typing adventure interface and a science fiction mission with a dramatic navigation display" loading="eager" width="1440" height="940">
+        <div class="caption"><span>THE STORY WORLD</span><span>TYPE • DISCOVER • PLAY</span></div>
+      </div>
+    </section>
+    <div class="marquee" aria-hidden="true"><div>STORIES <b>✳</b> MUSIC <b>✳</b> SPEED <b>✳</b> SKILLS <b>✳</b> EVERY KEY OPENS A WORLD <b>✳</b></div></div>
+    <section class="section wrap" id="worlds" aria-labelledby="worlds-heading">
+      <div class="section-header"><div><p class="eyebrow">01 / CHOOSE YOUR EXPERIENCE</p><h2 id="worlds-heading">FOUR WAYS <em>TO PLAY.</em></h2></div><p>Different genres, different goals. The same simple idea: make every keystroke matter.</p></div>
+      <div class="modes">
+        <article class="mode mode-story"><span class="mode-index">01 / IMMERSIVE</span><div class="mode-icon" aria-hidden="true">✧</div><h3>Story Worlds</h3><p>Twenty-four original scenarios, cinematic scenes, and cooperative typing challenges. Play solo with an AI partner or invite a friend by room code.</p><span class="mode-foot">STORY-DRIVEN CO-OP <b>→</b></span></article>
+        <article class="mode mode-music"><span class="mode-index">02 / RHYTHMIC</span><div class="mode-icon" aria-hidden="true">♫</div><h3>Lyric Lab</h3><p>Type along with timed lyrics. A flashing next-letter cue, color-coded accuracy, and an original offline demo make rhythm practice feel intuitive.</p><span class="mode-foot">MUSIC + TYPING <b>→</b></span></article>
+        <article class="mode mode-speed"><span class="mode-index">03 / FOCUSED</span><div class="mode-icon" aria-hidden="true">⌨</div><h3>Speed Lab</h3><p>Quick 15, 30, 60, or 120-second challenges with live feedback, WPM, accuracy, and personal-best tracking in your own browser.</p><span class="mode-foot">PURE TYPING PRACTICE <b>→</b></span></article>
+        <article class="mode mode-academy"><span class="mode-index">04 / PRACTICAL</span><div class="mode-icon" aria-hidden="true">{ }</div><h3>Field Academy</h3><p>Learn real command patterns across Windows, macOS, and Linux inside a safe teaching simulation. Nothing is executed on your device.</p><span class="mode-foot">SKILLS + INTERACTION <b>→</b></span></article>
+      </div>
+    </section>
+    <section class="spotlight wrap" aria-labelledby="spotlight-heading">
+      <div class="spotlight-image"><img src="assets/lyric-next-key-desktop-v023.png" alt="Lyric Lab highlighting a current lyric and the next letter to type" loading="lazy"></div>
+      <div class="spotlight-copy"><p class="eyebrow">02 / THE LITTLE DETAILS</p><h2 id="spotlight-heading">BUILT FOR<br><em>THE NEXT KEY.</em></h2><p>When a word is active in Lyric Lab, the current letter flashes in place. Correct input turns green, mistakes become red, and the yellow word highlight stays visible. It's a small detail that makes the whole experience easier to follow.</p><div class="note"><span>LIVE INPUT</span><span>PROGRESSIVE FEEDBACK</span><span>ACCESSIBLE MOTION</span></div></div>
+    </section>
+    <section class="section wrap" id="build" aria-labelledby="build-heading"><div class="section-header"><div><p class="eyebrow">03 / ENGINEERING</p><h2 id="build-heading">MORE THAN<br><em>A PRETTY SCREEN.</em></h2></div><p>An original browser experience backed by a real-time game server, authored content, and testable interactions.</p></div><div class="tech"><div><strong>WebSocket multiplayer</strong><p>Real-time asymmetric roles, a server-authoritative game engine, and reconnect handling.</p></div><div><strong>Vanilla JavaScript</strong><p>Modular UI controllers, responsive CSS, no frontend build step, and local save state.</p></div><div><strong>Python + aiohttp</strong><p>Mission logic, timed room updates, optional video matching, and local development launchers.</p></div><div><strong>Automated tests</strong><p>Python and JavaScript regressions plus Chromium browser checks for important gameplay flows.</p></div></div></section>
+    <section class="callout wrap" id="play" aria-labelledby="play-heading"><div><p class="eyebrow">04 / GETTING HANDS ON</p><h2 id="play-heading">READY TO<br><em>OPEN A WORLD?</em></h2><p>Keystoria is currently a locally runnable portfolio prototype. A public playable URL has not been set up. The full experience requires its Python/WebSocket server; this showcase is intentionally static.</p></div><div class="steps"><span>LOCAL PLAY</span><p><strong>Mac:</strong> Extract the project and run <code>run_mac.command</code>.</p><p><strong>Windows:</strong> Extract the project and run <code>run_windows.bat</code>.</p><p><strong>Browser:</strong> Open <code>http://localhost:8080</code> after starting the server.</p><small>This page itself needs no server and can be hosted on static platforms.</small></div></section>
+  </main>
+  <footer class="wrap footer"><div class="logo"><img src="assets/keystoria-mark.svg" width="32" height="32" alt=""><span>KEY<span class="logo-accent">STORIA</span></span></div><p>AN ORIGINAL TYPING EXPERIENCE · 2026</p><a href="#top">BACK TO TOP ↑</a></footer>
+</body>
+</html>
