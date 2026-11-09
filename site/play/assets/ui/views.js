@@ -7,6 +7,7 @@ import { missionScene, sceneStep, sceneStory } from "./mission-scenes.js";
 import { renderSceneSVG } from "./scene-illustrations.js";
 import { safe, timeString, pad, ico, brand, tag } from "./helpers.js";
 import { isSoundOn } from "../sound.js";
+import { THEMES } from "./themes.js";
 import { trainingLibrary } from "./training-view.js";
 import { speedLibrary } from "./speed-view.js";
 import { readHistory, readCareer, summarizeHistory, MILESTONES } from "./progression.js";
@@ -124,7 +125,12 @@ ${BROWSER_EDITION ? `      <div class="welcome-ways">
       ["reducedMotion", "REDUCED MOTION", "Disable atmospheric animations and transitions."],
     ];
     return `<div class="modal-backdrop" data-action="close-modal"><div class="modal-panel settings-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="close-modal" data-action="close-modal" aria-label="Close dialog">${ico("cross",20)}</button>
-      ${tag("PERSONALIZE THE TERMINAL")}<h2 id="modal-title">DISPLAY SETTINGS.</h2><p>These settings only affect this browser. Your teammate can choose their own.</p><div class="settings-list">${options.map(([key, name, help])=>`<button class="setting-choice" data-action="setting" data-setting="${key}" aria-pressed="${state.preferences[key]}"><span><strong>${name}</strong><small>${help}</small></span><i class="setting-switch ${state.preferences[key] ? "on" : ""}"></i></button>`).join("")}</div><button class="btn btn-primary btn-wide" data-action="close-modal">DONE</button>
+      ${tag("MAKE IT YOURS")}<h2 id="modal-title">CHOOSE YOUR THEME.</h2><p>Pick from 15 carefully designed palettes. Your selection is saved on this device and applies to every playable mode.</p>
+      <div class="theme-picker" role="group" aria-label="Choose a color theme">
+        ${THEMES.map(theme => `<button type="button" class="theme-choice" data-action="theme-select" data-theme-id="${theme.id}" aria-pressed="${state.preferences.theme === theme.id}" title="${theme.description}"><span class="theme-preview" aria-hidden="true" style="--swatch-bg:${theme.bg};--swatch-panel:${theme.panel};--swatch-accent:${theme.accent}"><i></i><i></i><b></b></span><span class="theme-choice-name">${theme.name}</span><span class="theme-choice-check" aria-hidden="true">${ico("check",15)}</span></button>`).join("")}
+      </div>
+      <p class="theme-selected" id="theme-selection-status" aria-live="polite">Selected: ${THEMES.find(theme => theme.id === state.preferences.theme)?.name || "Signal"} · Changes apply instantly.</p>
+      <h3 class="theme-options-heading">DISPLAY OPTIONS</h3><div class="settings-list">${options.map(([key, name, help])=>`<button class="setting-choice" data-action="setting" data-setting="${key}" aria-pressed="${state.preferences[key]}"><span><strong>${name}</strong><small>${help}</small></span><i class="setting-switch ${state.preferences[key] ? "on" : ""}"></i></button>`).join("")}</div><button class="btn btn-primary btn-wide" data-action="close-modal">DONE</button>
     </div></div>`;
   }
   if (state.modal === "guide" && state.room) {

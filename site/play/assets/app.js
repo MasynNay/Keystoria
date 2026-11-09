@@ -14,6 +14,7 @@ import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";
 import { createViews } from "./ui/views.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
+import { THEMES, THEME_IDS } from "./ui/themes.js";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
@@ -367,6 +368,19 @@ app.addEventListener("click",event=>{
   case "reel-prev":moveStoryReel(state.room,-1);break;
   case "reel-next":moveStoryReel(state.room,1);break;
   case "settings":showModal("settings");break;
+  case "theme-select": {
+    const id = item.dataset.themeId;
+    if (!THEME_IDS.includes(id)) break;
+    state.preferences = savePreferences({...state.preferences,theme:id});
+    applyPreferences(state.preferences);
+    // Keep the settings modal open and its scroll position intact.
+    app.querySelectorAll(".theme-choice").forEach(button => {
+      button.setAttribute("aria-pressed", String(button.dataset.themeId === id));
+    });
+    const status = document.getElementById("theme-selection-status");
+    if (status) status.textContent = "Selected: " + THEMES.find(theme => theme.id === id).name + " · Changes apply instantly.";
+    break;
+  }
   case "setting":{
     const key=item.dataset.setting;
     if(!Object.hasOwn(state.preferences,key)) break;
