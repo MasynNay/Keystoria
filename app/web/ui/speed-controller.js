@@ -5,6 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js';
+import { nextSpeedCue } from './mobile-typing.js';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element) element.textContent=value; };
@@ -58,6 +59,9 @@ export function createSpeedController({ state, onRender, playSound }) {
     // Mount the passage once; only letter classes and vertical scroll update.
     if (!flow) flow=createSpeedFlow(node('speed-letters'),session.reference);
     flow?.update(session.typed);
+    const cue=nextSpeedCue(session.reference,session.typed);
+    text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
+    text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
     text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));
     text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
@@ -104,9 +108,19 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (session.typed.length===session.reference.length) finish();
   }
 
+  /** Mobile separator stays a real input character, included in accuracy. */
+  function insertSpace(){
+    const session=state.speed;
+    if(!session||session.status==='complete'||session.typed.length>=session.reference.length)return;
+    session.keystrokes++;
+    input(session.typed+' ');
+    const field=node('speed-input');
+    if(field&&!field.disabled)field.focus({preventScroll:true});
+  }
+
   function keystroke() {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,input,keystroke,finish,tick};
+  return {open,close,paint,input,keystroke,insertSpace,finish,tick};
 }
