@@ -45,7 +45,7 @@ export const isNumericPack = pack => PACKS[pack]?.numeric === true;
 
 /** Generate fictional number-entry drills. A supplied RNG keeps tests deterministic. */
 export function createNumberStream(style='digits', count=700, rng=Math.random) {
-  const digit=()=>String(Math.max(0,Math.min(9,Math.floor((Number.isFinite(Number(rng())) ? Number(rng()) : 0)*10))));
+  const digit=()=>{const value=Number(rng());return String(Math.max(0,Math.min(9,Math.floor((Number.isFinite(value)?value:0)*10))));};
   const groups=[];
   for(let i=0;i<count;i++){
     if(style==='amounts') {

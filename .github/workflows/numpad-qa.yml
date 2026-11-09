@@ -1,0 +1,35 @@
+name: Verify Numpad Feature
+on:
+  push:
+    branches: [feature/speed-lab-numpad]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax, engine tests and parity
+        run: |
+          node --check app/web/ui/speed-engine.js
+          node --check app/web/ui/speed-controller.js
+          node --check app/web/ui/speed-view.js
+          node --check site/play/assets/ui/speed-engine.js
+          node --test app/tests/test_numpad.mjs
+          diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
+          diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/keystoria-numpad.log 2>&1 &
+          curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8765/play/ >/dev/null
+      - name: Exercise Speed Lab
+        run: node scripts/test-numpad.mjs
