@@ -20,6 +20,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Serve static edition
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory site >/tmp/keystoria-numpad.log 2>&1 &
+          curl --fail --silent --retry 12 --retry-connrefused --retry-delay 1 http://127.0.0.1:8765/play/ >/dev/null
+      - name: Browser regression
+        run: node scripts/test-numpad-browser.mjs
       - name: Check code and numeric scoring
         run: |
           node --check app/web/app.js
