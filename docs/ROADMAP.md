@@ -31,21 +31,32 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 **Why:** Lyrics and optional media depend on external APIs; graceful failure is part of a credible product.  
 **Exit criteria:** Loading, timeout, empty-result, and rate-limit states are clear; stale responses do not replace recent searches; the built-in demo remains usable; failure paths are covered by tests.
 
+### 3. Numpad typing challenge
+**Tracking:** Dedicated Speed Lab number-entry mode, scheduled as a separate release.  
+**Why:** Number-pad proficiency matters in accounting, finance, administration, and data-entry roles.  
+**Exit criteria:** Timed digit-only drills, accurate characters-per-minute and accuracy metrics, optional separators, keyboard-only play, local history, and desktop/mobile regression coverage.
+
+### 4. Industry-specific Speed Lab vocabulary
+**Tracking:** Planned expansion after the numpad release.  
+**Why:** Typing practice should be relevant to the words people encounter at work and school.  
+**Proposed banks:** Legal services, education, municipal government, healthcare, finance, customer service, and IT, alongside Everyday and Story Mode.  
+**Exit criteria:** Clear category selection, curated non-sensitive terms, accessible controls, and accurate results/history labels. Avoid real client, patient, or student information.
+
 ## Next — accessibility and architecture
 
-### 3. Keyboard-first accessibility review
+### 5. Keyboard-first accessibility review
 **Tracking:** [Issue #3 — Accessibility audit](https://github.com/MasynNay/Keystoria/issues/3)  
 **Why:** Players should be able to navigate a typing game without a mouse or motion-heavy effects.  
 **Exit criteria:** Focus, announcements, contrast, mobile interaction, and reduced-motion support pass a documented checklist.
 
-### 4. Secure public story-mode feasibility study
+### 6. Secure public story-mode feasibility study
 **Tracking:** [Issue #4 — Co-op hosting architecture](https://github.com/MasynNay/Keystoria/issues/4)  
 **Why:** GitHub Pages cannot host a persistent Python/WebSocket backend, and public rooms require safety and operational work.  
 **Exit criteria:** Document hosting costs, WSS/TLS setup, rate limits, room expiration, reconnect behavior, single-worker constraints, and operational monitoring. Run a small proof of concept before deciding whether to launch. **No public co-op release is committed.**
 
 ## Later — meaningful long-term progression
 
-### 5. Personal practice goals and useful insights
+### 7. Personal practice goals and useful insights
 **Tracking:** [Issue #5 — Practice goals and progression](https://github.com/MasynNay/Keystoria/issues/5)  
 **Why:** Learning should provide more than a streak or a number.  
 **Exit criteria:** A tested design for local-first practice trends, clear goals, privacy/export/reset behavior, and actionable feedback. This is a concept until scoped and implemented.
