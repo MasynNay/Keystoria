@@ -570,7 +570,14 @@ app.addEventListener("keydown",event=>{
    event.preventDefault();speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});return;
  }
  if(state.speed && event.target.id === "speed-input" && event.key === "Enter") {
-   event.preventDefault();return;
+   event.preventDefault();
+   if(state.speed.pack==="numpad" && event.code==="NumpadEnter") {
+     const field=event.target;
+     field.setRangeText(" ",field.selectionStart,field.selectionEnd,"end");
+     speedController.input(field.value);
+     speedController.keystroke();
+   }
+   return;
  }
  if(state.speed && event.target.id === "speed-input" && event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
    speedController.keystroke();
