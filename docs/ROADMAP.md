@@ -5,7 +5,7 @@
 **Play the browser edition:** https://keystoria.masynnay.com/play/  
 **Tracked work:** https://github.com/MasynNay/Keystoria/issues
 
-Keystoria is an evolving typing game collection with 24 authored story adventures, Lyric Lab, Speed Lab, and Field Academy. This roadmap records why the next changes matter, how we will verify them, and which features have already been delivered. Priorities may change after testing or feedback; the roadmap is not a promise of dates.
+Keystoria is an evolving typing game collection with 24 authored story adventures, Lyric Lab, Speed Lab, and Field Academy. Mobile-first gameplay is a near-term priority based on direct feedback, separate from desktop accessibility and planned content features. This roadmap records why the next changes matter, how we will verify them, and which features have already been delivered. Priorities may change after testing or feedback; the roadmap is not a promise of dates.
 
 ## Shipped and verifiable
 
@@ -19,59 +19,59 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 
 Shipped refers to code merged and/or a GitHub Pages deployment—not a claim that every device, browser, or third-party media provider has been verified.
 
-## Now — quality and predictable behavior
+## Now — mobile usability and dependable gameplay
 
-### 1. Browser practice regression testing
+### 1. Mobile-first gameplay redesign (high priority)
+**Tracking:** [Issue #11 — Comfortable typing with the phone keyboard](https://github.com/MasynNay/Keystoria/issues/11)  
+**Why:** A responsive layout is not enough for a typing game: the phone's software keyboard can obscure the prompt, steal much of the screen, and make controls difficult to reach.  
+**Status:** **Planned** following a user report; no mobile redesign is shipped yet.  
+**First fixes:** Keep the active word and input visible together above the virtual keyboard; preserve focus as words advance; offer large touch-accessible submit, skip, and pause buttons; collapse secondary information while typing; avoid scroll jumps and hidden controls as the keyboard opens/closes.  
+**Follow-up:** Evaluate an optional one-word or short-phrase mobile presentation for Lyric Lab and Speed Lab, including numeric practice. Keep existing desktop gameplay intact.  
+**Exit criteria:** Lyric Lab, Speed Lab, and Field Academy can be completed without a physical keyboard; verify real iOS Safari and Android Chrome software keyboards in addition to automated narrow-viewport tests. Test portrait, landscape, safe areas, 15 themes, assistive technology, and timing/scoring behavior. Do not claim native-keyboard compatibility from browser-emulation screenshots alone.
+
+### 2. Browser practice regression testing
 **Tracking:** [Issue #1 — Headless browser testing in CI](https://github.com/MasynNay/Keystoria/issues/1)  
 **Why:** The portfolio opens the real practice UI. A deployment should fail if key buttons, typing inputs, or required routes break.  
-**Exit criteria:** Automated Chromium tests verify homepage-to-app navigation, Speed Lab typing, Lyric Lab local demo and next-letter cue, and Field Academy command submission at desktop/mobile widths. CI blocks broken releases.
+**Status:** **Partially implemented** through feature-specific Chromium and screenshot workflows; the requested comprehensive release gate is not complete.  
+**Exit criteria:** Automated tests verify homepage-to-app navigation, Speed Lab typing, Lyric Lab offline demo and next-letter cue, and Field Academy command submission at desktop/mobile widths. CI prevents a broken release.
 
-### 2. Lyric Lab reliability and graceful offline behavior
+### 3. Lyric Lab reliability and graceful offline behavior
 **Tracking:** [Issue #2 — Provider failures and recovery](https://github.com/MasynNay/Keystoria/issues/2)  
-**Why:** Lyrics and optional media depend on external APIs; graceful failure is part of a credible product.  
-**Exit criteria:** Loading, timeout, empty-result, and rate-limit states are clear; stale responses do not replace recent searches; the built-in demo remains usable; failure paths are covered by tests.
+**Why:** Timed lyrics and optional video rely on external providers.  
+**Status:** **Planned** for full failure-path coverage.  
+**Exit criteria:** Clear loading, timeout, empty-result, blocked-media and rate-limit states; stale requests do not replace newer searches; built-in demo remains usable; meaningful automated fallback tests.
 
-### 3. Numpad typing challenge
-**Tracking:** Dedicated Speed Lab number-entry mode, scheduled as a separate release.  
-**Why:** Number-pad proficiency matters in accounting, finance, administration, and data-entry roles.  
-**Exit criteria:** Timed digit-only drills, accurate characters-per-minute and accuracy metrics, optional separators, keyboard-only play, local history, and desktop/mobile regression coverage.
+### 4. Speed Lab numpad number-entry challenge
+**Tracking:** [Issue #6 — Numpad typing game](https://github.com/MasynNay/Keystoria/issues/6) · [Draft PR #8](https://github.com/MasynNay/Keystoria/pull/8)  
+**Why:** Number entry is a distinct skill in finance, administration, and data-entry jobs.  
+**Status:** **In development**, with an independently scheduled release review; not yet publicly shipped.  
+**Exit criteria:** Timed digit drills, correct numeric speed/accuracy units, optional separators, local history, accessible desktop/mobile interaction, and verified CI before publication.
 
-### 4. Industry-specific Speed Lab vocabulary
-**Tracking:** Planned expansion after the numpad release.  
-**Why:** Typing practice should be relevant to the words people encounter at work and school.  
-**Proposed banks:** Legal services, education, municipal government, healthcare, finance, customer service, and IT, alongside Everyday and Story Mode.  
-**Exit criteria:** Clear category selection, curated non-sensitive terms, accessible controls, and accurate results/history labels. Avoid real client, patient, or student information.
-
-### 6. Speed Lab: numpad number-entry challenge
-**Tracking:** [Issue #6 — Numpad typing game](https://github.com/MasynNay/Keystoria/issues/6)  
-**Why:** Number entry is a distinct workplace skill, especially for finance, records, data entry, and administrative roles.  
-**Status:** **In development on a feature branch**; not yet publicly shipped.  
-**Exit criteria:** A dedicated numeric drill with live feedback, digit-based scoring, local history, responsive UI, and passing browser/unit tests.
-
-### 7. Speed Lab: industry-specific word banks
+### 5. Industry-specific Speed Lab vocabulary
 **Tracking:** [Issue #7 — Professional vocabulary packs](https://github.com/MasynNay/Keystoria/issues/7)  
-**Why:** Players in schools, law firms, government, healthcare, and other workplaces should be able to practice language they actually use.  
+**Why:** People in legal services, education, government, healthcare, finance, hospitality, and IT should practice words relevant to their work.  
 **Status:** **Planned**.  
-**Exit criteria:** Carefully curated vocabulary groups, reliable word generation, accessibility, and appropriate metrics for each group.
+**Exit criteria:** Curated, non-sensitive vocabulary packs, clear category controls, reliable generation, and accurate score/history labels without real client, patient, or student data.
 
 ## Next — accessibility and architecture
 
-### 5. Keyboard-first accessibility review
+### 6. Keyboard-first accessibility review
 **Tracking:** [Issue #3 — Accessibility audit](https://github.com/MasynNay/Keystoria/issues/3)  
-**Why:** Players should be able to navigate a typing game without a mouse or motion-heavy effects.  
-**Exit criteria:** Focus, announcements, contrast, mobile interaction, and reduced-motion support pass a documented checklist.
+**Why:** Players should be able to navigate the desktop experience without a mouse or motion-heavy effects. Mobile-specific ergonomics are tracked separately in issue #11.  
+**Exit criteria:** Focus, announcements, contrast, keyboard navigation, and reduced-motion support pass a documented checklist across all available themes.
 
-### 6. Secure public story-mode feasibility study
+### 7. Secure public story-mode feasibility study
 **Tracking:** [Issue #4 — Co-op hosting architecture](https://github.com/MasynNay/Keystoria/issues/4)  
-**Why:** GitHub Pages cannot host a persistent Python/WebSocket backend, and public rooms require safety and operational work.  
-**Exit criteria:** Document hosting costs, WSS/TLS setup, rate limits, room expiration, reconnect behavior, single-worker constraints, and operational monitoring. Run a small proof of concept before deciding whether to launch. **No public co-op release is committed.**
+**Why:** GitHub Pages cannot host a persistent Python/WebSocket backend, and public co-op rooms require security and operational work.  
+**Exit criteria:** Document hosting costs, WSS/TLS, rate limits, room expiration, reconnect behavior, single-worker constraints, and monitoring. Run a small proof of concept first. **No public co-op launch is committed.**
 
 ## Later — meaningful long-term progression
 
-### 7. Personal practice goals and useful insights
+### 8. Personal practice goals and useful insights
 **Tracking:** [Issue #5 — Practice goals and progression](https://github.com/MasynNay/Keystoria/issues/5)  
-**Why:** Learning should provide more than a streak or a number.  
-**Exit criteria:** A tested design for local-first practice trends, clear goals, privacy/export/reset behavior, and actionable feedback. This is a concept until scoped and implemented.
+**Why:** Useful learning feedback goes beyond a streak or score.  
+**Status:** **Concept**.  
+**Exit criteria:** Design local-first trends, realistic goals, privacy/export/reset controls, and actionable insights, and validate before shipping.
 
 ## How this roadmap stays honest
 
