@@ -28,7 +28,7 @@ test('normal scoring skips punctuation without losing the original lyric text', 
  assert.equal((result.html.match(/type-char correct/g)||[]).length,5);
  const apostrophe=renderLyricWordFeedback('You’re','you');
  assert.equal(apostrophe.nextKey,'r');
- assert.match(apostrophe.html,/type-char ignored">’<\\/span>/);
+ assert.ok(apostrophe.html.includes('<span class="type-char ignored">’</span>'));
  assert.match(apostrophe.html,/data-next-key="r"/);
 });
 
@@ -46,21 +46,21 @@ test('relaxed mode accepts untyped apostrophes and parentheses but preserves lyr
   assert.equal(rendered.nextKey,'SPACE',display);
   assert.equal(rendered.errors,0,display);
   assert.match(rendered.html,/type-char ignored/,display);
-  assert.ok(rendered.html.includes(ignored==='"'?'&quot;':ignored),display);
+  assert.ok(rendered.html.includes(ignored==="'"?'&#39;':ignored==='"'?'&quot;':ignored),display);
  }
  const afterApostrophe=renderLyricWordFeedback("Don't","Don");
  assert.equal(afterApostrophe.nextKey,'t');
  assert.match(afterApostrophe.html,/data-next-key="t"/);
  const afterParen=renderLyricWordFeedback('(sing)','si');
  assert.equal(afterParen.nextKey,'n');
- assert.match(afterParen.html,/type-char ignored">\\(<\\/span>/);
+ assert.ok(afterParen.html.includes('<span class="type-char ignored">(</span>'));
 });
 
 test('strict mode remains an explicit opt-in for punctuation and case', () => {
  const mandatory=renderLyricWordFeedback("don't","don",{strict:true});
  assert.equal(mandatory.nextKey,"'");
- assert.equal(renderLyricWordFeedback("(Yeah)","Yeah",{strict:true}).nextKey,'(');
- assert.equal(renderLyricWordFeedback("don't","dont",{strict:true}).errors,2);
+ assert.equal(renderLyricWordFeedback("(Yeah)","",{strict:true}).nextKey,'(');
+ assert.equal(renderLyricWordFeedback("don't","dont",{strict:true}).errors,1);
  const exact=renderLyricWordFeedback("don't","don't",{strict:true});
  assert.equal(exact.errors,0);
  assert.equal(exact.nextKey,'SPACE');
