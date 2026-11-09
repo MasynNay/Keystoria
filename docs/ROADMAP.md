@@ -42,6 +42,18 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 **Proposed banks:** Legal services, education, municipal government, healthcare, finance, customer service, and IT, alongside Everyday and Story Mode.  
 **Exit criteria:** Clear category selection, curated non-sensitive terms, accessible controls, and accurate results/history labels. Avoid real client, patient, or student information.
 
+### 6. Speed Lab: numpad number-entry challenge
+**Tracking:** [Issue #6 — Numpad typing game](https://github.com/MasynNay/Keystoria/issues/6)  
+**Why:** Number entry is a distinct workplace skill, especially for finance, records, data entry, and administrative roles.  
+**Status:** **In development on a feature branch**; not yet publicly shipped.  
+**Exit criteria:** A dedicated numeric drill with live feedback, digit-based scoring, local history, responsive UI, and passing browser/unit tests.
+
+### 7. Speed Lab: industry-specific word banks
+**Tracking:** [Issue #7 — Professional vocabulary packs](https://github.com/MasynNay/Keystoria/issues/7)  
+**Why:** Players in schools, law firms, government, healthcare, and other workplaces should be able to practice language they actually use.  
+**Status:** **Planned**.  
+**Exit criteria:** Carefully curated vocabulary groups, reliable word generation, accessibility, and appropriate metrics for each group.
+
 ## Next — accessibility and architecture
 
 ### 5. Keyboard-first accessibility review
