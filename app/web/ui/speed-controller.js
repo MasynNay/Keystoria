@@ -3,7 +3,7 @@
  * This controller owns its one timer and never reaches the multiplayer socket.
  * Story missions can continue to evolve independently of personal training.
  */
-import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
+import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult, isNumericPack, scoreNumericRun } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js';
 
 const node = id => document.getElementById(id);
@@ -50,19 +50,23 @@ export function createSpeedController({ state, onRender, playSound }) {
     return session?.startedAt == null ? 0 : Math.min(session.seconds,(performance.now()-session.startedAt)/1000);
   }
 
+  const metricsFor = (session,seconds) => isNumericPack(session.pack)
+    ? scoreNumericRun(session.reference,session.typed,seconds,session.keystrokes)
+    : scoreSpeedRun(session.reference,session.typed,seconds,session.keystrokes);
+
   function paint() {
     const session=state.speed;
     if (!session || session.status==='complete') return;
     const seconds=elapsed();
-    const metrics=scoreSpeedRun(session.reference,session.typed,Math.max(1,seconds),session.keystrokes);
+    const metrics=metricsFor(session,Math.max(1,seconds));
     // Mount the passage once; only letter classes and vertical scroll update.
     if (!flow) flow=createSpeedFlow(node('speed-letters'),session.reference);
     flow?.update(session.typed);
     text('speed-progress',`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));
-    text('speed-wpm',String(seconds ? metrics.wpm : 0));
-    text('speed-accuracy',`${metrics.accuracy}%`);
-    text('speed-raw',String(seconds ? metrics.rawWpm : 0));
+    text('speed-wpm',String(seconds ? (isNumericPack(session.pack) ? metrics.dpm : metrics.wpm) : 0));
+    text('speed-accuracy',`${isNumericPack(session.pack) ? metrics.digitAccuracy : metrics.accuracy}%`);
+    text('speed-raw',String(seconds ? (isNumericPack(session.pack) ? metrics.rawDpm : metrics.rawWpm) : 0));
     text('speed-mode',session.status === 'running' ? 'SESSION LIVE' : 'TIMER STARTS WHEN YOU TYPE');
   }
 
@@ -71,7 +75,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (!session || session.status==='complete') return;
     clearTimer();
     session.result={
-      ...scoreSpeedRun(session.reference,session.typed,session.seconds,session.keystrokes),
+      ...metricsFor(session,session.seconds),
       pack:session.pack,seconds:session.seconds,at:new Date().toISOString(),
     };
     session.status='complete';

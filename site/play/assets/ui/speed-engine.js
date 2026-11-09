@@ -13,6 +13,27 @@ export const PACKS = Object.freeze({
     description: 'Typing drills inspired by the tools developers and IT teams use.',
     words: 'server client browser terminal memory kernel thread system network packet router switch cloud local remote backup restore login session access token secure firewall certificate virtual container database endpoint service process build compile deploy branch commit merge pull request function variable string object array event promise async await response request status latency cache queue endpoint method header gateway monitor process device driver update firmware hardware software folder directory file path script shell python javascript powershell linux mac windows command account password policy permissions group user domain dns dhcp subnet gateway ethernet wireless protocol socket websocket http https traffic storage disk volume partition archive checksum integrity encryption key secret public private sign validate parse format value integer boolean class module export import test assertion fixture report exception error warning debug trace log history output input library reference release repository pipeline workflow package dependency version telemetry render view state component property template cursor caret accuracy speed timing rhythm focus reliability performance profile metrics'.split(' '),
   },
+  numpad: {
+    title: 'NUMPAD · DIGITS',
+    description: 'Practice quick number entry with 3–6 digit groups. Works with the number row or a physical numpad.',
+    numeric: true,
+    numericStyle: 'digits',
+    words: [],
+  },
+  'numpad-amounts': {
+    title: 'NUMPAD · AMOUNTS',
+    description: 'Practice realistic decimal amounts such as 25.40 and 1098.75.',
+    numeric: true,
+    numericStyle: 'amounts',
+    words: [],
+  },
+  'numpad-codes': {
+    title: 'NUMPAD · CODES',
+    description: 'Practice structured numeric identifiers in short groups without any real personal information.',
+    numeric: true,
+    numericStyle: 'codes',
+    words: [],
+  },
   atmosphere: {
     title: 'STORY MODE',
     description: 'Fast cinematic prose with richer words and punctuation.',
@@ -20,7 +41,27 @@ export const PACKS = Object.freeze({
   },
 });
 
+export const isNumericPack = pack => PACKS[pack]?.numeric === true;
+
+/** Generate fictional number-entry drills. A supplied RNG keeps tests deterministic. */
+export function createNumberStream(style='digits', count=700, rng=Math.random) {
+  const digit=()=>String(Math.max(0,Math.min(9,Math.floor((Number.isFinite(Number(rng())) ? Number(rng()) : 0)*10))));
+  const groups=[];
+  for(let i=0;i<count;i++){
+    if(style==='amounts') {
+      const width=1+(i%4);
+      groups.push(Array.from({length:width},digit).join('')+'.'+digit()+digit());
+    } else if(style==='codes') {
+      groups.push(Array.from({length:3+(i%3)},digit).join(''));
+    } else {
+      groups.push(Array.from({length:3+(i%4)},digit).join(''));
+    }
+  }
+  return groups.join(' ');
+}
+
 export function createWordStream(pack, count = 700, rng = Math.random) {
+  if(isNumericPack(pack)) return createNumberStream(PACKS[pack].numericStyle,count,rng);
   const words = PACKS[pack]?.words || PACKS.everyday.words;
   const result = [];
   for (let index = 0; index < count; index++) {
@@ -48,6 +89,27 @@ export function scoreSpeedRun(reference, typed, seconds, keystrokes = 0) {
     incorrect: active - correct,
     characters: active,
     keystrokes,
+  };
+}
+
+/** Number entry uses actual digits/minute rather than five-character word estimates. */
+export function scoreNumericRun(reference,typed,seconds,keystrokes=0) {
+  const base=scoreSpeedRun(reference,typed,seconds,keystrokes);
+  let digits=0,correctDigits=0;
+  for(let i=0;i<typed.length;i++){
+    if(/[0-9]/.test(typed[i])){
+      digits++;
+      if(typed[i]===reference[i]) correctDigits++;
+    }
+  }
+  const minutes=Math.max(.001,seconds)/60;
+  return {
+    ...base,
+    dpm:Math.round(correctDigits/minutes),
+    rawDpm:Math.round(digits/minutes),
+    digitAccuracy:digits?Math.round(correctDigits/digits*100):100,
+    correctDigits,
+    typedDigits:digits,
   };
 }
 

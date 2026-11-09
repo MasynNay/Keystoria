@@ -1,6 +1,6 @@
 /** Stateless presentation for the solo Speed Lab. */
 import { safe, ico, tag } from './helpers.js';
-import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
+import { DURATIONS, PACKS, isNumericPack, readSpeedHistory } from './speed-engine.js';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -15,27 +15,32 @@ export function speedLibrary() {
 function historyPanel() {
   const history = readSpeedHistory();
   if (!history.length) return `<div class="speed-empty">Your personal records appear here after your first completed run. Scores are kept on this device.</div>`;
-  return `<div class="speed-history">${history.slice(0, 5).map(run => `<div><strong>${Number(run.wpm)} <small>WPM</small></strong><span>${safe(PACKS[run.pack]?.title || 'EVERYDAY')} · ${Number(run.seconds)}s</span><b>${Number(run.accuracy)}% accuracy</b></div>`).join('')}</div>`;
+  return `<div class="speed-history">${history.slice(0, 5).map(run => `<div><strong>${Number(isNumericPack(run.pack)?(run.dpm??0):run.wpm)} <small>${isNumericPack(run.pack)?'DPM':'WPM'}</small></strong><span>${safe(PACKS[run.pack]?.title || 'EVERYDAY')} · ${Number(run.seconds)}s</span><b>${Number(isNumericPack(run.pack)?(run.digitAccuracy??run.accuracy):run.accuracy)}% accuracy</b></div>`).join('')}</div>`;
 }
 
 export function speedTemplate(session, header) {
   const done = session.status === 'complete';
   const result = session.result;
-  return `${header({inGame:true})}<main class="speed-page shell" data-speed="${safe(session.pack)}">
+  const numeric=isNumericPack(session.pack);
+  const net=done?(numeric?result.dpm:result.wpm):0;
+  const raw=done?(numeric?result.rawDpm:result.rawWpm):0;
+  const accuracy=done?(numeric?result.digitAccuracy:result.accuracy):100;
+  const unit=numeric?'DPM':'WPM';
+  return `${header({inGame:true})}<main class="speed-page shell" data-speed="${safe(session.pack)}" data-numeric="${numeric}">
     <div class="speed-topline"><button class="text-button" data-action="speed-home">${ico('arrow',16)} BACK TO MISSIONS</button><span>// PERSONAL TRAINING / ZERO PRESSURE FROM TEAMMATES</span></div>
-    <div class="speed-title">${tag('THE SPEED LAB / SOLO MODE')}<h1>FIND YOUR <em>RHYTHM.</em></h1><p>Inspired by the fast feedback of TypeNinja. The timer starts on your first keystroke. Mistakes glow red, correct characters turn green, and Backspace lets you correct errors.</p></div>
+    <div class="speed-title">${tag('THE SPEED LAB / SOLO MODE')}<h1>FIND YOUR <em>RHYTHM.</em></h1><p>${numeric?'Practice realistic number-entry drills. Use your physical numpad or the number row. The timer begins on your first key; results show digits per minute (DPM).':'Practice fast, accurate typing. The timer begins on your first key. Mistakes glow red, correct characters turn green, and Backspace lets you correct errors.'}</p></div>
     <section class="speed-console" aria-label="Timed typing test">
       <div class="speed-settings"><div class="speed-setting"><span>TIME LIMIT</span><div class="speed-choices" role="group" aria-label="Duration">${DURATIONS.map(seconds => `<button type="button" data-action="speed-duration" data-seconds="${seconds}" aria-pressed="${seconds===session.seconds}">${seconds}s</button>`).join('')}</div></div>
-      <div class="speed-setting"><span>WORD BANK</span><div class="speed-choices" role="group" aria-label="Word bank">${Object.entries(PACKS).map(([id,pack]) => `<button type="button" data-action="speed-pack" data-pack="${id}" aria-pressed="${id===session.pack}">${safe(pack.title)}</button>`).join('')}</div></div></div>
-      <div class="speed-metrics"><div><span>TIME REMAINING</span><strong id="speed-time" class="speed-clock">${done ? 0 : session.seconds}</strong><small>SECONDS</small></div><div><span>NET SPEED</span><strong id="speed-wpm">${done ? result.wpm : 0}</strong><small>WPM</small></div><div><span>ACCURACY</span><strong id="speed-accuracy">${done ? `${result.accuracy}%` : "100%"}</strong><small>CORRECT KEYS</small></div><div><span>RAW SPEED</span><strong id="speed-raw">${done ? result.rawWpm : 0}</strong><small>WPM</small></div></div>
-      ${done ? `<div class="speed-results">${tag('SESSION FINISHED')}<h2>YOU FOUND YOUR PACE.</h2><div class="speed-result-hero"><strong>${result.wpm} <small>WPM</small></strong><div><span>ACCURACY <b>${result.accuracy}%</b></span><span>RAW SPEED <b>${result.rawWpm} WPM</b></span><span>CORRECT CHARACTERS <b>${result.correct}</b></span><span>MISTAKES REMAINING <b>${result.incorrect}</b></span></div></div><p>Results measure correctly typed characters. Press Ctrl + Enter or click Test Again to try again and beat this score.</p><button class="btn btn-primary btn-large" data-action="speed-restart">${ico('refresh',18)} TEST AGAIN</button></div>` : `<div class="speed-prompt-wrap"><div class="speed-prompt-label"><span><i class="command-live"></i> LIVE CHARACTER FEEDBACK</span><span id="speed-mode">${session.status==='running'?'SESSION LIVE':'TIMER STARTS WHEN YOU TYPE'}</span></div>
+      <div class="speed-setting"><span>PRACTICE CATEGORY</span><div class="speed-choices" role="group" aria-label="Word bank">${Object.entries(PACKS).map(([id,pack]) => `<button type="button" data-action="speed-pack" data-pack="${id}" aria-pressed="${id===session.pack}">${safe(pack.title)}</button>`).join('')}</div></div></div>
+      <div class="speed-metrics"><div><span>TIME REMAINING</span><strong id="speed-time" class="speed-clock">${done ? 0 : session.seconds}</strong><small>SECONDS</small></div><div><span>NET SPEED</span><strong id="speed-wpm">${net}</strong><small>${unit}</small></div><div><span>ACCURACY</span><strong id="speed-accuracy">${accuracy}%</strong><small>CORRECT KEYS</small></div><div><span>RAW SPEED</span><strong id="speed-raw">${raw}</strong><small>${unit}</small></div></div>
+      ${done ? `<div class="speed-results">${tag('SESSION FINISHED')}<h2>YOU FOUND YOUR PACE.</h2><div class="speed-result-hero"><strong>${net} <small>${unit}</small></strong><div><span>ACCURACY <b>${accuracy}%</b></span><span>RAW SPEED <b>${raw} ${unit}</b></span><span>${numeric?'CORRECT DIGITS':'CORRECT CHARACTERS'} <b>${numeric?result.correctDigits:result.correct}</b></span><span>MISTAKES REMAINING <b>${result.incorrect}</b></span></div></div><p>${numeric?'Results measure correct digits per minute, excluding spaces and decimal points.':'Results measure correctly typed characters.'} Press Ctrl + Enter or click Test Again to improve your score.</p><button class="btn btn-primary btn-large" data-action="speed-restart">${ico('refresh',18)} TEST AGAIN</button></div>` : `<div class="speed-prompt-wrap"><div class="speed-prompt-label"><span><i class="command-live"></i> LIVE CHARACTER FEEDBACK</span><span id="speed-mode">${session.status==='running'?'SESSION LIVE':'TIMER STARTS WHEN YOU TYPE'}</span></div>
         <div id="speed-letters" class="typing-feedback speed-letters" aria-live="off"></div>
         <div class="speed-page-indicator">CONTINUOUS PASSAGE · <span id="speed-progress">0 characters typed</span> · WORDS ADVANCE UPWARD ONLY</div>
         <div class="typing-legend"><span><i class="legend-correct"></i> CORRECT</span><span><i class="legend-incorrect"></i> INCORRECT</span><span><i class="legend-caret"></i> NEXT KEY</span></div></div>
-        <label for="speed-input" class="speed-input-label">TYPE THE WORDS ABOVE — USE BACKSPACE TO FIX MISTAKES</label>
-        <textarea id="speed-input" class="speed-input" rows="2" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" aria-label="Type the displayed words" placeholder="Click here or start typing to begin..."></textarea>
+        <label for="speed-input" class="speed-input-label">${numeric?'TYPE THE NUMBERS ABOVE — BACKSPACE CORRECTS MISTAKES':'TYPE THE WORDS ABOVE — USE BACKSPACE TO FIX MISTAKES'}</label>
+        <textarea id="speed-input" class="speed-input" rows="2" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" aria-label="${numeric?'Type the displayed numbers':'Type the displayed words'}" inputmode="${numeric?'decimal':'text'}" placeholder="${numeric?'Type the displayed digits and spaces to begin...':'Click here or start typing to begin...'}"></textarea>
         <div class="speed-controls"><span>TIME STARTS ON FIRST KEY · CTRL + ENTER TO RESTART</span><button class="btn btn-outline" data-action="speed-restart">${ico('refresh',16)} RESTART</button></div>`}
     </section>
-    <div class="speed-bottom"><section><span>// YOUR RECENT RESULTS</span><h2>PERSONAL RECORDS.</h2>${historyPanel()}</section><aside><span>// PRACTICE PROFILE</span><h2>${safe(PACKS[session.pack].title)}</h2><p>${safe(PACKS[session.pack].description)}</p><p>Timed solo drills use local browser storage, so you can train without an account. None of these words are shell commands.</p></aside></div>
+    <div class="speed-bottom"><section><span>// YOUR RECENT RESULTS</span><h2>PERSONAL RECORDS.</h2>${historyPanel()}</section><aside><span>// PRACTICE PROFILE</span><h2>${safe(PACKS[session.pack].title)}</h2><p>${safe(PACKS[session.pack].description)}</p><p>Timed solo drills use local browser storage, so you can train without an account. ${numeric?'All example numbers are randomly generated and fictional.':'None of these words are shell commands.'}</p></aside></div>
   </main>`;
 }

@@ -105,3 +105,9 @@
   .speed-bottom { grid-template-columns:1fr; }
   .typing-main .step-explanation { font-size:12px; }
 }
+
+/* Numeric practice is a distinct Speed Lab drill, not a misleading WPM test. */
+.speed-page[data-numeric="true"] .speed-letters {font-variant-numeric:tabular-nums;letter-spacing:.08em;}
+.speed-page[data-numeric="true"] .speed-input {font-variant-numeric:tabular-nums;letter-spacing:.07em;}
+.speed-page[data-numeric="true"] .speed-title em {color:var(--accent);}
+.speed-page .speed-choices button {border-radius:5px;}

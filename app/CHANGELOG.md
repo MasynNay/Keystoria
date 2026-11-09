@@ -1,3 +1,11 @@
+## [Unreleased] — Speed Lab Numpad (feature branch)
+
+- Add dedicated digit, amount, and code entry drills to Speed Lab.
+- Show DPM (digits per minute) and digit accuracy instead of misleading word metrics.
+- Keep the existing 15/30/60/120 second timers, live feedback, restart, and local records.
+- Include responsive numeric input hints and fictional test data.
+- This feature is staged for review and is not publicly released until merged and deployed.
+
 ## [0.25.1] — Smoother Lyric Typing — 2026-11-08
 
 - Make all lyric punctuation optional in the default relaxed typing mode, including straight/curly apostrophes and parentheses.
