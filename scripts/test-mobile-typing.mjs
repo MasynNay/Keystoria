@@ -40,7 +40,7 @@ try{
   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),'numpad');
   assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),'numeric');
   const numericReference=await page.locator('#speed-letters').innerText();
-  assert.match(numericReference,/^\\d{3} \\d{4}/);
+  assert.match(numericReference,/^\d{3} \d{4}/);
   await page.locator('#speed-input').fill(numericReference.slice(0,3));
   if(isPhone){
     await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
