@@ -15,10 +15,12 @@ import { createViews } from "./ui/views.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
+import { setupMobileTyping } from "./ui/mobile-typing.js";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
 const app = $("#app");
+setupMobileTyping(app);
 const params = new URLSearchParams(location.search);
 const savedName = localStorage.getItem("panic.callsign") || "";
 const state = {
@@ -390,6 +392,7 @@ app.addEventListener("click",event=>{
   }
   case "lyric-open":lyricController.open();break;
   case "speed-open":speedController.open();break;
+  case "speed-space":speedController.insertSpace();break;
   case "speed-duration":if(state.speed)speedController.open({pack:state.speed.pack,seconds:Number(item.dataset.seconds)});break;
   case "speed-pack":if(state.speed)speedController.open({pack:item.dataset.pack,seconds:state.speed.seconds});break;
   case "speed-restart":if(state.speed)speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});break;
@@ -544,6 +547,7 @@ app.addEventListener("input",event=>{
    state.lesson.draft=event.target.value;
    const target=LESSONS[state.lesson.os].commands[activeCommandIndex(state.lesson)].text;
    paintTypingFeedback($("#lesson-target-text"),target,state.lesson.draft);
+    paintTypingFeedback($("#lesson-mobile-target"),target,state.lesson.draft);
    return;
  }
  if(event.target.id === "speed-input") {speedController.input(event.target.value);return;}
