@@ -571,7 +571,7 @@ app.addEventListener("keydown",event=>{
  }
  if(state.speed && event.target.id === "speed-input" && event.key === "Enter") {
    event.preventDefault();
-   if(state.speed.pack==="numpad" && event.code==="NumpadEnter") {
+   if(state.speed.pack==="numpad" && event.code==="NumpadEnter" && !state.speed.result) {
      const field=event.target;
      field.setRangeText(" ",field.selectionStart,field.selectionEnd,"end");
      speedController.input(field.value);

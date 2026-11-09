@@ -1,0 +1,32 @@
+name: Validate Numpad Challenge
+on:
+  push:
+    branches: [feature/speed-lab-numpad-2026-11-09]
+  pull_request:
+    paths:
+      - 'app/web/ui/speed-*'
+      - 'site/play/assets/ui/speed-*'
+      - 'app/tests/test_numpad.mjs'
+      - '.github/workflows/numpad-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  numpad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check code and numeric scoring
+        run: |
+          node --check app/web/app.js
+          node --check site/play/assets/app.js
+          node --check app/web/ui/speed-controller.js
+          node --check app/web/ui/speed-view.js
+          node --test app/tests/test_numpad.mjs
+          diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
+          diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
+          diff app/web/styles/speed.css site/play/assets/styles/speed.css

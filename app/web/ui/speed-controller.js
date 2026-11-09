@@ -60,9 +60,9 @@ export function createSpeedController({ state, onRender, playSound }) {
     flow?.update(session.typed);
     text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));
-    text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(metrics.correct/Math.max(1,seconds)*60):metrics.wpm) : 0));
+    text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
     text('speed-accuracy',`${metrics.accuracy}%`);
-    text('speed-raw',String(seconds ? (session.pack==='numpad'?Math.round(metrics.characters/Math.max(1,seconds)*60):metrics.rawWpm) : 0));
+    text('speed-raw',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.replace(/[^0-9]/g,'').length/Math.max(1,seconds)*60):metrics.rawWpm) : 0));
     text('speed-mode',session.status === 'running' ? 'SESSION LIVE' : 'TIMER STARTS WHEN YOU TYPE');
   }
 
@@ -72,8 +72,8 @@ export function createSpeedController({ state, onRender, playSound }) {
     clearTimer();
     const metrics=scoreSpeedRun(session.reference,session.typed,session.seconds,session.keystrokes);
     session.result={
-      ...metrics,cpm:Math.round(metrics.correct/session.seconds*60),
-      rawCpm:Math.round(metrics.characters/session.seconds*60),
+      ...metrics,cpm:Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/session.seconds*60),
+      rawCpm:Math.round(session.typed.replace(/[^0-9]/g,'').length/session.seconds*60),
       pack:session.pack,seconds:session.seconds,at:new Date().toISOString(),
     };
     session.status='complete';
