@@ -24,7 +24,7 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 ### 1. Mobile-first gameplay redesign (high priority)
 **Tracking:** [Issue #11 — Comfortable typing with the phone keyboard](https://github.com/MasynNay/Keystoria/issues/11)  
 **Why:** A responsive layout is not enough for a typing game: the phone's software keyboard can obscure the prompt, steal much of the screen, and make controls difficult to reach.  
-**Status:** **Planned** following a user report; no mobile redesign is shipped yet.  
+**Status:** **In progress** in [draft PR #12](https://github.com/MasynNay/Keystoria/pull/12), with [passing Chromium mobile regression tests](https://github.com/MasynNay/Keystoria/actions/runs/42551764690); **not shipped**. Real iOS/Android keyboard checks remain, and release follows the scheduled numpad PR #8.  
 **First fixes:** Keep the active word and input visible together above the virtual keyboard; preserve focus as words advance; offer large touch-accessible submit, skip, and pause buttons; collapse secondary information while typing; avoid scroll jumps and hidden controls as the keyboard opens/closes.  
 **Follow-up:** Evaluate an optional one-word or short-phrase mobile presentation for Lyric Lab and Speed Lab, including numeric practice. Keep existing desktop gameplay intact.  
 **Exit criteria:** Lyric Lab, Speed Lab, and Field Academy can be completed without a physical keyboard; verify real iOS Safari and Android Chrome software keyboards in addition to automated narrow-viewport tests. Test portrait, landscape, safe areas, 15 themes, assistive technology, and timing/scoring behavior. Do not claim native-keyboard compatibility from browser-emulation screenshots alone.
