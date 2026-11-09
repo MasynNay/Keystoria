@@ -105,3 +105,5 @@
   .speed-bottom { grid-template-columns:1fr; }
   .typing-main .step-explanation { font-size:12px; }
 }
+
+.speed-page[data-speed="numpad"] .speed-letters,.speed-page[data-speed="numpad"] .speed-input {font-variant-numeric:tabular-nums;letter-spacing:.025em;}
