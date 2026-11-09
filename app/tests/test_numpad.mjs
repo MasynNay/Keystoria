@@ -35,4 +35,6 @@ test('Numpad screen offers separate selection, number prompts, and CPM results',
  assert.match(html,/id="speed-input"/);
  const finished=speedTemplate({...base,status:'complete',result:{wpm:12,cpm:60,rawCpm:60,rawWpm:12,accuracy:100,correct:7,incorrect:0}},header);
  assert.match(finished,/60 <small>CPM<\/small>/);
+ assert.match(finished,/id="speed-wpm">60<\/strong><small>CPM/);
+ assert.match(finished,/id="speed-raw">60<\/strong><small>CPM/);
 });
