@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PACKS, createWordStream, scoreSpeedRun, readSpeedHistory, saveSpeedResult } from '../web/ui/speed-engine.js';
 import { speedTemplate } from '../web/ui/speed-view.js';
+// Browser storage is intentionally mocked in the pure Node test.
+globalThis.localStorage={getItem(){return null},setItem(){}};
 test('Numpad is an independent Speed Lab category',()=>{
  assert.equal(PACKS.numpad.title,'NUMPAD');
  const passage=createWordStream('numpad',12,()=>0.47);
