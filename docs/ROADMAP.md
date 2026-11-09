@@ -1,6 +1,6 @@
 # Keystoria development roadmap
 
-**Last reviewed:** November 7, 2026  
+**Last reviewed:** November 8, 2026  
 **Status:** Actively maintained portfolio project; upcoming items are planned work, **not completed features**.  
 **Play the browser edition:** https://keystoria.masynnay.com/play/  
 **Tracked work:** https://github.com/MasynNay/Keystoria/issues
@@ -14,6 +14,7 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 | Keystoria v0.24 rebrand and organized source | **Shipped** | [Repository reorganization and Pages workflow](https://github.com/MasynNay/Keystoria/commit/fabf803523c8bd95269e5ea9660aba9e12a7675a) |
 | GitHub Pages portfolio and custom-domain workflow | **Shipped** | [GitHub Actions deployment history](https://github.com/MasynNay/Keystoria/actions/workflows/pages.yml) |
 | Browser-accessible Keystoria interface for Lyric Lab, Speed Lab, and Field Academy | **Shipped** | [Browser edition, logo refresh, and links](https://github.com/MasynNay/Keystoria/commit/9b4362c448fdb3b87befc61738ec2a85f6011a0a) |
+| 15 persistent visual themes across browser and local app | **Shipped (v0.25)** | [Theme documentation](THEMES.md) and [automated end-to-end checks](https://github.com/MasynNay/Keystoria/actions/runs/42540558364) |
 | 24 story campaigns with room-based cooperative play | **Available locally** | [Python game server](../app/server/app.py) and [local launch instructions](../README.md#get-started); **not** publicly hosted |
 
 Shipped refers to code merged and/or a GitHub Pages deployment—not a claim that every device, browser, or third-party media provider has been verified.

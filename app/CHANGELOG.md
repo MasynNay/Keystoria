@@ -1,3 +1,13 @@
+## [0.25.0] — Personalize Your World — 2026-11-08
+
+- Add **15 user-selectable visual palettes** in the Settings dialog, with live swatch previews and immediate application.
+- Persist the choice in the existing browser preference store without discarding larger-type, high-contrast, or reduced-motion settings.
+- Keep a player's appearance independent of mission selection and apply the same palette options in the public browser edition and the locally hosted game.
+- Coordinate background, panel, border, text, and accent colors across the homepage, Lyric Lab, Speed Lab, Field Academy, and story controls.
+- Add a responsive, keyboard-accessible 15-choice Settings grid and an accurate screenshot for the README.
+- Add Node preference tests and a Chromium regression that exercises every palette, persistence, mission selection, mobile layout, and all three browser practice modes.
+- References: [Theme documentation](../docs/THEMES.md) · [Passing theme validation](https://github.com/MasynNay/Keystoria/actions/runs/42540558364).
+
 ## [0.23.0] — Live Lyric Keys — 2026-11-07
 
 - Lyric Lab highlights the expected letter *within* the existing yellow active word and flashes that character; it uses the same green/red character status language as the campaign and Speed Lab.

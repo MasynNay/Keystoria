@@ -40,4 +40,10 @@ All 15 palettes use dark surfaces, legible text, and high-contrast accent colors
 - `site/play/assets/`: equivalent browser-hosted assets.
 - `scripts/test-themes.mjs`: automated Playwright check across all palettes and three browser practice modes.
 
-No game logic, save files, or third-party media integrations need to change for palette selection.
+The theme update changes only presentation and preference storage; it does not alter story logic, mission save data, or third-party media integrations.
+
+## Verification
+
+- [Chromium end-to-end tests](https://github.com/MasynNay/Keystoria/actions/runs/42540558364): all 15 choices, saved preferences, mission independence, desktop/mobile layout, and three browser practice modes.
+- [Automated screenshot capture](https://github.com/MasynNay/Keystoria/actions/runs/42540295457): the actual theme grid is captured for the README.
+- [GitHub Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/42540558384): successful publication.
