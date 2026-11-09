@@ -70,6 +70,7 @@ try{
   await open(lyric);
   assert.equal(await lyric.locator('.theme-choice[aria-pressed="true"]').getAttribute("data-theme-id"),"amethyst");
   await close(lyric);
+  await lyric.locator('[data-action="lyric-back"]').first().click();
   await lyric.locator('[data-action="lyric-home"]').first().click();
   await lyric.locator('[data-action="learn"][data-os="linux"]').click();
   await lyric.locator("#lesson-input").waitFor();

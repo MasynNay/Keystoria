@@ -44,5 +44,9 @@ jobs:
             echo "Screenshots unchanged"
           else
             git commit -m "docs: capture current Keystoria app screenshots"
+            # The screenshots can finish after another workflow pushes to main.
+            # Rebase on the current branch head before sending the generated assets.
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           fi
