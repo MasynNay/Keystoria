@@ -34,6 +34,12 @@ The Keystoria browser app, with the current **K logo**, story gallery, and entry
 
 <sub>Current browser interface · [Launch Keystoria](https://keystoria.masynnay.com/play/)</sub>
 
+### Choose your look
+
+Use the in-game Settings panel to switch between 15 palettes. Changes apply immediately and stay saved in your browser.
+
+![Keystoria theme picker with 15 available palettes](docs/screenshots/current/theme-picker-desktop.png)
+
 ### Lyric Lab
 
 The original built-in song, timed lyric display, playback controls, live typing feedback, and next-key indicator—all inside the working Lyric Lab screen.

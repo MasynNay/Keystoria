@@ -62,6 +62,14 @@ try {
   let page = await appPage(1440, 1000);
   await page.locator('[data-action="speed-open"]').first().waitFor();
   await shot(page, "browser-home-desktop.png");
+  // Capture the real theme selection dialog for the project README.
+  await page.locator(".prefs-toggle").first().click();
+  await page.locator(".theme-picker").waitFor();
+  if (await page.locator(".theme-choice").count() !== 15) {
+    throw new Error("Expected 15 selectable themes in the real UI");
+  }
+  await shot(page, "theme-picker-desktop.png");
+  await page.locator('.settings-modal button[data-action="close-modal"]').last().click();
   await page.screenshot({
     path: join(SITE, "assets", "keystoria-browser-home-current.png"),
     animations: "disabled",

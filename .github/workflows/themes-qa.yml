@@ -1,0 +1,44 @@
+name: Validate Keystoria themes
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/themes-qa.yml'
+      - 'site/play/**'
+      - 'app/web/**'
+      - 'app/tests/test_themes.mjs'
+      - 'scripts/test-themes.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  theme-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and preference regression checks
+        run: |
+          node --check app/web/app.js
+          node --check site/play/assets/app.js
+          node --check app/web/ui/views.js
+          node --check site/play/assets/ui/views.js
+          node --test app/tests/test_themes.mjs
+          diff app/web/ui/themes.js site/play/assets/ui/themes.js
+          diff app/web/ui/preferences.js site/play/assets/ui/preferences.js
+          diff app/web/styles/themes.css site/play/assets/styles/themes.css
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Serve browser edition
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/keystoria-themes.log 2>&1 &
+          curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8765/play/ >/dev/null
+      - name: Exercise all themes and modes
+        run: node scripts/test-themes.mjs

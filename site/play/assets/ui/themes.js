@@ -10,7 +10,7 @@ export const THEMES = Object.freeze([
     "accent": "#eaff78",
     "text": "#eaf1e7",
     "muted": "#aebec0",
-    "line": "#c7e9e0"
+    "line": "#2b3d3a"
   },
   {
     "id": "midnight",
@@ -22,7 +22,7 @@ export const THEMES = Object.freeze([
     "accent": "#85c5ff",
     "text": "#edf3ff",
     "muted": "#aebcd4",
-    "line": "#b5d8f3"
+    "line": "#35465e"
   },
   {
     "id": "aurora",
@@ -34,7 +34,7 @@ export const THEMES = Object.freeze([
     "accent": "#72ebcb",
     "text": "#edfff7",
     "muted": "#a6d0c4",
-    "line": "#abe5d1"
+    "line": "#2c554d"
   },
   {
     "id": "ember",
@@ -46,7 +46,7 @@ export const THEMES = Object.freeze([
     "accent": "#ffb475",
     "text": "#fff4e9",
     "muted": "#d7baaa",
-    "line": "#f0c79f"
+    "line": "#60433a"
   },
   {
     "id": "amethyst",
@@ -58,7 +58,7 @@ export const THEMES = Object.freeze([
     "accent": "#d6b5ff",
     "text": "#f8f1ff",
     "muted": "#c4b3d6",
-    "line": "#e4caff"
+    "line": "#534267"
   },
   {
     "id": "deep-sea",
@@ -70,7 +70,7 @@ export const THEMES = Object.freeze([
     "accent": "#81d6f6",
     "text": "#eefaff",
     "muted": "#a9c5d6",
-    "line": "#b9e6f4"
+    "line": "#315369"
   },
   {
     "id": "forest",
@@ -82,7 +82,7 @@ export const THEMES = Object.freeze([
     "accent": "#b6e492",
     "text": "#f2fbed",
     "muted": "#bad0b6",
-    "line": "#d6eab6"
+    "line": "#395341"
   },
   {
     "id": "rose",
@@ -94,7 +94,7 @@ export const THEMES = Object.freeze([
     "accent": "#ffb2cf",
     "text": "#fff1f7",
     "muted": "#d9b7c6",
-    "line": "#f4cbdc"
+    "line": "#624252"
   },
   {
     "id": "copper",
@@ -106,7 +106,7 @@ export const THEMES = Object.freeze([
     "accent": "#f2c48c",
     "text": "#fcf4e7",
     "muted": "#d1beab",
-    "line": "#f1d0a8"
+    "line": "#5b4736"
   },
   {
     "id": "glacier",
@@ -118,7 +118,7 @@ export const THEMES = Object.freeze([
     "accent": "#b6e2ff",
     "text": "#f4faff",
     "muted": "#bacddc",
-    "line": "#d3eaff"
+    "line": "#415c70"
   },
   {
     "id": "synthwave",
@@ -130,7 +130,7 @@ export const THEMES = Object.freeze([
     "accent": "#f4a2f5",
     "text": "#fff3ff",
     "muted": "#d9b9e5",
-    "line": "#f6c3f3"
+    "line": "#674277"
   },
   {
     "id": "royal",
@@ -142,7 +142,7 @@ export const THEMES = Object.freeze([
     "accent": "#acbbff",
     "text": "#f3f6ff",
     "muted": "#b7c3e5",
-    "line": "#d2d9ff"
+    "line": "#405482"
   },
   {
     "id": "plum",
@@ -154,7 +154,7 @@ export const THEMES = Object.freeze([
     "accent": "#e6b3d9",
     "text": "#fdf2fa",
     "muted": "#d3b9d0",
-    "line": "#efd2e9"
+    "line": "#624765"
   },
   {
     "id": "slate",
@@ -166,7 +166,7 @@ export const THEMES = Object.freeze([
     "accent": "#a8d4dc",
     "text": "#f1f9f9",
     "muted": "#b8cace",
-    "line": "#d2e9e9"
+    "line": "#3c5a60"
   },
   {
     "id": "noir",
@@ -178,7 +178,7 @@ export const THEMES = Object.freeze([
     "accent": "#f1e7cd",
     "text": "#faf7f0",
     "muted": "#c3c3bf",
-    "line": "#e8e1d3"
+    "line": "#4b5055"
   }
 ].map(theme => Object.freeze(theme)));
 export const DEFAULT_THEME = "signal";
