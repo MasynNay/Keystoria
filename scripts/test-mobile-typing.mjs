@@ -62,12 +62,16 @@ try{
   const target=await page.locator('#lesson-target-text').textContent();
   assert.equal(await page.locator('#lesson-mobile-target').textContent(),target);
   await page.locator('#lesson-input').fill(target);
+  if(isPhone)await page.evaluate(()=>{window.__academyInput=document.querySelector('#lesson-input');});
   if(isPhone)await page.locator('.academy-mobile-entry [data-action="training-submit"]').click();
   else await page.locator('.terminal-inner > .training-buttons [data-action="training-submit"]').click();
   assert.match(await page.locator('#training-feedback').innerText(),/COMMAND RECOGNIZED/);
+  if(isPhone)assert.equal(await page.evaluate(()=>document.querySelector('#lesson-input')===window.__academyInput),true,'Academy must preserve native input after accepted command');
   if(isPhone){
    await page.locator('.academy-mobile-entry [data-action="training-next"]').click();
    assert.ok((await page.locator('.terminal-bar').innerText()).includes('STEP 02'));
+   assert.equal(await page.evaluate(()=>document.querySelector('#lesson-input')===window.__academyInput),true,'Academy must preserve native input after advancing');
+   assert.equal(await page.locator('#lesson-input').inputValue(),'');
   }
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
   assert.ok(overflow<=2,'no horizontal overflow at width '+width+': '+overflow);

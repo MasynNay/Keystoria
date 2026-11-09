@@ -22,6 +22,49 @@ export function mobileScrollDelta(rect,visibleTop,visibleHeight,padding=12) {
  if(rect.top<top+margin)return rect.top-(top+margin);
  return 0;
 }
+/** Update a mobile Academy lesson without detaching its native text input.
+ * Keeping the same focused input node avoids closing the software keyboard
+ * between accepted commands on touch devices. Returns false for final screens.
+ */
+export function patchMobileTraining(current,next){
+ if(!current||!next||next.querySelector('.training-complete'))return false;
+ const original=current.querySelector('#lesson-input');
+ const fresh=next.querySelector('#lesson-input');
+ if(!original||!fresh)return false;
+ const selectors=[
+   '.training-hud','.terminal-bar','.terminal-inner > h2',
+   '.terminal-inner > p','.terminal-prompt',
+   '.terminal-inner > .typing-legend',
+   '.mobile-academy-target','.academy-mobile-entry > label',
+   '.academy-mobile-entry > .mobile-entry-actions',
+   '.terminal-inner > .training-feedback',
+   '.terminal-inner > .training-buttons','.reference-panel'
+ ];
+ for(const selector of selectors){
+   const old=current.querySelector(selector);
+   const replacement=next.querySelector(selector);
+   if(old&&replacement)old.replaceWith(replacement.cloneNode(true));
+ }
+ for(const [selector,insert] of [
+   ['.terminal-inner > .sample-output',()=>current.querySelector('.terminal-inner > .training-buttons')],
+   ['.training-glossary',()=>null]
+ ]){
+   const old=current.querySelector(selector);
+   const replacement=next.querySelector(selector);
+   if(old&&replacement)old.replaceWith(replacement.cloneNode(true));
+   else if(old&&!replacement)old.remove();
+   else if(!old&&replacement){
+     const anchor=insert();
+     if(anchor)anchor.before(replacement.cloneNode(true));
+     else current.append(replacement.cloneNode(true));
+   }
+ }
+ original.value=fresh.value;
+ original.readOnly=fresh.readOnly;
+ original.disabled=fresh.disabled;
+ return true;
+}
+
 export function setupMobileTyping(root) {
  if(typeof window==='undefined'||!root)return ()=>{};
  const selector=MOBILE_TYPING_FIELDS.map(id=>`#${id}`).join(',');

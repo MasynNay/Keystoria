@@ -15,7 +15,7 @@ import { createViews } from "./ui/views.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
-import { setupMobileTyping } from "./ui/mobile-typing.js";
+import { setupMobileTyping, patchMobileTraining } from "./ui/mobile-typing.js";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
@@ -482,6 +482,16 @@ app.addEventListener("click",event=>{
  */
 function renderTrainingInPlace() {
   const top=window.scrollY;
+  const focused=$("#lesson-input");
+  // Never remove the focused native input while a phone's keyboard is up.
+  if (focused && !state.lesson?.completed && window.matchMedia("(max-width:760px)").matches) {
+    const draft=document.createElement("div");
+    draft.innerHTML=trainingTemplate(state.lesson,header);
+    if(patchMobileTraining($(".academy-play"),draft.querySelector(".academy-play"))){
+      if(!focused.readOnly)focused.focus({preventScroll:true});
+      return;
+    }
+  }
   state.layout="";
   render();
   window.scrollTo({top,behavior:"instant"});
@@ -580,6 +590,7 @@ app.addEventListener("keydown",event=>{
    speedController.keystroke();
  }
  if(event.target.id === "lesson-input" && event.key === "Enter") {
+   if(event.isComposing || event.keyCode === 229)return;
    event.preventDefault();
    if (state.lesson?.answered) advanceLesson();
    else submitLesson();
