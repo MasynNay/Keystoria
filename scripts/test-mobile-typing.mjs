@@ -63,7 +63,7 @@ try{
   assert.equal(await page.locator('#lesson-mobile-target').textContent(),target);
   await page.locator('#lesson-input').fill(target);
   if(isPhone)await page.locator('.academy-mobile-entry [data-action="training-submit"]').click();
-  else await page.locator('[data-action="training-submit"]').first().click();
+  else await page.locator('.terminal-inner > .training-buttons [data-action="training-submit"]').click();
   assert.match(await page.locator('#training-feedback').innerText(),/COMMAND RECOGNIZED/);
   if(isPhone){
    await page.locator('.academy-mobile-entry [data-action="training-next"]').click();
