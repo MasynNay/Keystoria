@@ -1,3 +1,12 @@
+## [Unreleased] — Mobile-first typing ergonomics (issue #11)
+
+- Show the current Speed Lab characters, Lyric Lab word, and Field Academy command directly above their native text inputs on narrow screens.
+- Add touch-accessible Space/Next, Submit Word, Skip Line, Restart, Play/Pause, and Academy Check/Next controls without altering desktop keyboard shortcuts.
+- Reposition the focused typing unit when the phone's visual viewport changes, preserving the real system keyboard; provide safe-area spacing and compact secondary panels.
+- Maintain the existing typing/accuracy calculation and disable browser autocorrect for the Academy's exact commands.
+- Add browser regression tests for 320px and 390px screens, prompt/input visibility, touch progression, and desktop compatibility. Real iOS and Android software keyboard behavior still requires device verification.
+- Feature staged in a review branch; do not mark publicly shipped before a successful merge and deployment.
+
 ## [0.25.1] — Smoother Lyric Typing — 2026-11-08
 
 - Make all lyric punctuation optional in the default relaxed typing mode, including straight/curly apostrophes and parentheses.
