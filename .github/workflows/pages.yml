@@ -43,6 +43,8 @@ jobs:
           node --check site/play/assets/app.js
           node --check site/play/assets/ui/views.js
           node --check site/play/assets/ui/lyric-lab-controller.js
+          node --test app/tests/test_lyric_word_feedback.mjs
+          diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
           test -f site/styles.css
           test -f site/.nojekyll
           test -f site/assets/keystoria-mark.svg

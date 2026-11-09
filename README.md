@@ -87,7 +87,7 @@ The original built-in song, timed lyric display, playback controls, live typing 
 - **15 selectable visual themes.** Switch instantly between polished, high-contrast palettes in Settings. Your appearance stays saved across visits and does not change when you select another story.
 
 - **24 cooperative story adventures.** Progress through themed missions by typing under pressure, with shared objectives and real-time multiplayer gameplay.
-- **Lyric Lab.** Practice typing along with synchronized lyrics, with highlighted words, letter-by-letter feedback, and a flashing cue for the next expected key.
+- **Lyric Lab.** Practice typing along with synchronized lyrics, highlighted words, letter-by-letter feedback, and a flashing next-key cue. In normal mode, punctuation—including apostrophes and parentheses—is optional; strict punctuation remains an opt-in challenge.
 - **Speed Lab.** Work on typing speed and accuracy through focused challenges.
 - **Field Academy.** Practice useful command-line typing in a game-oriented environment.
 - **Responsive interface.** A browser frontend designed for desktop and smaller screens, with a responsive 15-theme selector.

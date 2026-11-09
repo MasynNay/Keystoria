@@ -103,7 +103,10 @@ export function calibratedOffset(lineStart,videoTime){
  const t=Number(videoTime),start=Number(lineStart);
  return Number.isFinite(t)&&Number.isFinite(start)?Math.max(-120,Math.min(120,Math.round((start-t)*4)/4)):0;
 }
-export const cleanWord = input => String(input ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘]/g,"'").replace(/[^a-z0-9']/g,'').trim();
+// Lyric Lab's relaxed mode scores letters and digits, not punctuation.
+// Apostrophes, parentheses, hyphens, quotation marks, and other symbols stay
+// visible in the original lyric, but are never required to type.
+export const cleanWord = input => String(input ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
 export const sameWord = (a,b) => cleanWord(a) === cleanWord(b) && cleanWord(b).length > 0;
 export function parseLRC(lrc, duration=0) {
   const input=String(lrc || '').slice(0,100000);

@@ -1,3 +1,11 @@
+## [0.25.1] — Smoother Lyric Typing — 2026-11-08
+
+- Make all lyric punctuation optional in the default relaxed typing mode, including straight/curly apostrophes and parentheses.
+- Preserve the original lyric text while skipping punctuation in next-letter feedback, word matching, and score accuracy.
+- Count typed letters rather than skipped punctuation toward relaxed-mode WPM.
+- Keep the existing opt-in strict punctuation mode for players who prefer exact punctuation and case.
+- Clarify the in-game typing hint and add unit regressions plus GitHub Pages CI checks.
+
 ## [0.25.0] — Personalize Your World — 2026-11-08
 
 - Add **15 user-selectable visual palettes** in the Settings dialog, with live swatch previews and immediate application.
