@@ -72,6 +72,9 @@ try{
   await close(lyric);
   await lyric.locator('[data-action="lyric-back"]').first().click();
   await lyric.locator('[data-action="lyric-home"]').first().click();
+  if (await lyric.locator(".welcome-continue").isVisible()) {
+    await lyric.locator(".welcome-continue").click();
+  }
   await lyric.locator('[data-action="learn"][data-os="linux"]').click();
   await lyric.locator("#lesson-input").waitFor();
   await open(lyric);
