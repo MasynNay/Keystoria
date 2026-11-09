@@ -4,9 +4,8 @@
  */
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
-import { readFile } from "node:fs/promises";
 const base = "http://127.0.0.1:8765";
-const themes = JSON.parse((await readFile("app/web/ui/themes.js","utf8")).match(/Object\\.freeze\\((\\[[\\s\\S]*?\\])\\.map\\(theme/)[1]);
+const { THEMES: themes } = await import("../app/web/ui/themes.js");
 const ids = themes.map(t=>t.id);
 const errors=[];
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
