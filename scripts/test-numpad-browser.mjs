@@ -15,6 +15,8 @@ try{
   assert.equal(await page.locator('[data-action="speed-pack"][data-pack="numpad"]').getAttribute('aria-pressed'),'true');
   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),'numpad');
   const reference=await page.locator('#speed-letters').innerText();
+  assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),'numeric');
+  if(viewport.width<800)assert.equal(await page.locator('.speed-mobile-entry [data-action="speed-space"]').isVisible(),true);
   assert.match(reference,/^\d{3} \d{4}/);
   await page.locator('#speed-input').fill(reference.slice(0,3)+'X');
   assert.equal(await page.locator('#speed-input').inputValue(),reference.slice(0,3));
@@ -24,7 +26,7 @@ try{
   assert.ok((await page.locator('#speed-wpm').innerText()).match(/^\d+$/));
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   assert.ok(overflow<=2,'Numpad layout overflows '+viewport.width+'px by '+overflow+'px');
-  await page.locator('[data-action="speed-restart"]').click();
+  await page.locator(viewport.width<800?'.speed-mobile-entry [data-action="speed-restart"]':'.speed-controls [data-action="speed-restart"]').click();
   assert.equal(await page.locator('#speed-input').inputValue(),'');
   await page.locator('[data-action="speed-pack"][data-pack="technology"]').click();
   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),'technology');
