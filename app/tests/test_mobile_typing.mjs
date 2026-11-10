@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta } from '../web/ui/mobile-typing.js';
+import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta, patchMobileTraining } from '../web/ui/mobile-typing.js';
 
 test('every practice input is tracked for keyboard visibility',()=>{
  assert.deepEqual([...MOBILE_TYPING_FIELDS],['speed-input','lyric-input','lesson-input']);
@@ -23,4 +23,24 @@ test('keyboard viewport scroll correction only moves when necessary',()=>{
  assert.equal(mobileScrollDelta({top:0,bottom:100},20,600),-32);
  assert.equal(mobileScrollDelta({top:0,bottom:800},0,300),512);
  assert.equal(mobileScrollDelta({top:200,bottom:300},0,0),0);
+});
+
+test('Academy mobile advancement retains the original focused input node',()=>{
+ const original={value:'previous',readOnly:false,disabled:false};
+ const fresh={value:'',readOnly:true,disabled:true};
+ const old={querySelector(selector){return selector==='#lesson-input'?original:null;}};
+ const next={querySelector(selector){return selector==='#lesson-input'?fresh:null;}};
+ assert.equal(patchMobileTraining(old,next),true);
+ assert.equal(old.querySelector('#lesson-input'),original);
+ assert.equal(original.value,'');
+ assert.equal(original.readOnly,true);
+ assert.equal(original.disabled,true);
+});
+test('Academy completion does not patch or detach its input',()=>{
+ const original={value:'keep',readOnly:false,disabled:false};
+ const old={querySelector(selector){return selector==='#lesson-input'?original:null;}};
+ const next={querySelector(selector){return selector==='.training-complete'?{}:null;}};
+ assert.equal(patchMobileTraining(old,next),false);
+ assert.equal(original.value,'keep');
+ assert.equal(original.disabled,false);
 });
