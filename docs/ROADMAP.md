@@ -15,6 +15,7 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 | GitHub Pages portfolio and custom-domain workflow | **Shipped** | [GitHub Actions deployment history](https://github.com/MasynNay/Keystoria/actions/workflows/pages.yml) |
 | Browser-accessible Keystoria interface for Lyric Lab, Speed Lab, and Field Academy | **Shipped** | [Browser edition, logo refresh, and links](https://github.com/MasynNay/Keystoria/commit/9b4362c448fdb3b87befc61738ec2a85f6011a0a) |
 | 15 persistent visual themes across browser and local app | **Shipped (v0.25)** | [Theme documentation](THEMES.md) and [automated end-to-end checks](https://github.com/MasynNay/Keystoria/actions/runs/42540558364) |
+| Speed Lab Numpad challenge with CPM scoring | **Shipped (November 9, 2026)** | [Merge commit](https://github.com/MasynNay/Keystoria/commit/92e8bda120e7520f0a9ac8556e5660d9add27b86), [passed numpad CI](https://github.com/MasynNay/Keystoria/actions/runs/42661101795), and [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/42661319306) |
 | 24 story campaigns with room-based cooperative play | **Available locally** | [Python game server](../app/server/app.py) and [local launch instructions](../README.md#get-started); **not** publicly hosted |
 
 Shipped refers to code merged and/or a GitHub Pages deployment—not a claim that every device, browser, or third-party media provider has been verified.
@@ -44,7 +45,7 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 ### 4. Speed Lab numpad number-entry challenge
 **Tracking:** [Issue #6 — Numpad typing game](https://github.com/MasynNay/Keystoria/issues/6) · [PR #8](https://github.com/MasynNay/Keystoria/pull/8)  
 **Why:** Number entry is a distinct skill in finance, administration, and data-entry jobs.  
-**Status:** **Merged into main** at [92e8bda](https://github.com/MasynNay/Keystoria/commit/92e8bda120e7520f0a9ac8556e5660d9add27b86) after passing [CI run 42661101795](https://github.com/MasynNay/Keystoria/actions/runs/42661101795). Production Pages deployment has not been independently verified; public shipment remains unconfirmed.  
+**Status:** **Merged into main** at [92e8bda](https://github.com/MasynNay/Keystoria/commit/92e8bda120e7520f0a9ac8556e5660d9add27b86) after passing [CI run 42661101795](https://github.com/MasynNay/Keystoria/actions/runs/42661101795). [GitHub Pages deployment 42661319306](https://github.com/MasynNay/Keystoria/actions/runs/42661319306) completed successfully on November 9, 2026. Shipped to the public browser edition; real-device interaction remains subject to ongoing testing.  
 **Exit criteria:** Timed digit drills, correct numeric speed/accuracy units, optional separators, local history, accessible desktop/mobile interaction, and verified CI before publication.
 
 ### 5. Industry-specific Speed Lab vocabulary
