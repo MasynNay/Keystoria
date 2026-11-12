@@ -1,11 +1,18 @@
-## [Unreleased] — Accessible navigation and motion controls (issue #3)
+## [Unreleased] — Palette contrast regression guard (issue #3)
+
+- Validate all 15 theme foreground, muted and accent colors against their background and panel surfaces using relative luminance.
+- Require at least 4.5:1 on every tested pair and strong accent contrast for focus affordances.
+- Guard JavaScript theme-to-CSS palette parity in the Themes and Pages CI workflows.
+- This is an automated palette-token check, not certification of every rendered element or WCAG conformance.
+
+## [Feature milestone] — Accessible navigation and motion controls — 2026-11-11 (America/Denver)
 
 - Add keyboard-visible Skip to main content links and persistent main landmarks for the home screen and every playable mode.
 - Make completed Speed Lab results a live status and return keyboard focus to the completion heading, so screen reader users do not lose their place when the typing field is replaced.
 - Correct the explicit Reduce Motion class selector for typing carets and provide strong focus outlines for textareas and selection controls.
 - Add Chromium checks at 320px, 390px and desktop widths for navigation, score feedback, motion and basic skip-link contrast.
 - Document assistive-technology, contrast and real-phone checks that cannot be verified by browser emulation.
-- Development candidate only until release CI passes and GitHub Pages deployment is verified.
+- Shipped through [PR #21](https://github.com/MasynNay/Keystoria/pull/21), six passing test suites, and [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43145095301). Full assistive-technology and physical-device checks remain open.
 
 ## [Feature milestone] — Lyric Lab silent fallback — 2026-11-11 (America/Denver)
 

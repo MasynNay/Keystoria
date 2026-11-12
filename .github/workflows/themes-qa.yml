@@ -7,6 +7,7 @@ on:
       - 'site/play/**'
       - 'app/web/**'
       - 'app/tests/test_themes.mjs'
+      - 'app/tests/test_theme_contrast.mjs'
       - 'scripts/test-themes.mjs'
   pull_request:
     branches: [main]
@@ -15,6 +16,7 @@ on:
       - 'site/play/**'
       - 'app/web/**'
       - 'app/tests/test_themes.mjs'
+      - 'app/tests/test_theme_contrast.mjs'
       - 'scripts/test-themes.mjs'
   workflow_dispatch:
 
@@ -36,7 +38,7 @@ jobs:
           node --check site/play/assets/app.js
           node --check app/web/ui/views.js
           node --check site/play/assets/ui/views.js
-          node --test app/tests/test_themes.mjs
+          node --test app/tests/test_themes.mjs app/tests/test_theme_contrast.mjs
           diff app/web/ui/themes.js site/play/assets/ui/themes.js
           diff app/web/ui/preferences.js site/play/assets/ui/preferences.js
           diff app/web/styles/themes.css site/play/assets/styles/themes.css
