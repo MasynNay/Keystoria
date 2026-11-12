@@ -278,7 +278,13 @@ export function createLyricLabController({state,onRender}){
  let beatCtx=null,beatTimer=null,beatNum=0;
  function stopBeat(){clearInterval(beatTimer);beatTimer=null;try{beatCtx?.close();}catch{}beatCtx=null;}
  function practiceSilently(){
-  if(!selected||selected.demo||!selected.videoId||phase==='done')return;
+  if(!selected||selected.demo||phase==='done')return;
+  // A track without a linked video can enter silent practice directly.
+  if(!selected.videoId){
+   if(!active)toggle();
+   else setStatus('Already practicing timed lyrics without video.');
+   return;
+  }
   // Cancel callbacks from the failed YouTube player without resetting the lyric chart.
   playerGeneration++;
   try{player?.destroy();}catch{}
