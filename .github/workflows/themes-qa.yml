@@ -8,6 +8,14 @@ on:
       - 'app/web/**'
       - 'app/tests/test_themes.mjs'
       - 'scripts/test-themes.mjs'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/themes-qa.yml'
+      - 'site/play/**'
+      - 'app/web/**'
+      - 'app/tests/test_themes.mjs'
+      - 'scripts/test-themes.mjs'
   workflow_dispatch:
 
 permissions:

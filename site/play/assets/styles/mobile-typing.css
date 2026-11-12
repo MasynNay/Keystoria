@@ -1,0 +1,68 @@
+/* Mobile practice: target, native input, and actions occupy one compact unit.
+ * Do not hide the video iframe: display:none can interrupt official embeds. */
+.mobile-speed-cue,.mobile-lyric-word,.mobile-academy-target,.mobile-entry-actions{display:none}
+@media(max-width:760px){
+  html{scroll-padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  .mobile-typing-entry{scroll-margin-top:14px;scroll-margin-bottom:calc(18px + env(safe-area-inset-bottom));min-width:0}
+  .mobile-typing-active #app{padding-bottom:calc(45px + env(safe-area-inset-bottom))}
+  .mobile-speed-cue,.mobile-lyric-word,.mobile-academy-target{display:block;min-width:0;margin:8px 0 12px;padding:12px 14px;border:1px solid var(--accent);border-radius:9px;background:#101c2b;color:#f8f7ff}
+  .mobile-speed-cue>small,.mobile-lyric-word>small,.mobile-academy-target>small{display:block;margin-bottom:7px;font:700 10px/1.4 var(--mono);letter-spacing:.07em;color:var(--accent)}
+  .mobile-speed-cue>div{font:700 19px/1.65 var(--mono);overflow-wrap:anywhere;min-height:32px;white-space:pre-wrap;letter-spacing:.02em}
+  #speed-mobile-first{color:#101820;background:var(--accent);border-radius:2px;padding:0 2px}
+  #speed-mobile-rest{color:#f0e7f8}
+  .mobile-lyric-word>div,.mobile-academy-target>code{display:block;min-height:34px;font:700 clamp(19px,5.3vw,25px)/1.55 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+  .mobile-lyric-word .type-char.pending,.mobile-academy-target .type-char.pending{color:#f0e7fc}
+  .mobile-lyric-word .type-char.correct,.mobile-academy-target .type-char.correct{color:#9df2cc}
+  .mobile-lyric-word .type-char.ignored{opacity:.6}
+  .mobile-lyric-word .type-char.current,.mobile-academy-target .type-char.current{background:var(--accent);color:#0a151d;box-shadow:inset 2px 0 0 #fff}
+  .mobile-entry-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:11px}
+  .mobile-entry-actions button{display:flex;align-items:center;justify-content:center;min-height:46px;padding:10px 9px;border:1px solid #587e88;border-radius:9px;background:#172d3e;color:#fff;font:800 12px/1.2 var(--mono);text-align:center;cursor:pointer}
+  .mobile-entry-actions button:first-child{background:var(--accent);border-color:var(--accent);color:#101820}
+  .mobile-entry-actions button:disabled{opacity:.55;cursor:not-allowed}
+  .mobile-entry-actions button:focus-visible{outline:3px solid white;outline-offset:2px}
+  .mobile-entry-actions--three{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .speed-page .speed-title{margin-bottom:12px}
+  .speed-page .speed-title h1{font-size:clamp(35px,9vw,48px);margin:8px 0}
+  .speed-page .speed-title p{font-size:12px}
+  .speed-page .speed-console{padding:12px}
+  .speed-page .speed-metrics{margin-bottom:12px}
+  .speed-page .speed-metrics>div{padding:9px}
+  .speed-page .speed-metrics strong{font-size:clamp(24px,7vw,33px)}
+  .speed-page .speed-letters{max-height:105px;min-height:80px;font-size:18px}
+  .speed-page .speed-prompt-wrap{min-height:0}
+  .speed-page .typing-legend{display:none}
+  .speed-page .speed-input{font-size:16px;line-height:1.5;min-height:59px;max-height:80px;padding:11px 13px}
+  .speed-page .speed-input-label{margin:10px 0 6px;line-height:1.5}
+  .speed-page .speed-page-indicator{font-size:10px}
+  .speed-page .speed-controls{margin-top:12px}
+  .speed-page .speed-mobile-entry{margin-top:14px}
+  .lyric-typing-column .lyric-current-line{min-height:0;margin:0;padding:12px 0 5px;font-size:21px}
+  .lyric-stage{padding:12px!important}
+  .lyric-next-line{min-height:0;margin-bottom:8px}
+  .lyric-prompt input{min-height:50px;font-size:16px;padding:11px 12px}
+  .lyric-skip-button{display:none}
+  .lyric-mobile-entry .mobile-lyric-word{margin-top:8px}
+  .lyric-score-grid strong{font-size:18px}
+  .lyric-now-singing{margin:8px 0;padding:9px 12px}
+  .lyric-now-singing p{font-size:17px;margin:8px 0}
+  .lyric-stage-heading{font-size:10px}
+  .lyric-typing-column .lyric-scroll-list{max-height:180px;overflow:auto}
+  .academy-play .terminal-inner{padding:13px}
+  .academy-play .terminal-inner>h2{font-size:clamp(24px,8vw,38px)}
+  .academy-play .terminal-inner>.typing-legend{display:none}
+  .academy-play .terminal-prompt{margin-bottom:7px}
+  .academy-play .terminal-input-box input{font-size:16px;min-height:48px}
+  .academy-play .academy-mobile-entry>.mobile-entry-actions{margin-bottom:12px}
+  .academy-play .training-title h1{font-size:clamp(36px,10vw,53px)}
+  .academy-play .training-hud{margin-bottom:10px}
+  .mobile-typing-active .speed-page .speed-title,.mobile-typing-active .academy-play .training-title,.mobile-typing-active .academy-play .academy-shuffle-tools{display:none}
+  .mobile-typing-active .lyric-song-heading,.mobile-typing-active .lyric-now-singing{display:none}
+}
+@media(max-width:370px){
+ .mobile-entry-actions--three{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .mobile-entry-actions--three button:last-child{grid-column:1/-1}
+ .mobile-entry-actions button{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .mobile-speed-cue *,.mobile-lyric-word *,.mobile-academy-target *{animation:none!important;transition:none!important}
+}

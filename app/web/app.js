@@ -15,10 +15,12 @@ import { createViews } from "./ui/views.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
+import { setupMobileTyping, patchMobileTraining } from "./ui/mobile-typing.js";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
 const app = $("#app");
+setupMobileTyping(app);
 const params = new URLSearchParams(location.search);
 const savedName = localStorage.getItem("panic.callsign") || "";
 const state = {
@@ -390,6 +392,7 @@ app.addEventListener("click",event=>{
   }
   case "lyric-open":lyricController.open();break;
   case "speed-open":speedController.open();break;
+  case "speed-space":speedController.insertSpace();break;
   case "speed-duration":if(state.speed)speedController.open({pack:state.speed.pack,seconds:Number(item.dataset.seconds)});break;
   case "speed-pack":if(state.speed)speedController.open({pack:item.dataset.pack,seconds:state.speed.seconds});break;
   case "speed-restart":if(state.speed)speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});break;
@@ -479,6 +482,16 @@ app.addEventListener("click",event=>{
  */
 function renderTrainingInPlace() {
   const top=window.scrollY;
+  const focused=$("#lesson-input");
+  // Never remove the focused native input while a phone's keyboard is up.
+  if (focused && !state.lesson?.completed && window.matchMedia("(max-width:760px)").matches) {
+    const draft=document.createElement("div");
+    draft.innerHTML=trainingTemplate(state.lesson,header);
+    if(patchMobileTraining($(".academy-play"),draft.querySelector(".academy-play"))){
+      if(!focused.readOnly)focused.focus({preventScroll:true});
+      return;
+    }
+  }
   state.layout="";
   render();
   window.scrollTo({top,behavior:"instant"});
@@ -544,6 +557,7 @@ app.addEventListener("input",event=>{
    state.lesson.draft=event.target.value;
    const target=LESSONS[state.lesson.os].commands[activeCommandIndex(state.lesson)].text;
    paintTypingFeedback($("#lesson-target-text"),target,state.lesson.draft);
+    paintTypingFeedback($("#lesson-mobile-target"),target,state.lesson.draft);
    return;
  }
  if(event.target.id === "speed-input") {speedController.input(event.target.value);return;}
@@ -570,6 +584,7 @@ app.addEventListener("keydown",event=>{
    event.preventDefault();speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});return;
  }
  if(state.speed && event.target.id === "speed-input" && event.key === "Enter") {
+   if(event.isComposing || event.keyCode===229)return;
    event.preventDefault();
    if(state.speed.pack==="numpad" && event.code==="NumpadEnter" && !state.speed.result) {
      const field=event.target;
@@ -583,6 +598,7 @@ app.addEventListener("keydown",event=>{
    speedController.keystroke();
  }
  if(event.target.id === "lesson-input" && event.key === "Enter") {
+   if(event.isComposing || event.keyCode === 229)return;
    event.preventDefault();
    if (state.lesson?.answered) advanceLesson();
    else submitLesson();

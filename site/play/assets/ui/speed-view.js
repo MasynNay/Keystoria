@@ -32,8 +32,12 @@ export function speedTemplate(session, header) {
         <div id="speed-letters" class="typing-feedback speed-letters" aria-live="off"></div>
         <div class="speed-page-indicator">CONTINUOUS PASSAGE · <span id="speed-progress">${session.pack==="numpad"?"0 digits typed":"0 characters typed"}</span> · ${session.pack==="numpad"?"SPACE OR NUMPAD ENTER BETWEEN GROUPS":"WORDS ADVANCE UPWARD ONLY"}</div>
         <div class="typing-legend"><span><i class="legend-correct"></i> CORRECT</span><span><i class="legend-incorrect"></i> INCORRECT</span><span><i class="legend-caret"></i> NEXT KEY</span></div></div>
+        <div class="speed-mobile-entry mobile-typing-entry" id="speed-mobile-entry">
+          <div class="mobile-speed-cue" aria-hidden="true"><small>NEXT CHARACTERS · TYPE WHAT YOU SEE</small><div><span id="speed-mobile-first"></span><span id="speed-mobile-rest"></span></div></div>
         <label for="speed-input" class="speed-input-label">${session.pack==="numpad"?"TYPE THE DIGITS ABOVE — SPACE OR NUMPAD ENTER BETWEEN GROUPS":"TYPE THE WORDS ABOVE — USE BACKSPACE TO FIX MISTAKES"}</label>
-        <textarea id="speed-input" class="speed-input" rows="2" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" ${session.pack==="numpad"?'inputmode="text"':""} aria-label="${session.pack==="numpad"?"Type the displayed number groups":"Type the displayed words"}" placeholder="Click here or start typing to begin..."></textarea>
+        <textarea id="speed-input" class="speed-input" rows="2" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" inputmode="${session.pack==="numpad"?"numeric":"text"}" enterkeyhint="next" aria-label="${session.pack==="numpad"?"Type the displayed number groups":"Type the displayed words"}" placeholder="Click here or start typing to begin..."></textarea>
+          <div class="mobile-entry-actions"><button type="button" data-action="speed-space" aria-label="Type a space character">SPACE / NEXT</button><button type="button" data-action="speed-restart">RESTART</button></div>
+        </div>
         <div class="speed-controls"><span>TIME STARTS ON FIRST KEY · CTRL + ENTER TO RESTART</span><button class="btn btn-outline" data-action="speed-restart">${ico('refresh',16)} RESTART</button></div>`}
     </section>
     <div class="speed-bottom"><section><span>// YOUR RECENT RESULTS</span><h2>PERSONAL RECORDS.</h2>${historyPanel()}</section><aside><span>// PRACTICE PROFILE</span><h2>${safe(PACKS[session.pack].title)}</h2><p>${safe(PACKS[session.pack].description)}</p><p>Timed solo drills use local browser storage, so you can train without an account. None of these words are shell commands.</p></aside></div>
