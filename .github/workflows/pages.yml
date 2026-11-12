@@ -3,17 +3,54 @@ name: Deploy Keystoria portfolio
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: keystoria-pages
+  group: keystoria-pages-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  browser-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript, scoring, and shared browser modules
+        run: |
+          node --check scripts/test-release-browser.mjs
+          node --check site/play/assets/app.js
+          node --check app/web/app.js
+          node --test app/tests/test_lyric_word_feedback.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs
+          diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
+          diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
+          diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Serve the exact Pages source folder
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/keystoria-release.log 2>&1 &
+          curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8765/ >/dev/null
+      - name: Block release if portfolio or gameplay fails
+        run: |
+          node scripts/test-release-browser.mjs
+          node scripts/test-vocabulary-browser.mjs
+
   deploy:
+    needs: browser-regression
+    # A PR can test a release, but only main may publish the portfolio.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
