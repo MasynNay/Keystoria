@@ -27,6 +27,7 @@ node scripts/test-release-negative.mjs
 node scripts/test-vocabulary-browser.mjs
 node scripts/test-lyric-recovery.mjs
 node scripts/test-dialog-keyboard.mjs
+node scripts/test-speed-mobile-performance.mjs
 node scripts/test-navigation-accessibility.mjs
 ```
 

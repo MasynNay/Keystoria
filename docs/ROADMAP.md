@@ -7,6 +7,10 @@
 
 Keystoria is an evolving typing game collection with 24 authored story adventures, Lyric Lab, Speed Lab, and Field Academy. Mobile-first gameplay is a near-term priority based on direct feedback, separate from desktop accessibility and planned content features. This roadmap records why the next changes matter, how we will verify them, and which features have already been delivered. Priorities may change after testing or feedback; the roadmap is not a promise of dates.
 
+## Priority fix: Speed Lab mobile lag (reported November 11, 2026 Mountain Time)
+
+**User-reported release blocker:** Speed Lab was effectively unusable due to lag when typing on a phone. This is tracked in [issue #11](https://github.com/MasynNay/Keystoria/issues/11). The mobile renderer previously mounted individual spans for all ~700 words and repeatedly measured layout during 100ms timer refreshes. A bounded mobile character window and lower-frequency clock are being validated. **Do not claim this fixed real iOS/Android input latency until confirmed on a physical device.** New automated performance regressions cover DOM bounds, the rolling cursor, backspace and score retention. Desktop continues rendering its full passage.
+
 ## Next session — prioritized execution plan
 
 The current release is **stable enough to pause**. At the November 11, 2026 Mountain Time checkpoint, there were **zero open PRs**, and the last audited Pages release ([run 43146026599](https://github.com/MasynNay/Keystoria/actions/runs/43146026599)) passed both browser regression and deployment. The last observed subsequent code-repository commit was screenshot-only. The current, detailed resume instructions live in [app/CONTINUE_HERE.md](../app/CONTINUE_HERE.md).

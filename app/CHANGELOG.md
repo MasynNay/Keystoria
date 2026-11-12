@@ -1,3 +1,11 @@
+## [Unreleased] — Speed Lab mobile latency hotfix (issue #11)
+
+- Replace the thousands-of-elements mobile Speed Lab display with a 220-character rolling view. Keep the full 700-word exercise in memory for correct scoring, Numpad separators, and long 120-second sessions.
+- Do not recalculate the typing display on timer-only refreshes; lower the metric/clock refresh cadence from 100ms to 250ms while keeping character feedback immediate.
+- Preserve desktop full-passage rendering and ensure mobile keyboard entry, deletion, category switching and result focus still work.
+- Add mobile/desktop regression tests for bounded DOM, cursor progression, backspace and score integrity; gate GitHub Pages on them.
+- Root cause is code-supported, but actual performance gains and native mobile Safari/Chrome behavior require physical-device verification.
+
 ## [Feature milestone] — Palette contrast regression guard — 2026-11-11 (America/Denver)
 
 - Validate all 15 theme foreground, muted and accent colors against their background and panel surfaces using relative luminance.
