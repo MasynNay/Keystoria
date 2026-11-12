@@ -140,7 +140,7 @@ export function createLyricLabController({state,onRender}){
  function mountPlayer(){
   const videoId=selected?.videoId;
   const generation=++playerGeneration;
-  if(!videoId){setStatus(selected?.demo?'Offline original demo—press START to play the built-in beat.':selected?.matchFailed?'An automatic video match was not found. You can connect a different video manually, or practice lyrics silently.':'This lyric result has no linked video yet. Use FIND ON YOUTUBE and CONNECT VIDEO to add music.');return;}
+  if(!videoId){setStatus(selected?.demo?'Offline original demo—press START to play the built-in beat.':selected?.manualVideoOnly?'Automatic video matching needs the local server. Use FIND ON YOUTUBE to connect a video, or practice the lyrics silently.':selected?.matchFailed?'An automatic video match was not found. You can connect a different video manually, or practice lyrics silently.':'This lyric result has no linked video yet. Use FIND ON YOUTUBE and CONNECT VIDEO to add music.');return;}
   youtubeApi().then(YT=>{
    if(generation!==playerGeneration||phase==='browse'||!state.lyric||!$('lyric-video-slot')||selected?.videoId!==videoId)return;
    player=new YT.Player('lyric-video-slot',{
