@@ -49,6 +49,13 @@ try{
   assert.match(await page.locator('.lyric-song-heading h1').innerText(),/Never Gonna Give You Up/);
   await page.waitForFunction(()=>document.querySelector('#lyric-video-status')?.textContent?.includes('does not allow embedding'));
   assert.match(await page.locator('#lyric-video-status').innerText(),/change youtube video/i);
+  await page.locator('[data-action="lyric-silent"]').click();
+  assert.match(await page.locator('#lyric-video-status').innerText(),/without music/i);
+  assert.match(await page.locator('.lyric-player-frame').innerText(),/SILENT PRACTICE/);
+  await page.locator('[data-action="lyric-toggle"]').click();
+  assert.equal(await page.locator('#lyric-input').isEnabled(),true,'silent typing is enabled after an embed failure');
+  await page.locator('#lyric-input').fill('Never');
+  assert.equal(await page.locator('#lyric-input').inputValue(),'Never');
   await oldRelease();
   await page.waitForTimeout(80);
   assert.match(await page.locator('.lyric-song-heading h1').innerText(),/Never Gonna Give You Up/,'stale search must never replace current song');

@@ -1,3 +1,11 @@
+## [Unreleased] — Lyric Lab silent fallback (issue #2)
+
+- Add a direct **PRACTICE WITHOUT VIDEO** control when a track's YouTube player is blocked, unavailable or unwanted.
+- Destroy the video player, invalidate old callbacks and preserve the original timed lyric chart and current position.
+- Continue using the native text input and timed practice without video; keep the manual link option available.
+- Extend the blocked-embed browser test to verify silent practice actually resumes and accepts text.
+- Release only after successful CI, merge and GitHub Pages deployment.
+
 ## [Unreleased] — Keyboard-accessible dialog behavior (issue #3)
 
 - Trap Tab/Shift+Tab inside an active dialog so keyboard users cannot tab behind a modal.
