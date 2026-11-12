@@ -1,10 +1,10 @@
-## [Unreleased] — Speed Lab workplace vocabulary (issue #7)
+## [Feature milestone] — Speed Lab workplace vocabulary — 2026-11-11 (America/Denver)
 
 - Prepare six professional practice categories: legal services, education, municipal government, healthcare administration, finance, and hospitality.
 - Curate generic, non-sensitive practice words without confidential client, student, patient, or account data.
 - Group the selector into core and workplace drills while retaining the existing Numpad, Everyday, Technology, and Story modes.
 - Add unit coverage for vocabulary variety, category selection, original WPM history, and mobile/desktop browser regressions.
-- **Development branch only.** Do not claim shipment until PR checks pass, the feature is merged, and Pages deployment succeeds.
+- Shipped through [PR #14](https://github.com/MasynNay/Keystoria/pull/14) after passing [Vocabulary CI including keyboard selection](https://github.com/MasynNay/Keystoria/actions/runs/43137092706), [Numpad](https://github.com/MasynNay/Keystoria/actions/runs/43136886444), [Mobile](https://github.com/MasynNay/Keystoria/actions/runs/43136886383), and [Theme](https://github.com/MasynNay/Keystoria/actions/runs/43136886350) regressions, followed by [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43137227461). Publication date does not imply all code was authored that day.
 
 ## [0.26.0] — Mobile-first typing Phase 1 — 2026-11-11 (America/Denver)
 

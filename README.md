@@ -90,8 +90,9 @@ The original built-in song, timed lyric display, playback controls, live typing 
 
 - **24 cooperative story adventures.** Progress through themed missions by typing under pressure, with shared objectives and real-time multiplayer gameplay.
 - **Lyric Lab.** Practice typing along with synchronized lyrics, highlighted words, letter-by-letter feedback, and a flashing next-key cue. In normal mode, punctuation—including apostrophes and parentheses—is optional; strict punctuation remains an opt-in challenge.
-- **Speed Lab.** Work on typing speed and accuracy through focused challenges.
+- **Speed Lab.** Try timed word drills, dedicated Numpad numbers with CPM scoring, or six curated workplace word banks (legal, education, government, healthcare administration, finance, hospitality). WPM, accuracy, and records stay local.
 - **Field Academy.** Practice useful command-line typing in a game-oriented environment.
+- **Mobile practice Phase 1.** Input-adjacent cues and touch-friendly controls in Speed Lab, Lyric Lab, and Field Academy. Browser regressions passed; real iOS/Android keyboard QA remains open in issue #11.
 - **Responsive interface.** A browser frontend designed for desktop and smaller screens, with a responsive 15-theme selector.
 - **Progress compatibility.** The rebrand preserves existing internal save identifiers so earlier progress is not discarded solely because of the new name.
 
@@ -179,7 +180,7 @@ For details on the theme system, see [Themes and customization](docs/THEMES.md).
 
 Keystoria is an evolving project. The [public roadmap](docs/ROADMAP.md) documents shipped milestones, near-term work, and longer-term ideas. Every planned item has an open [GitHub Issue](https://github.com/MasynNay/Keystoria/issues) with acceptance criteria; a plan is not the same as a completed feature.
 
-**Current priorities:** automated browser regression checks ([#1](https://github.com/MasynNay/Keystoria/issues/1)) and robust Lyric Lab failure handling ([#2](https://github.com/MasynNay/Keystoria/issues/2)). Later work includes accessibility, safe co-op hosting research, and meaningful practice progression. See [the roadmap on the portfolio](https://keystoria.masynnay.com/#roadmap) for a quick overview.
+**Current priorities:** mobile keyboard verification ([#11](https://github.com/MasynNay/Keystoria/issues/11)), stronger browser release gates ([#1](https://github.com/MasynNay/Keystoria/issues/1)), and Lyric Lab failure recovery ([#2](https://github.com/MasynNay/Keystoria/issues/2)). Numpad, mobile Phase 1, and workplace word banks are shipped. Later work includes accessibility, secure co-op hosting research, and meaningful practice progression. See [the roadmap on the portfolio](https://keystoria.masynnay.com/#roadmap) for a quick overview.
 
 ## Development and testing
 
