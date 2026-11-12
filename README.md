@@ -180,9 +180,9 @@ For details on the theme system, see [Themes and customization](docs/THEMES.md).
 
 Keystoria is an evolving project. The [public roadmap](docs/ROADMAP.md) documents shipped milestones, near-term work, and longer-term ideas. Every planned item has an open [GitHub Issue](https://github.com/MasynNay/Keystoria/issues) with acceptance criteria; a plan is not the same as a completed feature.
 
-**Browser QA:** See [repeatable local smoke tests and release negative controls](docs/QA.md). GitHub Pages requires passing gameplay tests and deliberate broken-link/app-load controls before publishing.
+**Browser QA:** See [repeatable local smoke tests and release negative controls](docs/QA.md). GitHub Pages requires passing gameplay tests and deliberate broken-link/app-load controls before publishing. [Accessibility QA](docs/ACCESSIBILITY-QA.md) documents skip navigation, reduced-motion checks, the 15-theme contrast guard, and remaining real-device tests.
 
-**Current priorities:** real iPhone/Android keyboard validation ([#11](https://github.com/MasynNay/Keystoria/issues/11)) and the remaining accessibility audit ([#3](https://github.com/MasynNay/Keystoria/issues/3)). The [browser release gate (#1)](https://github.com/MasynNay/Keystoria/issues/1) and [Lyric Lab recovery (#2)](https://github.com/MasynNay/Keystoria/issues/2) are complete, with successful CI and Pages deployments. Secure co-op hosting feasibility (#4) and optional practice progression (#5) remain roadmap work. Later work includes accessibility, secure co-op hosting research, and meaningful practice progression. See [the roadmap on the portfolio](https://keystoria.masynnay.com/#roadmap) for a quick overview.
+**Current priorities:** real iPhone/Android keyboard validation ([#11](https://github.com/MasynNay/Keystoria/issues/11)) and the remaining accessibility audit ([#3](https://github.com/MasynNay/Keystoria/issues/3)). The [browser release gate (#1)](https://github.com/MasynNay/Keystoria/issues/1) and [Lyric Lab recovery (#2)](https://github.com/MasynNay/Keystoria/issues/2) are complete, with successful CI and Pages deployments. Secure co-op hosting feasibility (#4) and optional practice progression (#5) remain roadmap work. See [the roadmap on the portfolio](https://keystoria.masynnay.com/#roadmap) for a quick overview.
 
 ## Development and testing
 

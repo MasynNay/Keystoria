@@ -24,6 +24,8 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 | Lyric Lab video matcher and stale-result recovery | **Shipped (2026-11-11 (America/Denver))** | [PR #18](https://github.com/MasynNay/Keystoria/pull/18), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43141952768) |
 | Keyboard dialog focus and return | **Shipped (2026-11-11 (America/Denver))** | [PR #19](https://github.com/MasynNay/Keystoria/pull/19), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43142670372) |
 | Silent lyric practice on blocked or absent video | **Shipped (2026-11-11 (America/Denver))** | [PR #20](https://github.com/MasynNay/Keystoria/pull/20), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43143498175) |
+| Keyboard skip navigation, focusable Speed Lab results, and reduced-motion checks | **Shipped (November 11, 2026 Mountain Time)** | [PR #21](https://github.com/MasynNay/Keystoria/pull/21), [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43145095301) |
+| 15-theme palette contrast regression guard | **Shipped (November 11, 2026 Mountain Time)** | [PR #22](https://github.com/MasynNay/Keystoria/pull/22), [Theme CI](https://github.com/MasynNay/Keystoria/actions/runs/43145545877), and [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43145696865) |
 | 24 story campaigns with room-based cooperative play | **Available locally** | [Python game server](../app/server/app.py) and [local launch instructions](../README.md#get-started); **not** publicly hosted |
 
 Shipped refers to code merged and/or a GitHub Pages deployment—not a claim that every device, browser, or third-party media provider has been verified.
@@ -55,7 +57,7 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 ### Keyboard-first accessibility review
 **Tracking:** [Issue #3 — Accessibility audit](https://github.com/MasynNay/Keystoria/issues/3)  
 **Why:** Players should be able to navigate the desktop experience without a mouse or motion-heavy effects. Mobile-specific ergonomics are tracked separately in issue #11.  
-**Status:** **Partially implemented** in [PR #19](https://github.com/MasynNay/Keystoria/pull/19): Tab cycling and dialog-focus restoration passed CI and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43142670372). Screen readers, contrast and wider focus/motion audits remain open under [#3](https://github.com/MasynNay/Keystoria/issues/3).  
+**Status:** **Multiple accessibility phases shipped**: dialog Tab cycling and focus return in [PR #19](https://github.com/MasynNay/Keystoria/pull/19); skip links, changing-screen main landmarks, announced Speed Lab results and reduced-motion regression coverage in [PR #21](https://github.com/MasynNay/Keystoria/pull/21); and AA-level palette-token contrast checks for all 15 themes in [PR #22](https://github.com/MasynNay/Keystoria/pull/22). [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43145696865) succeeded. See [accessibility QA checklist](ACCESSIBILITY-QA.md). **Issue #3 remains open** for actual screen-reader testing, visual contrast of composited screens, text zoom and other manual checks.  
 **Exit criteria:** Focus, announcements, contrast, keyboard navigation, and reduced-motion support pass a documented checklist across all available themes.
 
 ### Secure public story-mode feasibility study

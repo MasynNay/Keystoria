@@ -1,9 +1,10 @@
-## [Unreleased] — Palette contrast regression guard (issue #3)
+## [Feature milestone] — Palette contrast regression guard — 2026-11-11 (America/Denver)
 
 - Validate all 15 theme foreground, muted and accent colors against their background and panel surfaces using relative luminance.
 - Require at least 4.5:1 on every tested pair and strong accent contrast for focus affordances.
 - Guard JavaScript theme-to-CSS palette parity in the Themes and Pages CI workflows.
-- This is an automated palette-token check, not certification of every rendered element or WCAG conformance.
+- Automated palette-token checks do not certify every rendered element or WCAG conformance.
+- Shipped through [PR #22](https://github.com/MasynNay/Keystoria/pull/22), [passing Themes CI](https://github.com/MasynNay/Keystoria/actions/runs/43145545877), and [successful gated Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43145696865). Real screen-reader and phone keyboard validation remains open.
 
 ## [Feature milestone] — Accessible navigation and motion controls — 2026-11-11 (America/Denver)
 
