@@ -41,7 +41,7 @@ try{
   assert.match(await page.locator('.lyric-song-heading').innerText(),/Orbit Practice/);
   await page.locator('[data-action="lyric-silent"]').click();
   assert.equal(await page.locator('#lyric-input').isEnabled(),true,'no-video song should immediately support silent practice');
-  assert.match(await page.locator('#lyric-video-status').innerText(),/without video/i);
+  assert.match(await page.locator('#lyric-video-status').innerText(),/without (?:a )?video/i);
   await ctx.close();
  }
  assert.deepEqual(backendCalls,[],'static edition must never request its nonexistent video matching API');
