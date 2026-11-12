@@ -4,7 +4,7 @@
  */
 import { safe, ico } from './helpers.js';
 import { renderLyricWordFeedback } from './lyric-word-feedback.js';
-import { FEATURED_SONGS, cleanWord, sameWord, parseLRC, currentLineAt, expectedWordsAt, scoreRun, searchTimedLyrics, featuredFor, parseYouTubeVideoId, youtubeSearchUrl, PLAYBACK_RATES, nextPlaybackRate, coverStyle, lineHasForeignScript, calibratedOffset } from './lyric-lab-core.js';
+import { FEATURED_SONGS, cleanWord, sameWord, parseLRC, currentLineAt, expectedWordsAt, scoreRun, searchTimedLyrics, featuredFor, parseYouTubeVideoId, youtubeSearchUrl, PLAYBACK_RATES, nextPlaybackRate, coverStyle, lineHasForeignScript, calibratedOffset, resolveLocalVideoMatch } from './lyric-lab-core.js';
 
 const $ = id => document.getElementById(id);
 const fmt = s => `${String(Math.floor(Math.max(0,s)/60)).padStart(2,'0')}:${String(Math.floor(Math.max(0,s)%60)).padStart(2,'0')}`;
@@ -91,6 +91,7 @@ export function createLyricLabController({state,onRender}){
   notice='';query=`${item.artist} ${item.title}`;fetchController?.abort();fetchController=new AbortController();const req=++request;searching=true;results=[];rerender();
   try{
    let found=await searchTimedLyrics(query,{signal:fetchController.signal});
+   if(req!==request||!state.lyric)return; // Do not launch a fallback search for a superseded selection.
    if(!found.length)found=await searchTimedLyrics(item.title,{signal:fetchController.signal});
    if(req!==request||!state.lyric)return;
    const match=found.find(x=>norm(x.trackName)===norm(item.title) && norm(x.artistName)===norm(item.artist)) || found.find(x=>norm(x.trackName)===norm(item.title));
@@ -108,10 +109,7 @@ export function createLyricLabController({state,onRender}){
   const label=button?.querySelector('small');if(label)label.textContent='◎ FINDING MATCHING YOUTUBE VIDEO…';
   if(button)button.disabled=true;
   try{
-   const params=new URLSearchParams({title:String(track.trackName||''),artist:String(track.artistName||''),duration:String(track.duration||0)});
-   const response=await fetch('/api/music/resolve?'+params.toString(),{signal:controller.signal});
-   if(!response.ok)throw new Error('Video search service unavailable');
-   const data=await response.json();
+   const data=await resolveLocalVideoMatch(track,{signal:controller.signal});
    if(req!==request||!state.lyric)return;
    const id=parseYouTubeVideoId(data?.videoId);
    if(id){
@@ -120,7 +118,7 @@ export function createLyricLabController({state,onRender}){
    }else select({...track,matchFailed:true});
   }catch(error){
    if(req!==request||!state.lyric||error.name==='AbortError')return;
-   select({...track,matchFailed:true});
+   select({...track,matchFailed:true,videoMatchError:String(error?.message||'Video matching is unavailable.')});
   }finally{if(button)button.disabled=false;}
  }
  function select(track){
@@ -137,7 +135,7 @@ export function createLyricLabController({state,onRender}){
  function mountPlayer(){
   const videoId=selected?.videoId;
   const generation=++playerGeneration;
-  if(!videoId){setStatus(selected?.demo?'Offline original demo—press START to play the built-in beat.':selected?.matchFailed?'An automatic video match was not found. You can connect a different video manually, or practice lyrics silently.':'This lyric result has no linked video yet. Use FIND ON YOUTUBE and CONNECT VIDEO to add music.');return;}
+  if(!videoId){setStatus(selected?.demo?'Offline original demo—press START to play the built-in beat.':selected?.videoMatchError?selected.videoMatchError:selected?.matchFailed?'An automatic video match was not found. You can connect a different video manually, or practice lyrics silently.':'This lyric result has no linked video yet. Use FIND ON YOUTUBE and CONNECT VIDEO to add music.');return;}
   youtubeApi().then(YT=>{
    if(generation!==playerGeneration||phase==='browse'||!state.lyric||!$('lyric-video-slot')||selected?.videoId!==videoId)return;
    player=new YT.Player('lyric-video-slot',{

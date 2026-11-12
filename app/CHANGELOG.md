@@ -1,3 +1,10 @@
+## [Unreleased] — Lyric Lab video match resilience (issue #2)
+
+- Bound local Python video resolution requests and JSON parsing; guide manual YouTube linking on timeout and failure.
+- Avoid starting a stale featured-song fallback search after a newer selection is made.
+- Add cancellation, timeout, malformed-response, stale-search, and blocked-player regression tests.
+- This work remains unreleased until all CI checks and Pages deployment pass.
+
 ## [Feature milestone] — Lyric Lab provider recovery Phase 1 — 2026-11-11 (America/Denver)
 
 - Apply a bounded deadline to LRCLIB searches and response decoding while propagating user cancellation.
