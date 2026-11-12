@@ -1,3 +1,11 @@
+## [Unreleased] — Lyric Lab provider recovery (issue #2)
+
+- Apply a bounded deadline to LRCLIB searches and response decoding while propagating user cancellation.
+- Explain rate limiting, failed responses and corrupt payloads; preserve original offline demo availability.
+- In the GitHub Pages edition, avoid attempting local-only automatic video matching and explain the manual YouTube link workflow.
+- Add unit coverage and real-browser provider failure scenarios; include provider unit tests in the Pages release gate.
+- **Development only.** Do not mark this work publicly shipped until CI, merge and Pages deployment succeed.
+
 ## [Feature milestone] — Speed Lab workplace vocabulary — 2026-11-11 (America/Denver)
 
 - Prepare six professional practice categories: legal services, education, municipal government, healthcare administration, finance, and hospitality.

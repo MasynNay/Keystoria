@@ -1,0 +1,51 @@
+name: Validate Lyric Provider Recovery
+on:
+  push:
+    branches: [feature/lyric-provider-recovery-2026-11-11]
+    paths:
+      - '.github/workflows/lyric-recovery-qa.yml'
+      - '.github/workflows/pages.yml'
+      - 'app/web/ui/lyric-lab-core.js'
+      - 'site/play/assets/ui/lyric-lab-core.js'
+      - 'site/play/assets/ui/lyric-lab-controller.js'
+      - 'app/tests/test_lyric_provider.mjs'
+      - 'scripts/test-lyric-recovery.mjs'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/lyric-recovery-qa.yml'
+      - '.github/workflows/pages.yml'
+      - 'app/web/ui/lyric-lab-core.js'
+      - 'site/play/assets/ui/lyric-lab-core.js'
+      - 'site/play/assets/ui/lyric-lab-controller.js'
+      - 'app/tests/test_lyric_provider.mjs'
+      - 'scripts/test-lyric-recovery.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lyric-recovery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Provider, cancellation, and lyric typing checks
+        run: |
+          node --check app/web/ui/lyric-lab-core.js
+          node --check site/play/assets/ui/lyric-lab-core.js
+          node --check site/play/assets/ui/lyric-lab-controller.js
+          node --test app/tests/test_lyric_provider.mjs app/tests/test_lyric_word_feedback.mjs
+          diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Serve browser edition
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/keystoria-lyric.log 2>&1 &
+          curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8765/play/ >/dev/null
+      - name: Exercise provider failures and offline fallback
+        run: node scripts/test-lyric-recovery.mjs
