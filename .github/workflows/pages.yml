@@ -33,6 +33,7 @@ jobs:
           node --test app/tests/test_lyric_word_feedback.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs app/tests/test_lyric_provider.mjs app/tests/test_video_match.mjs app/tests/test_theme_contrast.mjs
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
           diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
+          diff app/web/ui/speed-flow.js site/play/assets/ui/speed-flow.js
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
       - name: Install Playwright Chromium
         run: |
@@ -50,6 +51,7 @@ jobs:
           node scripts/test-lyric-races.mjs
           node scripts/test-dialog-keyboard.mjs
           node scripts/test-navigation-accessibility.mjs
+          node scripts/test-speed-mobile-performance.mjs
 
   deploy:
     needs: browser-regression

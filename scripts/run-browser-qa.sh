@@ -17,4 +17,5 @@ node scripts/test-vocabulary-browser.mjs
 node scripts/test-lyric-recovery.mjs
 node scripts/test-dialog-keyboard.mjs
 node scripts/test-navigation-accessibility.mjs
+node scripts/test-speed-mobile-performance.mjs
 echo "PASS: Keystoria local browser QA completed."

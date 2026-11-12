@@ -1,7 +1,7 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js";
 import { speedTemplate } from "./ui/speed-view.js";
-import { createSpeedController } from "./ui/speed-controller.js";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.27.1";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js";
 import { paintTypingFeedback } from "./ui/typing-feedback.js";
 import { sound, toggleSound, isSoundOn } from "./sound.js";

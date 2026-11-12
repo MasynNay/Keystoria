@@ -4,11 +4,11 @@
  * Story missions can continue to evolve independently of personal training.
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
-import { createSpeedFlow } from './speed-flow.js';
+import { createSpeedFlow } from './speed-flow.js?v=0.27.1';
 import { nextSpeedCue } from './mobile-typing.js';
 
 const node = id => document.getElementById(id);
-const text = (id, value) => { const element=node(id); if (element) element.textContent=value; };
+const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
 
 export function createSpeedController({ state, onRender, playSound }) {
   let interval=null;
@@ -57,7 +57,9 @@ export function createSpeedController({ state, onRender, playSound }) {
     const seconds=elapsed();
     const metrics=scoreSpeedRun(session.reference,session.typed,Math.max(1,seconds),session.keystrokes);
     // Mount the passage once; only letter classes and vertical scroll update.
-    if (!flow) flow=createSpeedFlow(node('speed-letters'),session.reference);
+    const mobile=window.matchMedia?.('(max-width: 760px)').matches ?? false;
+    if (!flow || flow.windowed !== mobile)
+      flow=createSpeedFlow(node('speed-letters'),session.reference,{windowed:mobile});
     flow?.update(session.typed);
     const cue=nextSpeedCue(session.reference,session.typed);
     text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
@@ -103,7 +105,7 @@ export function createSpeedController({ state, onRender, playSound }) {
       session.startedAt=performance.now();
       session.status='running';
       clearTimer();
-      interval=setInterval(tick,100);
+      interval=setInterval(tick,250);
     }
     paint();
     if (session.typed.length===session.reference.length) finish();

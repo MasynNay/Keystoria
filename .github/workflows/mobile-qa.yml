@@ -8,6 +8,7 @@ on:
       - 'site/play/**'
       - 'app/tests/test_mobile_typing.mjs'
       - 'scripts/test-mobile-typing.mjs'
+      - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-numpad-browser.mjs'
   pull_request:
     branches: [main]
@@ -17,6 +18,7 @@ on:
       - 'site/play/**'
       - 'app/tests/test_mobile_typing.mjs'
       - 'scripts/test-mobile-typing.mjs'
+      - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-numpad-browser.mjs'
   workflow_dispatch:
 permissions:
@@ -44,6 +46,7 @@ jobs:
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
+          diff app/web/ui/speed-flow.js site/play/assets/ui/speed-flow.js
           diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
       - name: Install Chromium
         run: |
@@ -56,4 +59,5 @@ jobs:
       - name: Exercise three modes in mobile and desktop widths
         run: |
           node scripts/test-mobile-typing.mjs
+          node scripts/test-speed-mobile-performance.mjs
           node scripts/test-numpad-browser.mjs

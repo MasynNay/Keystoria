@@ -43,7 +43,7 @@ try{
 
   await page.locator('[data-action="speed-open"]').first().click();
   assert.equal(await page.locator('main#app-main').count(),1,'Speed Lab main landmark');
-  const text=await page.locator('#speed-letters').textContent();
+  const text=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
   assert.ok(text.length>30,'a real timed Speed Lab prompt is available');
   await page.locator('#speed-input').fill(text);
   await page.locator('#speed-results-heading').waitFor();
