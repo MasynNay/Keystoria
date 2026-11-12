@@ -58,6 +58,8 @@ async function playAt(width){
   assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),'numeric');
   assert.equal(await page.locator('#speed-wpm').locator('xpath=following-sibling::small').innerText(),'CPM');
   await page.locator('[data-action="speed-home"]').first().click();
+  // Returning to the menu may reopen the onboarding dialog.
+  if(await page.locator('.welcome-continue').isVisible())await page.locator('.welcome-continue').click();
 
   // The original built-in lyric demo must work without any media service.
   await page.locator('[data-action="lyric-open"]').first().click();
@@ -69,6 +71,8 @@ async function playAt(width){
   assert.ok((await page.locator('#lyric-next-keystroke').innerText()).length>0,'next-key cue should render');
   await page.locator('[data-action="lyric-back"]').first().click();
   await page.locator('[data-action="lyric-home"]').first().click();
+  // Returning to the menu may reopen the onboarding dialog.
+  if(await page.locator('.welcome-continue').isVisible())await page.locator('.welcome-continue').click();
 
   // An actual Academy command must be checked through its working UI.
   await page.locator('[data-action="learn"][data-os="linux"]').click();
