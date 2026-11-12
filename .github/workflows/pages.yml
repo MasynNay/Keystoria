@@ -30,7 +30,7 @@ jobs:
           node --check scripts/test-release-browser.mjs
           node --check site/play/assets/app.js
           node --check app/web/app.js
-          node --test app/tests/test_lyric_word_feedback.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs
+          node --test app/tests/test_lyric_word_feedback.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs app/tests/test_lyric_provider.mjs
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
           diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js

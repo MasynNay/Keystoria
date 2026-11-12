@@ -161,15 +161,56 @@ export function featuredFor(track){
   const normalize=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
   return FEATURED_SONGS.find(item=>normalize(item.title)===normalize(track?.trackName||track?.title) && normalize(item.artist)===normalize(track?.artistName||track?.artist))||null;
 }
-/** LRCLIB offers CORS, documented client identification and no access key. */
-export async function searchTimedLyrics(query,{fetcher=fetch,signal}={}){
-  if(!String(query||'').trim())return [];
-  const url='https://lrclib.net/api/search?q='+encodeURIComponent(String(query).trim().slice(0,110));
-  const response=await fetcher(url,{headers:{'Lrclib-Client':'KEYSTORIA Lyric Lab/0.24 (local project; github.com)'},signal});
-  if(response.status===429)throw new Error(`Lyric search rate-limited. Please retry after ${response.headers?.get('Retry-After')||'a short break'} seconds.`);
-  if(!response.ok)throw new Error('The lyric service could not be reached. Try again in a moment.');
-  const rows=await response.json();
-  if(!Array.isArray(rows))return [];
-  return rows.filter(x=>x && !x.instrumental && typeof x.syncedLyrics==='string' && x.syncedLyrics.includes('['))
+/** LRCLIB offers CORS and no access key.
+ * The deadline covers both fetch and JSON parsing so stalled providers cannot
+ * leave a search spinning indefinitely. Parent cancellations win immediately.
+ */
+export async function searchTimedLyrics(query,{fetcher=fetch,signal,timeoutMs=12000}={}){
+ const trimmed=String(query||'').trim().slice(0,110);
+ if(!trimmed)return [];
+ const url='https://lrclib.net/api/search?q='+encodeURIComponent(trimmed);
+ const aborted=()=>Object.assign(new Error('Lyric search cancelled.'),{name:'AbortError'});
+ if(signal?.aborted)throw aborted();
+
+ const controller=new AbortController();
+ const seconds=Math.max(20,Math.min(30000,Number.isFinite(Number(timeoutMs))?Number(timeoutMs):12000));
+ let timer=null,abortParent=null;
+ const cancelled=new Promise((_,reject)=>{
+   if(!signal)return;
+   abortParent=()=>{reject(aborted());controller.abort();};
+   signal.addEventListener('abort',abortParent,{once:true});
+   if(signal.aborted)abortParent();
+ });
+ const deadline=new Promise((_,reject)=>{
+   timer=setTimeout(()=>{
+     reject(new Error('Lyric search timed out. Check your connection or try the original offline demo.'));
+     controller.abort();
+   },seconds);
+ });
+ const request=(async()=>{
+   const response=await fetcher(url,{
+     headers:{'Lrclib-Client':'KEYSTORIA Lyric Lab/0.24 (local project; github.com)'},
+     signal:controller.signal,
+   });
+   if(response.status===429){
+     const retry=Number(response.headers?.get?.('Retry-After'));
+     const delay=Number.isFinite(retry)&&retry>0&&retry<=300?Math.ceil(retry)+' seconds':'a short break';
+     throw new Error('Lyric search is temporarily rate-limited. Try again after '+delay+'.');
+   }
+   if(!response.ok)throw new Error('The lyric service is unavailable. Try again or open the original offline demo.');
+   let rows;
+   try{rows=await response.json();}
+   catch{throw new Error('The lyric service returned unreadable results. Try the offline demo or search again.');}
+   if(!Array.isArray(rows))return [];
+   return rows.filter(x=>x && !x.instrumental && typeof x.syncedLyrics==='string' && x.syncedLyrics.includes('['))
      .slice(0,20).map(x=>({id:x.id,trackName:String(x.trackName||x.name||''),artistName:String(x.artistName||''),albumName:String(x.albumName||''),duration:Number(x.duration)||0,syncedLyrics:x.syncedLyrics,videoId:featuredFor(x)?.videoId||null}));
+ })();
+ try{return await Promise.race([request,deadline,cancelled]);}
+ catch(error){
+   if(error instanceof TypeError)throw new Error('Cannot reach the lyric service. Check your connection or try the original offline demo.');
+   throw error;
+ }finally{
+   if(timer!==null)clearTimeout(timer);
+   if(abortParent)signal?.removeEventListener('abort',abortParent);
+ }
 }
