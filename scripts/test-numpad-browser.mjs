@@ -24,7 +24,8 @@ try{
   assert.ok((await page.locator('#speed-wpm').innerText()).match(/^\d+$/));
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   assert.ok(overflow<=2,'Numpad layout overflows '+viewport.width+'px by '+overflow+'px');
-  await page.locator('[data-action="speed-restart"]').click();
+  // The mobile layout adds its own Restart button; target the one visible in this viewport.
+  await page.locator('[data-action="speed-restart"]:visible').first().click();
   assert.equal(await page.locator('#speed-input').inputValue(),'');
   await page.locator('[data-action="speed-pack"][data-pack="technology"]').click();
   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),'technology');
