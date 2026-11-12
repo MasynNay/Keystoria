@@ -45,6 +45,7 @@ jobs:
       - name: Block release if portfolio or gameplay fails
         run: |
           node scripts/test-release-browser.mjs
+          node scripts/test-release-negative.mjs
           node scripts/test-vocabulary-browser.mjs
 
   deploy:

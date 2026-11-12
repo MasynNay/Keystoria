@@ -180,6 +180,8 @@ For details on the theme system, see [Themes and customization](docs/THEMES.md).
 
 Keystoria is an evolving project. The [public roadmap](docs/ROADMAP.md) documents shipped milestones, near-term work, and longer-term ideas. Every planned item has an open [GitHub Issue](https://github.com/MasynNay/Keystoria/issues) with acceptance criteria; a plan is not the same as a completed feature.
 
+**Browser QA:** See [repeatable local smoke tests and release negative controls](docs/QA.md). GitHub Pages requires passing gameplay tests and deliberate broken-link/app-load controls before publishing.
+
 **Current priorities:** physical mobile-keyboard verification ([#11](https://github.com/MasynNay/Keystoria/issues/11)), negative-control and extended browser QA ([#1](https://github.com/MasynNay/Keystoria/issues/1)), and remaining Lyric Lab provider failure cases ([#2](https://github.com/MasynNay/Keystoria/issues/2)). Numpad, mobile Phase 1, workplace word banks, the Pages regression gate, and initial lyric-provider recovery are shipped. Later work includes accessibility, secure co-op hosting research, and meaningful practice progression. See [the roadmap on the portfolio](https://keystoria.masynnay.com/#roadmap) for a quick overview.
 
 ## Development and testing
