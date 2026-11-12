@@ -24,7 +24,7 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 ### 1. Mobile-first gameplay redesign (high priority)
 **Tracking:** [Issue #11 — Comfortable typing with the phone keyboard](https://github.com/MasynNay/Keystoria/issues/11)  
 **Why:** A responsive layout is not enough for a typing game: the phone's software keyboard can obscure the prompt, steal much of the screen, and make controls difficult to reach.  
-**Status:** **Planned** following a user report; no mobile redesign is shipped yet.  
+**Status:** **In progress** in [draft PR #12](https://github.com/MasynNay/Keystoria/pull/12), with [passing Chromium mobile regression tests](https://github.com/MasynNay/Keystoria/actions/runs/42551764690); **not shipped**. Real iOS/Android keyboard checks remain, and release follows the scheduled numpad PR #8.  
 **First fixes:** Keep the active word and input visible together above the virtual keyboard; preserve focus as words advance; offer large touch-accessible submit, skip, and pause buttons; collapse secondary information while typing; avoid scroll jumps and hidden controls as the keyboard opens/closes.  
 **Follow-up:** Evaluate an optional one-word or short-phrase mobile presentation for Lyric Lab and Speed Lab, including numeric practice. Keep existing desktop gameplay intact.  
 **Exit criteria:** Lyric Lab, Speed Lab, and Field Academy can be completed without a physical keyboard; verify real iOS Safari and Android Chrome software keyboards in addition to automated narrow-viewport tests. Test portrait, landscape, safe areas, 15 themes, assistive technology, and timing/scoring behavior. Do not claim native-keyboard compatibility from browser-emulation screenshots alone.
@@ -52,6 +52,18 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 **Why:** People in legal services, education, government, healthcare, finance, hospitality, and IT should practice words relevant to their work.  
 **Status:** **Planned**.  
 **Exit criteria:** Curated, non-sensitive vocabulary packs, clear category controls, reliable generation, and accurate score/history labels without real client, patient, or student data.
+
+### 6. Speed Lab: numpad number-entry challenge
+**Tracking:** [Issue #6 — Numpad typing game](https://github.com/MasynNay/Keystoria/issues/6)  
+**Why:** Number entry is a distinct workplace skill, especially for finance, records, data entry, and administrative roles.  
+**Status:** **In development on a feature branch**; not yet publicly shipped.  
+**Exit criteria:** A dedicated numeric drill with live feedback, digit-based scoring, local history, responsive UI, and passing browser/unit tests.
+
+### 7. Speed Lab: industry-specific word banks
+**Tracking:** [Issue #7 — Professional vocabulary packs](https://github.com/MasynNay/Keystoria/issues/7)  
+**Why:** Players in schools, law firms, government, healthcare, and other workplaces should be able to practice language they actually use.  
+**Status:** **Planned**.  
+**Exit criteria:** Carefully curated vocabulary groups, reliable word generation, accessibility, and appropriate metrics for each group.
 
 ## Next — accessibility and architecture
 

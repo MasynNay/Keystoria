@@ -1,5 +1,7 @@
 <div align="center">
 
+<a href="https://keystoria.masynnay.com/"><img src="site/assets/keystoria-mark.svg" alt="Keystoria K monogram icon" width="100" height="100"></a>
+
 # Keystoria
 
 **Every key opens a world.**

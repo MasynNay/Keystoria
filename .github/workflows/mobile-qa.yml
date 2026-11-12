@@ -1,7 +1,7 @@
 name: Validate Mobile Typing
 on:
   push:
-    branches: [main, feature/mobile-typing-first-pass]
+    branches: [main, feature/mobile-typing-first-pass, integration/numpad-mobile-compatibility]
     paths:
       - '.github/workflows/mobile-qa.yml'
       - 'app/web/**'
@@ -30,9 +30,11 @@ jobs:
           node --check site/play/assets/ui/lyric-lab-controller.js
           node --check app/web/ui/training-view.js
           node --check site/play/assets/ui/training-view.js
-          node --test app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs
+          node --test app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_numpad.mjs
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
+          diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
+          diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
       - name: Install Chromium
         run: |
           npm install --no-save --no-package-lock playwright@1.56.0
@@ -42,4 +44,6 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/keystoria-mobile.log 2>&1 &
           curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8765/play/ >/dev/null
       - name: Exercise three modes in mobile and desktop widths
-        run: node scripts/test-mobile-typing.mjs
+        run: |
+          node scripts/test-mobile-typing.mjs
+          node scripts/test-numpad-browser.mjs

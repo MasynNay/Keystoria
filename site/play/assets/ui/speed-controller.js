@@ -62,11 +62,11 @@ export function createSpeedController({ state, onRender, playSound }) {
     const cue=nextSpeedCue(session.reference,session.typed);
     text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
     text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
-    text('speed-progress',`${session.typed.length} characters typed`);
+    text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));
-    text('speed-wpm',String(seconds ? metrics.wpm : 0));
+    text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
     text('speed-accuracy',`${metrics.accuracy}%`);
-    text('speed-raw',String(seconds ? metrics.rawWpm : 0));
+    text('speed-raw',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.replace(/[^0-9]/g,'').length/Math.max(1,seconds)*60):metrics.rawWpm) : 0));
     text('speed-mode',session.status === 'running' ? 'SESSION LIVE' : 'TIMER STARTS WHEN YOU TYPE');
   }
 
@@ -74,8 +74,10 @@ export function createSpeedController({ state, onRender, playSound }) {
     const session=state.speed;
     if (!session || session.status==='complete') return;
     clearTimer();
+    const metrics=scoreSpeedRun(session.reference,session.typed,session.seconds,session.keystrokes);
     session.result={
-      ...scoreSpeedRun(session.reference,session.typed,session.seconds,session.keystrokes),
+      ...metrics,cpm:Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/session.seconds*60),
+      rawCpm:Math.round(session.typed.replace(/[^0-9]/g,'').length/session.seconds*60),
       pack:session.pack,seconds:session.seconds,at:new Date().toISOString(),
     };
     session.status='complete';
@@ -93,7 +95,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   function input(value) {
     const session=state.speed;
     if (!session || session.status==='complete') return;
-    session.typed=value.replace(/[\r\n]/g,'').slice(0,session.reference.length);
+    session.typed=(session.pack==='numpad'?value.replace(/[^0-9 ]/g,''):value.replace(/[\r\n]/g,'')).slice(0,session.reference.length);
     const field=node('speed-input');
     if (field && field.value!==session.typed) field.value=session.typed;
     if (session.status==='idle' && session.typed.length) {
@@ -106,7 +108,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (session.typed.length===session.reference.length) finish();
   }
 
-  /** A touch button inserts one literal space, never free credit for skipped text. */
+  /** Mobile separator stays a real input character, included in accuracy. */
   function insertSpace(){
     const session=state.speed;
     if(!session||session.status==='complete'||session.typed.length>=session.reference.length)return;

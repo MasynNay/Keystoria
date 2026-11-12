@@ -36,6 +36,20 @@ try{
   } else {
    assert.equal(await page.locator('.mobile-entry-actions').first().isVisible(),false);
   }
+  await page.locator('[data-action="speed-pack"][data-pack="numpad"]').click();
+  assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),'numpad');
+  assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),'numeric');
+  const numericReference=await page.locator('#speed-letters').innerText();
+  assert.match(numericReference,/^\d{3} \d{4}/);
+  await page.locator('#speed-input').fill(numericReference.slice(0,3));
+  if(isPhone){
+    await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
+    assert.equal(await page.locator('#speed-input').inputValue(),numericReference.slice(0,3)+' ');
+  } else {
+    await page.locator('#speed-input').fill(numericReference.slice(0,3)+' ');
+  }
+  assert.equal(await page.locator('#speed-wpm').locator('xpath=following-sibling::small').innerText(),'CPM');
+  await page.locator('[data-action="speed-pack"][data-pack="everyday"]').click();
   await page.locator('[data-action="speed-home"]').first().click();
   await homeFromModal(page);
   await page.locator('[data-action="lyric-open"]').first().click();

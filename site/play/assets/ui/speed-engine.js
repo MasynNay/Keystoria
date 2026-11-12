@@ -13,6 +13,7 @@ export const PACKS = Object.freeze({
     description: 'Typing drills inspired by the tools developers and IT teams use.',
     words: 'server client browser terminal memory kernel thread system network packet router switch cloud local remote backup restore login session access token secure firewall certificate virtual container database endpoint service process build compile deploy branch commit merge pull request function variable string object array event promise async await response request status latency cache queue endpoint method header gateway monitor process device driver update firmware hardware software folder directory file path script shell python javascript powershell linux mac windows command account password policy permissions group user domain dns dhcp subnet gateway ethernet wireless protocol socket websocket http https traffic storage disk volume partition archive checksum integrity encryption key secret public private sign validate parse format value integer boolean class module export import test assertion fixture report exception error warning debug trace log history output input library reference release repository pipeline workflow package dependency version telemetry render view state component property template cursor caret accuracy speed timing rhythm focus reliability performance profile metrics'.split(' '),
   },
+  numpad: {title:'NUMPAD',description:'Timed number-pad drills. Type digits and use Space or Numpad Enter between groups.',words:[]},
   atmosphere: {
     title: 'STORY MODE',
     description: 'Fast cinematic prose with richer words and punctuation.',
@@ -21,6 +22,18 @@ export const PACKS = Object.freeze({
 });
 
 export function createWordStream(pack, count = 700, rng = Math.random) {
+  if (pack === 'numpad') {
+    const groups=[];
+    for(let i=0;i<count;i++){
+      let group='';
+      for(let j=0;j<3+(i%4);j++){
+        const n=Number(rng());
+        group+=String(Math.min(9,Math.max(0,Math.floor((Number.isFinite(n)?n:0)*10))));
+      }
+      groups.push(group);
+    }
+    return groups.join(' ');
+  }
   const words = PACKS[pack]?.words || PACKS.everyday.words;
   const result = [];
   for (let index = 0; index < count; index++) {
