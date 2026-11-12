@@ -29,6 +29,11 @@ try {
    assert.equal(await input.inputValue(),'per');
    assert.match(await page.locator('#speed-wpm').locator('xpath=following-sibling::small').innerText(),/^WPM$/);
   }
+  // The workplace selector must also work with a hardware keyboard, not only pointer clicks.
+  const keyboardChoice=page.locator('[data-action="speed-pack"][data-pack="legal"]');
+  await keyboardChoice.focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await keyboardChoice.getAttribute('aria-pressed'),'true','keyboard Enter must activate a category');
   await page.locator('[data-action="speed-pack"][data-pack="numpad"]').click();
   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),'numpad');
   assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),'numeric');
