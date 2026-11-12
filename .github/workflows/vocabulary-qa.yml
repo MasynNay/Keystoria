@@ -1,0 +1,57 @@
+name: Validate Speed Lab Vocabulary
+on:
+  push:
+    branches: [feature/speed-lab-industry-packs-2026-11-11]
+    paths:
+      - '.github/workflows/vocabulary-qa.yml'
+      - 'app/web/ui/speed-engine.js'
+      - 'site/play/assets/ui/speed-engine.js'
+      - 'app/web/ui/speed-view.js'
+      - 'site/play/assets/ui/speed-view.js'
+      - 'app/web/styles/speed.css'
+      - 'site/play/assets/styles/speed.css'
+      - 'app/tests/test_vocabulary.mjs'
+      - 'scripts/test-vocabulary-browser.mjs'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/vocabulary-qa.yml'
+      - 'app/web/ui/speed-engine.js'
+      - 'site/play/assets/ui/speed-engine.js'
+      - 'app/web/ui/speed-view.js'
+      - 'site/play/assets/ui/speed-view.js'
+      - 'app/web/styles/speed.css'
+      - 'site/play/assets/styles/speed.css'
+      - 'app/tests/test_vocabulary.mjs'
+      - 'scripts/test-vocabulary-browser.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  vocabulary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate packs and source parity
+        run: |
+          node --check app/web/ui/speed-engine.js
+          node --check site/play/assets/ui/speed-engine.js
+          node --check app/web/ui/speed-view.js
+          node --check site/play/assets/ui/speed-view.js
+          node --test app/tests/test_vocabulary.mjs app/tests/test_numpad.mjs
+          diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
+          diff app/web/styles/speed.css site/play/assets/styles/speed.css
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Serve browser edition
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/keystoria-vocabulary.log 2>&1 &
+          curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8765/play/ >/dev/null
+      - name: Exercise career categories at mobile and desktop widths
+        run: node scripts/test-vocabulary-browser.mjs

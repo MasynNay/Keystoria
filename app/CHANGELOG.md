@@ -1,3 +1,11 @@
+## [Unreleased] — Speed Lab workplace vocabulary (issue #7)
+
+- Prepare six professional practice categories: legal services, education, municipal government, healthcare administration, finance, and hospitality.
+- Curate generic, non-sensitive practice words without confidential client, student, patient, or account data.
+- Group the selector into core and workplace drills while retaining the existing Numpad, Everyday, Technology, and Story modes.
+- Add unit coverage for vocabulary variety, category selection, original WPM history, and mobile/desktop browser regressions.
+- **Development branch only.** Do not claim shipment until PR checks pass, the feature is merged, and Pages deployment succeeds.
+
 ## [0.26.0] — Mobile-first typing Phase 1 — 2026-11-11 (America/Denver)
 
 - Show the current Speed Lab characters, Lyric Lab word, and Field Academy command directly above their native text inputs on narrow screens.
