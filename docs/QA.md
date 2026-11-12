@@ -27,6 +27,7 @@ node scripts/test-release-negative.mjs
 node scripts/test-vocabulary-browser.mjs
 node scripts/test-lyric-recovery.mjs
 node scripts/test-dialog-keyboard.mjs
+node scripts/test-navigation-accessibility.mjs
 ```
 
 ## What the negative controls prove
@@ -39,3 +40,5 @@ The negative-control runner makes two isolated **HTTP response mutations** insid
 Each must make the **same release smoke test** exit unsuccessfully for a specific, expected assertion. A failure for an unrelated reason does not count as a successful negative control. Neither fixture writes to `site/` or GitHub.
 
 The Pages workflow requires passing positive and negative controls before deployment, and PR checks always skip publishing. This does **not** substitute for testing actual iOS Safari, Android Chrome, accessibility, or external media licensing.
+
+For the full accessibility scope and outstanding human-device tests, see [Accessibility QA](ACCESSIBILITY-QA.md).

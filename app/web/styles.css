@@ -3098,3 +3098,9 @@ body[data-theme="casefile"] {
 .sample-output span { display:block; color:var(--accent); font:10px/1.5 var(--mono); letter-spacing:.08em; margin-bottom:10px; }
 .sample-output pre { color:#d2e3dd; font:12px/1.75 var(--mono); white-space:pre-wrap; overflow-wrap:anywhere; margin:0; }
 
+
+/* Keyboard skip navigation to the current gameplay landmark. */
+.skip-link{position:fixed;top:12px;left:12px;z-index:10000;transform:translateY(calc(-100% - 30px));display:inline-block;padding:12px 18px;border:3px solid #172632;border-radius:6px;background:#fff;color:#101923;font:700 15px/1.4 system-ui,sans-serif;box-shadow:0 5px 16px rgba(0,0,0,.35)}
+.skip-link:focus-visible,.skip-link:focus{transform:none;outline:3px solid #f6c755;outline-offset:2px}
+textarea:focus-visible,select:focus-visible{outline:3px solid var(--accent,#fff);outline-offset:3px}
+#app-main{scroll-margin-top:20px}
