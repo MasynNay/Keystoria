@@ -19,6 +19,42 @@ export const PACKS = Object.freeze({
     description: 'Fast cinematic prose with richer words and punctuation.',
     words: 'shadows corridor tremble midnight beacon orbit signal flicker reactor storm escape mission captain rescue danger stars dark door whisper lantern mystery evidence archive secret witness footsteps silence arrival transmission shelter station pulse breach countdown detective alibi survivor oxygen captain gravity distant flickering terminal chamber hallway locked sealed ancient hallway drawing echo voices horizon cold distant flicker quiet breath courage shield approaching search discover release protect survive unlock countdown final verify prepare urgent response courage signal escape tunnel pulse silence footsteps distant hallway gravity alert danger tremble storm endless hollow bright blue green warning system secret recover rescue protect signal hope'.split(' '),
   },
+  legal: {
+    title: 'LEGAL',
+    professional: true,
+    description: 'General legal-office vocabulary for documents, filing, and court administration; not legal advice.',
+    words: 'affidavit agreement allegation amendment appeal applicant archive arbitration attorney authorization bailiff brief calendar case citation claimant clerk client compliance contract counsel court custody declaration decree defendant deposition discovery disclosure docket evidence exhibit filing hearing injunction jurisdiction judgment jury legislation litigation mediation memorandum motion notice objection ordinance order paralegal petition plaintiff precedent procedure provision record regulation release remedy renewal request respondent review ruling schedule settlement signature statute subpoena summons testimony transcript trial trustee verification verdict waiver witness worksheet'.split(' '),
+  },
+  education: {
+    title: 'EDUCATION',
+    professional: true,
+    description: 'School and education administration words for everyday professional communication.',
+    words: 'academic accommodation activity admission advisor assessment assignment attendance benchmark bulletin campus certificate classroom collaboration college conference curriculum deadline department diploma discussion enrollment evaluation faculty feedback grade graduation guardian handbook homework instruction learning lecture lesson library literacy mentor objective orientation outcome parent participation pedagogy policy portfolio principal program progress project registrar report resource review rubric schedule scholarship school semester session student syllabus teacher teaching textbook timetable transcript training tutorial university workshop'.split(' '),
+  },
+  government: {
+    title: 'GOVERNMENT',
+    professional: true,
+    description: 'Municipal and public-service vocabulary for records, utilities, and community operations.',
+    words: 'agenda allocation annexation application archive assessment authority ballot board budget building capital charter city citizen clerk code commission committee community compliance council county district documentation election enforcement engineering facility finance fire funding hearing inspection infrastructure jurisdiction licensing maintenance meeting municipal notice ordinance oversight parks permit planning policy procurement project property public records recreation report request resolution review safety service session sewer sidewalk signage staff street survey tax transportation utilities utility variance water zoning'.split(' '),
+  },
+  healthcare: {
+    title: 'HEALTHCARE ADMIN',
+    professional: true,
+    description: 'Non-clinical healthcare administration terms; no patient records or diagnostic content.',
+    words: 'admission appointment authorization availability benefit billing calendar cancellation capacity care center checklist claim clinic confirmation consent contact coordination copayment coverage credential customer deadline department directory discharge documentation eligibility enrollment estimate examination facility finance form frontdesk guideline intake insurance invoice laboratory letter location logistics medical message notification office operations outpatient payment pharmacy policy portal privacy procedure processing provider reception record referral registration reminder request reschedule resource review roster schedule screening service shift specialist statement support telehealth timetable tracking transfer transportation verification visit waiting wellness workflow'.split(' '),
+  },
+  finance: {
+    title: 'FINANCE',
+    professional: true,
+    description: 'Business finance and accounting vocabulary for reporting, budgets, and transactions.',
+    words: 'account accounting accrual allocation amortization analysis annual asset audit authorization balance bank banking benchmark billing budget capital cash category charge closing collection commission compliance contract cost credit currency customer debit deduction deposit depreciation dividend earnings equity expense fee finance fiscal forecast funding income interest inventory invoice journal ledger liability margin maturity monthly net operating payment payroll payable performance portfolio posting pricing profit purchase quarter receipt receivable reconciliation record refund report reserve revenue review risk savings schedule settlement statement subtotal tax taxable transaction transfer treasury variance vendor verification voucher worksheet yearly yield'.split(' '),
+  },
+  hospitality: {
+    title: 'HOSPITALITY',
+    professional: true,
+    description: 'Guest service, travel, reception, and hospitality operations vocabulary.',
+    words: 'accommodation arrival assistant availability banquet booking brochure cancellation capacity catering checkin checkout confirmation concierge contact courtesy customer departure desk destination dining directory discount event excursion feedback frontdesk greeting group guest housekeeping itinerary kitchen laundry location lodging lounge loyalty luggage maintenance management manager meal menu message occupancy offer operations order package payment policy preference preparation pricing reception recommendation refund registration reservation restaurant review room roster schedule seating service shift shuttle special staff stay support survey table ticket timetable tourism transportation travel upgrade vacancy vendor venue visitor welcome wellness workshop'.split(' '),
+  },
 });
 
 export function createWordStream(pack, count = 700, rng = Math.random) {
