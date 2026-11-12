@@ -18,6 +18,8 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 | Speed Lab Numpad challenge with CPM scoring | **Shipped (November 9, 2026)** | [Merge commit](https://github.com/MasynNay/Keystoria/commit/92e8bda120e7520f0a9ac8556e5660d9add27b86), [passed numpad CI](https://github.com/MasynNay/Keystoria/actions/runs/42661101795), and [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/42661319306) |
 | Mobile practice Phase 1 (Speed, Lyric, Academy) | **Shipped in browser edition (November 11, 2026 Mountain Time)** | [PR #12](https://github.com/MasynNay/Keystoria/pull/12), [Numpad QA](https://github.com/MasynNay/Keystoria/actions/runs/43135604906), [Mobile QA](https://github.com/MasynNay/Keystoria/actions/runs/43135604935), [Themes QA](https://github.com/MasynNay/Keystoria/actions/runs/43135604933), and [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43135800239). **Real iOS/Android keyboard QA remains outstanding.** |
 | Six workplace Speed Lab vocabulary categories | **Shipped (November 11, 2026 Mountain Time)** | [PR #14](https://github.com/MasynNay/Keystoria/pull/14), [passing vocabulary and keyboard CI](https://github.com/MasynNay/Keystoria/actions/runs/43137092706), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43137227461) |
+| Browser gameplay regression gate before Pages deployment | **Shipped (November 11, 2026 Mountain Time)** | [PR #15](https://github.com/MasynNay/Keystoria/pull/15), [passing production browser gate and Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43138914794) |
+| Lyric Lab provider recovery Phase 1 | **Shipped (November 11, 2026 Mountain Time)** | [PR #16](https://github.com/MasynNay/Keystoria/pull/16), [successful provider CI](https://github.com/MasynNay/Keystoria/actions/runs/43139756405), and [gated production deployment](https://github.com/MasynNay/Keystoria/actions/runs/43139905211) |
 | 24 story campaigns with room-based cooperative play | **Available locally** | [Python game server](../app/server/app.py) and [local launch instructions](../README.md#get-started); **not** publicly hosted |
 
 Shipped refers to code merged and/or a GitHub Pages deployment—not a claim that every device, browser, or third-party media provider has been verified.
@@ -35,13 +37,13 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 ### 2. Browser practice regression testing
 **Tracking:** [Issue #1 — Headless browser testing in CI](https://github.com/MasynNay/Keystoria/issues/1)  
 **Why:** The portfolio opens the real practice UI. A deployment should fail if key buttons, typing inputs, or required routes break.  
-**Status:** **Partially implemented**. Numpad, Mobile, and 15-theme Chromium workflows passed on PR #12 and now run on relevant feature pull requests; a comprehensive cross-mode release gate and broader failure-path coverage are still in progress.  
+**Status:** **Core release gate shipped** through [PR #15](https://github.com/MasynNay/Keystoria/pull/15): the portfolio, Speed Lab, Numpad, Lyric demo, Field Academy, and Pages-only multiplayer disclosure are checked in Chromium before deployment. [Production gate and Pages release passed](https://github.com/MasynNay/Keystoria/actions/runs/43138914794). Negative-control fixtures and additional failure paths remain open in issue #1.  
 **Exit criteria:** Automated tests verify homepage-to-app navigation, Speed Lab typing, Lyric Lab offline demo and next-letter cue, and Field Academy command submission at desktop/mobile widths. CI prevents a broken release.
 
 ### 3. Lyric Lab reliability and graceful offline behavior
 **Tracking:** [Issue #2 — Provider failures and recovery](https://github.com/MasynNay/Keystoria/issues/2)  
 **Why:** Timed lyrics and optional video rely on external providers.  
-**Status:** **Planned** for full failure-path coverage.  
+**Status:** **Phase 1 shipped** through [PR #16](https://github.com/MasynNay/Keystoria/pull/16): cancellable lyric-search deadlines, actionable rate-limit and invalid-response messages, static-site manual-video guidance, and preserved offline demo. [Provider CI passed](https://github.com/MasynNay/Keystoria/actions/runs/43139756405) and [Pages deployment succeeded](https://github.com/MasynNay/Keystoria/actions/runs/43139905211). Broader provider/media failure cases and stale-response regressions remain open in issue #2.  
 **Exit criteria:** Clear loading, timeout, empty-result, blocked-media and rate-limit states; stale requests do not replace newer searches; built-in demo remains usable; meaningful automated fallback tests.
 
 ## Next — accessibility and architecture

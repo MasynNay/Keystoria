@@ -1,10 +1,10 @@
-## [Unreleased] — Lyric Lab provider recovery (issue #2)
+## [Feature milestone] — Lyric Lab provider recovery Phase 1 — 2026-11-11 (America/Denver)
 
 - Apply a bounded deadline to LRCLIB searches and response decoding while propagating user cancellation.
 - Explain rate limiting, failed responses and corrupt payloads; preserve original offline demo availability.
 - In the GitHub Pages edition, avoid attempting local-only automatic video matching and explain the manual YouTube link workflow.
 - Add unit coverage and real-browser provider failure scenarios; include provider unit tests in the Pages release gate.
-- **Development only.** Do not mark this work publicly shipped until CI, merge and Pages deployment succeed.
+- Shipped via [PR #16](https://github.com/MasynNay/Keystoria/pull/16), passing [Lyric recovery CI](https://github.com/MasynNay/Keystoria/actions/runs/43139756405), [mobile CI](https://github.com/MasynNay/Keystoria/actions/runs/43139756452), [themes CI](https://github.com/MasynNay/Keystoria/actions/runs/43139756412), and [successful Pages browser gate and deployment](https://github.com/MasynNay/Keystoria/actions/runs/43139905211). More media-provider error cases remain planned under issue #2.
 
 ## [Feature milestone] — Speed Lab workplace vocabulary — 2026-11-11 (America/Denver)
 
