@@ -1,11 +1,18 @@
-## [Unreleased] — Mobile-first typing ergonomics (issue #11)
+## [0.26.0] — Mobile-first typing Phase 1 — 2026-11-11 (America/Denver)
 
 - Show the current Speed Lab characters, Lyric Lab word, and Field Academy command directly above their native text inputs on narrow screens.
 - Add touch-accessible Space/Next, Submit Word, Skip Line, Restart, Play/Pause, and Academy Check/Next controls without altering desktop keyboard shortcuts.
 - Reposition the focused typing unit when the phone's visual viewport changes, preserving the real system keyboard; provide safe-area spacing and compact secondary panels.
 - Maintain the existing typing/accuracy calculation and disable browser autocorrect for the Academy's exact commands.
 - Add browser regression tests for 320px and 390px screens, prompt/input visibility, touch progression, and desktop compatibility. Real iOS and Android software keyboard behavior still requires device verification.
-- Feature staged in a review branch; do not mark publicly shipped before a successful merge and deployment.
+- Shipped through [PR #12](https://github.com/MasynNay/Keystoria/pull/12), with passing [Mobile](https://github.com/MasynNay/Keystoria/actions/runs/43135604935), [Numpad](https://github.com/MasynNay/Keystoria/actions/runs/43135604906), and [15-theme](https://github.com/MasynNay/Keystoria/actions/runs/43135604933) CI; [GitHub Pages deployment 43135800239](https://github.com/MasynNay/Keystoria/actions/runs/43135800239) succeeded.
+- Maintain the corrected numeric net/raw CPM display in both local and browser editions. Physical iPhone and Android virtual-keyboard behavior remains unverified and tracked in [issue #11](https://github.com/MasynNay/Keystoria/issues/11).
+
+## [Feature milestone] — Speed Lab Numpad — 2026-11-09 (America/Denver)
+
+- Add dedicated Numpad practice with timed numeric sequences, digit filtering, optional group separation using Space or Numpad Enter, local results, and numeric CPM scoring.
+- Correct completion screens to display real CPM values rather than WPM values under CPM labels.
+- Implemented in [PR #8](https://github.com/MasynNay/Keystoria/pull/8), [passed automated Numpad CI](https://github.com/MasynNay/Keystoria/actions/runs/42661101795), and [deployed successfully through GitHub Pages](https://github.com/MasynNay/Keystoria/actions/runs/42661319306). Implementation was prepared before the scheduled release date; this records the verified publication date, not a claim of authorship on that date.
 
 ## [0.25.1] — Smoother Lyric Typing — 2026-11-08
 
