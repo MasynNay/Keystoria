@@ -18,6 +18,7 @@ async function playAt(width){
   reducedMotion:'reduce',
  });
  const page=await context.newPage();
+ page.setDefaultTimeout(8000);
  page.on('pageerror',error=>errors.push(String(error)));
  page.on('websocket',socket=>socketUrls.push(socket.url()));
  page.on('request',request=>{
@@ -66,6 +67,11 @@ async function playAt(width){
   await page.locator('[data-action="lyric-demo"]').click();
   await page.locator('#lyric-input').waitFor();
   await page.locator('#lyric-next-keystroke').waitFor();
+  // The demo must be started before its native typing field is enabled.
+  await page.locator(mobile
+    ?'[data-action="lyric-mobile-toggle"]'
+    :'[data-action="lyric-toggle"]').first().click();
+  assert.equal(await page.locator('#lyric-input').isEnabled(),true);
   await page.locator('#lyric-input').fill('Sig');
   assert.equal(await page.locator('#lyric-input').inputValue(),'Sig');
   assert.ok((await page.locator('#lyric-next-keystroke').innerText()).length>0,'next-key cue should render');
