@@ -6,6 +6,12 @@
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
+## Most recent Speed Lab fix — November 11, 2026
+
+The user reported that Speed Lab was **unusable due to mobile lag**. [PR #23](https://github.com/MasynNay/Keystoria/pull/23) was merged, and [production GitHub Pages run 43148220125](https://github.com/MasynNay/Keystoria/actions/runs/43148220125) passed. A mobile-sized DOM window now renders no more than 220 characters from the full 700-word exercise, clock-only updates avoid redundant text/layout work, and the timer updates at 250ms. Full reference/scoring and desktop behavior are preserved; the new long-session browser QA passed.
+
+**First action when resuming:** Ask the user to retest **Speed Lab** on the same phone and browser, including typing for 30–60 seconds with the software keyboard open. If it remains laggy, investigate input-event duration and visualViewport scroll loops on a real device. **Issue #11 stays open** until actual mobile performance and keyboard behavior are verified. Do not substitute Chromium emulation for device testing.
+
 ## Release state at this checkpoint
 
 - All development PRs from tonight through [#22](https://github.com/MasynNay/Keystoria/pull/22) have been merged into `main`; **no open pull requests** were present at the checkpoint.
