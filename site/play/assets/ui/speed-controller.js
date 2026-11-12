@@ -9,6 +9,20 @@ import { nextSpeedCue } from './mobile-typing.js';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
+const ASSIST_PREF_KEY='keystoria.speed.nativeKeyboardAssist.v1';
+const preferredAssist=()=>{
+  try {return localStorage.getItem(ASSIST_PREF_KEY)!=='off';}
+  catch {return true;}
+};
+const storeAssist=enabled=>{try {localStorage.setItem(ASSIST_PREF_KEY,enabled?'on':'off');}catch{/* Optional storage */}};
+function updateNativeKeyboard(field,enabled){
+  if(!field)return;
+  field.spellcheck=enabled;
+  field.setAttribute('spellcheck',String(enabled));
+  field.setAttribute('autocorrect',enabled?'on':'off');
+  field.setAttribute('autocomplete',enabled?'on':'off');
+  field.setAttribute('autocapitalize','off');
+}
 
 export function createSpeedController({ state, onRender, playSound }) {
   let interval=null;
@@ -24,16 +38,20 @@ export function createSpeedController({ state, onRender, playSound }) {
     clearTimer();
     flow=null;
     const selectedPack=PACKS[pack] ? pack : 'everyday';
+    const phoneLayout=window.matchMedia?.('(max-width: 760px)').matches ?? false;
+    const keyboardAssist=phoneLayout && selectedPack!=='numpad' && preferredAssist();
     state.speed={
       pack:selectedPack,
       seconds:DURATIONS.includes(seconds) ? seconds : 30,
       reference:createWordStream(selectedPack),
       typed:'',startedAt:null,status:'idle',keystrokes:0,result:null,
+      keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
     };
     onRender();
     if (typeof requestAnimationFrame === 'function') requestAnimationFrame(()=>{
       const field=node('speed-input');
       if (!field || !field.isConnected) return;
+      updateNativeKeyboard(field,state.speed?.keyboardAssist===true);
       if(enteringFromAnotherMode) window.scrollTo({top:0,behavior:"instant"});
       field.focus({preventScroll:true});
     });
@@ -81,6 +99,8 @@ export function createSpeedController({ state, onRender, playSound }) {
       ...metrics,cpm:Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/session.seconds*60),
       rawCpm:Math.round(session.typed.replace(/[^0-9]/g,'').length/session.seconds*60),
       pack:session.pack,seconds:session.seconds,at:new Date().toISOString(),
+      keyboardAssisted:session.keyboardAssistedEver===true,
+      practiceMode:session.phoneLayout ? (session.keyboardAssistedEver?'mobile-assisted':'mobile-exact') : 'standard-exact',
     };
     session.status='complete';
     saveSpeedResult(session.result);
@@ -121,9 +141,31 @@ export function createSpeedController({ state, onRender, playSound }) {
     if(field&&!field.disabled)field.focus({preventScroll:true});
   }
 
+  /** Toggle phone native predictions without detaching the focused field.
+   * A score stays marked assisted if predictions were enabled at any point.
+   */
+  function toggleKeyboardAssist(){
+    const session=state.speed;
+    if(!session||!session.phoneLayout||session.pack==='numpad'||session.status==='complete')return;
+    session.keyboardAssist=!session.keyboardAssist;
+    if(session.keyboardAssist)session.keyboardAssistedEver=true;
+    storeAssist(session.keyboardAssist);
+    const field=node('speed-input');
+    updateNativeKeyboard(field,session.keyboardAssist);
+    const button=node('speed-assist-toggle');
+    if(button){
+      button.textContent=session.keyboardAssist?'KEYBOARD HELP: ON':'KEYBOARD HELP: OFF';
+      button.setAttribute('aria-pressed',String(session.keyboardAssist));
+    }
+    text('speed-assist-detail',session.keyboardAssist
+      ? 'Phone predictions and autocorrect allowed. Score marked Assisted; suggestions depend on your keyboard settings.'
+      : 'Exact typing. No automatic corrections requested; this score stays Assisted if help was used.');
+    if(field&&!field.disabled)field.focus({preventScroll:true});
+  }
+
   function keystroke() {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,input,keystroke,insertSpace,finish,tick};
+  return {open,close,paint,input,keystroke,insertSpace,toggleKeyboardAssist,finish,tick};
 }

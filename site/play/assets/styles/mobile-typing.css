@@ -66,3 +66,14 @@
 @media(prefers-reduced-motion:reduce){
  .mobile-speed-cue *,.mobile-lyric-word *,.mobile-academy-target *{animation:none!important;transition:none!important}
 }
+
+/* Native phone keyboard help never changes desktop scoring behavior. */
+.speed-assist-settings{display:none}
+.speed-assist-result-label{font:700 11px/1.6 var(--mono);letter-spacing:.07em;color:var(--accent);margin:2px 0 10px}
+@media(max-width:760px){
+  .speed-assist-settings{display:flex;align-items:flex-start;gap:9px;flex-wrap:wrap;margin:8px 0 10px}
+  .speed-assist-settings button{min-height:44px;border:1px solid var(--accent);border-radius:7px;padding:9px 12px;background:var(--panel-2);color:var(--text);font:700 11px/1.4 var(--mono)}
+  .speed-assist-settings button[aria-pressed="true"]{background:var(--accent);color:var(--background)}
+  .speed-assist-settings button:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+  .speed-assist-settings p{min-width:185px;flex:1;font:12px/1.45 var(--body);color:var(--text);margin:0}
+}

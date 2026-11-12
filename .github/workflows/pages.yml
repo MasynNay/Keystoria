@@ -34,6 +34,7 @@ jobs:
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
           diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
           diff app/web/ui/speed-flow.js site/play/assets/ui/speed-flow.js
+          diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
       - name: Install Playwright Chromium
         run: |
@@ -52,6 +53,7 @@ jobs:
           node scripts/test-dialog-keyboard.mjs
           node scripts/test-navigation-accessibility.mjs
           node scripts/test-speed-mobile-performance.mjs
+          node scripts/test-speed-keyboard-assist.mjs
 
   deploy:
     needs: browser-regression

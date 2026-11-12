@@ -11,6 +11,14 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 
 **User-reported release blocker:** Speed Lab was effectively unusable due to lag when typing on a phone. This is tracked in [issue #11](https://github.com/MasynNay/Keystoria/issues/11). The mobile renderer previously mounted individual spans for all ~700 words and repeatedly measured layout during 100ms timer refreshes. A 220-character mobile rendering window and lower-frequency clock **shipped in [PR #23](https://github.com/MasynNay/Keystoria/pull/23)**; [Mobile QA](https://github.com/MasynNay/Keystoria/actions/runs/43148033242) and [production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43148220125) passed. The new regression tests cover DOM bounds, cursor progression, backspace and score retention. Desktop retains full-passage rendering. **The actual reported phone latency remains unverified until the user retests**; issue #11 is still open.
 
+## Mobile keyboard assistance follow-up (November 11, 2026)
+
+**User feedback:** The mobile Speed Lab performance fix in PR #23 substantially improved responsiveness, but the native phone keyboard had no predictions or autocorrect, making typing frustrating. The underlying Speed Lab textarea explicitly disabled `spellcheck`, `autocorrect` and `autocomplete`.
+
+**New work:** A default-on, optional **Keyboard Help** mode on the phone layout now permits the device's native spelling suggestions and autocorrect for word drills, with one-tap opt-out for exact input. Numpad and desktop stay exact. Personal records distinguish assisted vs exact results, including sessions where assistance was enabled for only part of the run. Automated checks cover preferences, score labels, no lost input and numeric drills; OS-generated suggestions and actual feel require **real phone verification**.
+
+**Important:** Browsers cannot force a disabled predictive keyboard or guarantee how keyboard vendors display suggestions. The game's toggle only requests native support. Keep [mobile issue #11](https://github.com/MasynNay/Keystoria/issues/11) open until real iOS Safari and Android Chrome testing.
+
 ## Next session — prioritized execution plan
 
 The current release is **stable enough to pause**. At the November 11, 2026 Mountain Time checkpoint, there were **zero open PRs**, and the last audited Pages release ([run 43146026599](https://github.com/MasynNay/Keystoria/actions/runs/43146026599)) passed both browser regression and deployment. The last observed subsequent code-repository commit was screenshot-only. The current, detailed resume instructions live in [app/CONTINUE_HERE.md](../app/CONTINUE_HERE.md).
