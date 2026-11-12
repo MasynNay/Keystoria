@@ -36,9 +36,13 @@ async function playAt(width){
   const welcome=page.locator('.welcome-continue');
   if(await welcome.count() && await welcome.isVisible())await welcome.click();
 
-  // Story entry should explain the unavailable server, not silently open /ws.
-  await page.locator('[data-action="solo"]').first().click();
-  assert.match(await page.locator('#toast-layer').innerText(),/need the Python game server/i);
+  // Some browser releases hide the local story button altogether. If it is
+  // offered, it must show the local-only explanation rather than connect /ws.
+  const localStory=page.locator('[data-action="solo"]');
+  if(await localStory.count()){
+   await localStory.first().click();
+   assert.match(await page.locator('#toast-layer').innerText(),/need the Python game server/i);
+  }
 
   // Speed Lab must start timing, survive category switches, and label CPM.
   await page.locator('[data-action="speed-open"]').first().click();
