@@ -20,6 +20,10 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 | Six workplace Speed Lab vocabulary categories | **Shipped (November 11, 2026 Mountain Time)** | [PR #14](https://github.com/MasynNay/Keystoria/pull/14), [passing vocabulary and keyboard CI](https://github.com/MasynNay/Keystoria/actions/runs/43137092706), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43137227461) |
 | Browser gameplay regression gate before Pages deployment | **Shipped (November 11, 2026 Mountain Time)** | [PR #15](https://github.com/MasynNay/Keystoria/pull/15), [passing production browser gate and Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43138914794) |
 | Lyric Lab provider recovery Phase 1 | **Shipped (November 11, 2026 Mountain Time)** | [PR #16](https://github.com/MasynNay/Keystoria/pull/16), [successful provider CI](https://github.com/MasynNay/Keystoria/actions/runs/43139756405), and [gated production deployment](https://github.com/MasynNay/Keystoria/actions/runs/43139905211) |
+| Fail-closed Pages negative controls | **Shipped (2026-11-11 (America/Denver))** | [PR #17](https://github.com/MasynNay/Keystoria/pull/17), [CI](https://github.com/MasynNay/Keystoria/actions/runs/43140934977), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43141092745) |
+| Lyric Lab video matcher and stale-result recovery | **Shipped (2026-11-11 (America/Denver))** | [PR #18](https://github.com/MasynNay/Keystoria/pull/18), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43141952768) |
+| Keyboard dialog focus and return | **Shipped (2026-11-11 (America/Denver))** | [PR #19](https://github.com/MasynNay/Keystoria/pull/19), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43142670372) |
+| Silent lyric practice on blocked or absent video | **Shipped (2026-11-11 (America/Denver))** | [PR #20](https://github.com/MasynNay/Keystoria/pull/20), [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43143498175) |
 | 24 story campaigns with room-based cooperative play | **Available locally** | [Python game server](../app/server/app.py) and [local launch instructions](../README.md#get-started); **not** publicly hosted |
 
 Shipped refers to code merged and/or a GitHub Pages deployment—not a claim that every device, browser, or third-party media provider has been verified.
@@ -37,13 +41,13 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 ### 2. Browser practice regression testing
 **Tracking:** [Issue #1 — Headless browser testing in CI](https://github.com/MasynNay/Keystoria/issues/1)  
 **Why:** The portfolio opens the real practice UI. A deployment should fail if key buttons, typing inputs, or required routes break.  
-**Status:** **Core release gate shipped** through [PR #15](https://github.com/MasynNay/Keystoria/pull/15): the portfolio, Speed Lab, Numpad, Lyric demo, Field Academy, and Pages-only multiplayer disclosure are checked in Chromium before deployment. [Production gate and Pages release passed](https://github.com/MasynNay/Keystoria/actions/runs/43138914794). Negative-control fixtures and additional failure paths remain open in issue #1.  
+**Status:** **Completed and [issue #1 closed](https://github.com/MasynNay/Keystoria/issues/1)**. PR #15 established predeployment gameplay checks, and [PR #17](https://github.com/MasynNay/Keystoria/pull/17) proved they fail when a critical link or app script is deliberately broken. [Production Pages deployment passed](https://github.com/MasynNay/Keystoria/actions/runs/43141092745). Repeatable local QA is documented in [QA.md](QA.md).  
 **Exit criteria:** Automated tests verify homepage-to-app navigation, Speed Lab typing, Lyric Lab offline demo and next-letter cue, and Field Academy command submission at desktop/mobile widths. CI prevents a broken release.
 
 ### 3. Lyric Lab reliability and graceful offline behavior
 **Tracking:** [Issue #2 — Provider failures and recovery](https://github.com/MasynNay/Keystoria/issues/2)  
 **Why:** Timed lyrics and optional video rely on external providers.  
-**Status:** **Phase 1 shipped** through [PR #16](https://github.com/MasynNay/Keystoria/pull/16): cancellable lyric-search deadlines, actionable rate-limit and invalid-response messages, static-site manual-video guidance, and preserved offline demo. [Provider CI passed](https://github.com/MasynNay/Keystoria/actions/runs/43139756405) and [Pages deployment succeeded](https://github.com/MasynNay/Keystoria/actions/runs/43139905211). Broader provider/media failure cases and stale-response regressions remain open in issue #2.  
+**Status:** **Completed and [issue #2 closed](https://github.com/MasynNay/Keystoria/issues/2)**. PRs [#16](https://github.com/MasynNay/Keystoria/pull/16), [#18](https://github.com/MasynNay/Keystoria/pull/18), and [#20](https://github.com/MasynNay/Keystoria/pull/20) handle provider timeout/rate limits, stale selection, bounded local video resolution, and one-click silent fallback for blocked or missing videos. [The final Pages deployment passed](https://github.com/MasynNay/Keystoria/actions/runs/43143498175). Provider availability and music licensing are not guaranteed.  
 **Exit criteria:** Clear loading, timeout, empty-result, blocked-media and rate-limit states; stale requests do not replace newer searches; built-in demo remains usable; meaningful automated fallback tests.
 
 ## Next — accessibility and architecture
@@ -51,6 +55,7 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 ### Keyboard-first accessibility review
 **Tracking:** [Issue #3 — Accessibility audit](https://github.com/MasynNay/Keystoria/issues/3)  
 **Why:** Players should be able to navigate the desktop experience without a mouse or motion-heavy effects. Mobile-specific ergonomics are tracked separately in issue #11.  
+**Status:** **Partially implemented** in [PR #19](https://github.com/MasynNay/Keystoria/pull/19): Tab cycling and dialog-focus restoration passed CI and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43142670372). Screen readers, contrast and wider focus/motion audits remain open under [#3](https://github.com/MasynNay/Keystoria/issues/3).  
 **Exit criteria:** Focus, announcements, contrast, keyboard navigation, and reduced-motion support pass a documented checklist across all available themes.
 
 ### Secure public story-mode feasibility study

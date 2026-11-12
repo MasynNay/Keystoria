@@ -1,24 +1,24 @@
-## [Unreleased] — Lyric Lab silent fallback (issue #2)
+## [Feature milestone] — Lyric Lab silent fallback — 2026-11-11 (America/Denver)
 
 - Add a direct **PRACTICE WITHOUT VIDEO** control when a track's YouTube player is blocked, unavailable or unwanted.
 - Destroy the video player, invalidate old callbacks and preserve the original timed lyric chart and current position.
 - Continue using the native text input and timed practice without video; keep the manual link option available.
 - Extend the blocked-embed browser test to verify silent practice actually resumes and accepts text.
-- Release only after successful CI, merge and GitHub Pages deployment.
+- Shipped through [PR #20](https://github.com/MasynNay/Keystoria/pull/20) after [Lyric](https://github.com/MasynNay/Keystoria/actions/runs/43143340418), [Mobile](https://github.com/MasynNay/Keystoria/actions/runs/43143340371), and [Themes](https://github.com/MasynNay/Keystoria/actions/runs/43143340215) CI passed, followed by the [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43143498175).
 
-## [Unreleased] — Keyboard-accessible dialog behavior (issue #3)
+## [Feature milestone] — Keyboard-accessible dialogs — 2026-11-11 (America/Denver)
 
 - Trap Tab/Shift+Tab inside an active dialog so keyboard users cannot tab behind a modal.
 - Return focus to the invoking control, or the accessible settings shortcut, after Escape or Close.
 - Regression-test initial welcome and all-theme settings dialogs at phone and desktop widths.
-- This remains a development candidate until CI, merge, and Pages deployment verification succeed.
+- Shipped through [PR #19](https://github.com/MasynNay/Keystoria/pull/19) with [successful browser checks and Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43142670372). The broader accessibility audit and real-device testing remain open under issues #3 and #11.
 
-## [Unreleased] — Lyric Lab video match resilience (issue #2)
+## [Feature milestone] — Lyric Lab video match resilience — 2026-11-11 (America/Denver)
 
 - Bound local Python video resolution requests and JSON parsing; guide manual YouTube linking on timeout and failure.
 - Avoid starting a stale featured-song fallback search after a newer selection is made.
 - Add cancellation, timeout, malformed-response, stale-search, and blocked-player regression tests.
-- This work remains unreleased until all CI checks and Pages deployment pass.
+- Shipped through [PR #18](https://github.com/MasynNay/Keystoria/pull/18) after [Lyric](https://github.com/MasynNay/Keystoria/actions/runs/43141784424), [Mobile](https://github.com/MasynNay/Keystoria/actions/runs/43141784433), and [Themes](https://github.com/MasynNay/Keystoria/actions/runs/43141784402) CI plus a [successful Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43141952768).
 
 ## [Feature milestone] — Lyric Lab provider recovery Phase 1 — 2026-11-11 (America/Denver)
 
