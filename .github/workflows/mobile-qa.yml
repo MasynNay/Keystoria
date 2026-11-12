@@ -8,6 +8,7 @@ on:
       - 'site/play/**'
       - 'app/tests/test_mobile_typing.mjs'
       - 'scripts/test-mobile-typing.mjs'
+      - 'scripts/test-numpad-browser.mjs'
   workflow_dispatch:
 permissions:
   contents: read
