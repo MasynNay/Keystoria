@@ -178,7 +178,7 @@ For details on the theme system, see [Themes and customization](docs/THEMES.md).
 
 ## Development roadmap
 
-Keystoria is an evolving project. The [public roadmap](docs/ROADMAP.md) documents shipped milestones, near-term work, and longer-term ideas. Every planned item has an open [GitHub Issue](https://github.com/MasynNay/Keystoria/issues) with acceptance criteria; a plan is not the same as a completed feature.
+Keystoria is an evolving project. The [public roadmap](docs/ROADMAP.md) documents shipped milestones, near-term work, and longer-term ideas. The [current development handoff](app/CONTINUE_HERE.md) records the last verified release and exactly where to resume. Every planned item has an open [GitHub Issue](https://github.com/MasynNay/Keystoria/issues) with acceptance criteria; a plan is not the same as a completed feature.
 
 **Browser QA:** See [repeatable local smoke tests and release negative controls](docs/QA.md). GitHub Pages requires passing gameplay tests and deliberate broken-link/app-load controls before publishing. [Accessibility QA](docs/ACCESSIBILITY-QA.md) documents skip navigation, reduced-motion checks, the 15-theme contrast guard, and remaining real-device tests.
 

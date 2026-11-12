@@ -7,6 +7,19 @@
 
 Keystoria is an evolving typing game collection with 24 authored story adventures, Lyric Lab, Speed Lab, and Field Academy. Mobile-first gameplay is a near-term priority based on direct feedback, separate from desktop accessibility and planned content features. This roadmap records why the next changes matter, how we will verify them, and which features have already been delivered. Priorities may change after testing or feedback; the roadmap is not a promise of dates.
 
+## Next session — prioritized execution plan
+
+The current release is **stable enough to pause**. At the November 11, 2026 Mountain Time checkpoint, there were **zero open PRs**, and the last audited Pages release ([run 43146026599](https://github.com/MasynNay/Keystoria/actions/runs/43146026599)) passed both browser regression and deployment. The last observed subsequent code-repository commit was screenshot-only. The current, detailed resume instructions live in [app/CONTINUE_HERE.md](../app/CONTINUE_HERE.md).
+
+| Order | Workstream | Next verifiable deliverable | What must remain unclaimed |
+| --- | --- | --- | --- |
+| **1 · Next hands-on pass** | [#11 Mobile software keyboards](https://github.com/MasynNay/Keystoria/issues/11) | Actual iPhone Safari and Android Chrome keyboard-open/closed notes for Lyric, Speed and Academy; focused fixes backed by mobile regression tests | Emulation is not physical iOS/Android evidence |
+| **2 · Next engineering pass** | [#3 Accessibility](https://github.com/MasynNay/Keystoria/issues/3) | Rendered-state contrast and zoom audit, screen-reader observations, and regression fixes beyond shipped skip links, focus, motion and palette checks | Palette color tests are not full WCAG conformance |
+| **3 · Design decision first** | [#4 Co-op hosting](https://github.com/MasynNay/Keystoria/issues/4) | Compare local-only, controlled demo and hosted options; write a security, cost and operations decision before a public proof of concept | Story multiplayer is not hosted on GitHub Pages |
+| **4 · Later optional feature** | [#5 Practice progression](https://github.com/MasynNay/Keystoria/issues/5) | Local-first privacy model, bounded history, export/reset plan, usability feedback and an opt-in dashboard proposal | No shipped analytics dashboard yet |
+
+**Release definition:** a task is not shipped until code merges to `main`, relevant tests pass and GitHub Pages deployment succeeds where applicable. End each working session with zero unintended open PRs, updated issue states, and a durable handoff. Pause new features once a stable deployment is reached; do not manufacture a release merely to show activity.
+
 ## Shipped and verifiable
 
 | Milestone | Status | Evidence |
