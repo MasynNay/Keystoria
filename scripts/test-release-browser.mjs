@@ -10,6 +10,10 @@ const base='http://127.0.0.1:8765';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const errors=[];
 const socketUrls=[];
+// Opt-in mutation fixtures are exclusively for proving the release gate fails closed.
+// Normal runs always test the unmodified site.
+const negativeControl=process.env.KEYSTORIA_QA_FAULT||'';
+if(negativeControl&&!['broken-link','missing-app'].includes(negativeControl))throw new Error('Unknown negative-control fixture: '+negativeControl);
 
 async function playAt(width){
  const mobile=width<800;
@@ -19,6 +23,21 @@ async function playAt(width){
  });
  const page=await context.newPage();
  page.setDefaultTimeout(8000);
+ if(negativeControl){
+  const target=negativeControl==='broken-link'?base+'/':base+'/play/';
+  await page.route(target,async route=>{
+   const response=await route.fetch();
+   const html=await response.text();
+   const original=negativeControl==='broken-link'
+    ?'class="primary" href="play/"'
+    :html.match(/src="assets\/app\.js\?v=[^"]+"/)?.[0];
+   assert.ok(original,'Negative-control fixture anchor exists in the actual HTML');
+   const corrupted=negativeControl==='broken-link'
+    ?'class="primary" href="play-missing/"'
+    :'src="assets/missing-app-fixture.js"';
+   await route.fulfill({response,body:html.replace(original,corrupted)});
+  });
+ }
  page.on('pageerror',error=>errors.push(String(error)));
  page.on('websocket',socket=>socketUrls.push(socket.url()));
  page.on('request',request=>{
@@ -29,6 +48,7 @@ async function playAt(width){
   const response=await page.goto(base+'/',{waitUntil:'domcontentloaded'});
   assert.equal(response.status(),200,'portfolio homepage must exist');
   assert.ok((await page.locator('#hero-heading').innerText()).includes('OPENS A WORLD'));
+  assert.equal(await page.locator('.hero-buttons a.primary[href="play/"]').count(),1,'public Play link must be present');
   await page.locator('.hero-buttons a.primary[href="play/"]').click();
   await page.waitForURL(/\/play\/$/);
   assert.equal(await page.locator('meta[name="keystoria-browser-edition"]').getAttribute('content'),'true');
