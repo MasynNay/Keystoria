@@ -14,7 +14,7 @@ The user reported that Speed Lab was **unusable due to mobile lag**. [PR #23](ht
 
 ## Mobile keyboard usability follow-up
 
-After [PR #23](https://github.com/MasynNay/Keystoria/pull/23), the user confirmed mobile Speed Lab performance was **much better**, but the native keyboard lacked suggestions and autocorrect. New native keyboard assist work enables those device features for phone word drills by default, with an exact-typing toggle and clearly separated score labels. This follow-up must pass its new browser tests and Pages CI before it is called shipped. **Real mobile keyboards are still not testable via Chromium automation.** Check the actual phone's keyboard settings and test the feature on iOS/Android, and keep issue #11 open.
+After [PR #23](https://github.com/MasynNay/Keystoria/pull/23), the user confirmed mobile Speed Lab performance was **much better**, but the native keyboard lacked suggestions and autocorrect. New native keyboard assist work enables those device features for phone word drills by default, with an exact-typing toggle and clearly separated score labels. This follow-up shipped in [PR #24](https://github.com/MasynNay/Keystoria/pull/24), passed six PR test suites, and [production Pages deployment 43150052557](https://github.com/MasynNay/Keystoria/actions/runs/43150052557) succeeded. **Real mobile keyboards are still not testable via Chromium automation.** Check the actual phone's keyboard settings and test the feature on iOS/Android, and keep issue #11 open.
 
 ## Release state at this checkpoint
 
