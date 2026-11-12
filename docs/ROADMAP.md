@@ -1,6 +1,6 @@
 # Keystoria development roadmap
 
-**Last reviewed:** November 8, 2026  
+**Last reviewed:** November 11, 2026  
 **Status:** Actively maintained portfolio project; upcoming items are planned work, **not completed features**.  
 **Play the browser edition:** https://keystoria.masynnay.com/play/  
 **Tracked work:** https://github.com/MasynNay/Keystoria/issues
@@ -24,7 +24,7 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 ### 1. Mobile-first gameplay redesign (high priority)
 **Tracking:** [Issue #11 — Comfortable typing with the phone keyboard](https://github.com/MasynNay/Keystoria/issues/11)  
 **Why:** A responsive layout is not enough for a typing game: the phone's software keyboard can obscure the prompt, steal much of the screen, and make controls difficult to reach.  
-**Status:** **In progress** in [draft PR #12](https://github.com/MasynNay/Keystoria/pull/12), with [passing Chromium mobile regression tests](https://github.com/MasynNay/Keystoria/actions/runs/42551764690); **not shipped**. Real iOS/Android keyboard checks remain, and release follows the scheduled numpad PR #8.  
+**Status:** **In progress** in [draft PR #12](https://github.com/MasynNay/Keystoria/pull/12), with [passing Chromium mobile regression tests](https://github.com/MasynNay/Keystoria/actions/runs/42551764690); **not shipped**. Real iOS/Android keyboard checks remain, and integration must be rebased against merged numpad PR #8, followed by fresh CI and real-device testing.  
 **First fixes:** Keep the active word and input visible together above the virtual keyboard; preserve focus as words advance; offer large touch-accessible submit, skip, and pause buttons; collapse secondary information while typing; avoid scroll jumps and hidden controls as the keyboard opens/closes.  
 **Follow-up:** Evaluate an optional one-word or short-phrase mobile presentation for Lyric Lab and Speed Lab, including numeric practice. Keep existing desktop gameplay intact.  
 **Exit criteria:** Lyric Lab, Speed Lab, and Field Academy can be completed without a physical keyboard; verify real iOS Safari and Android Chrome software keyboards in addition to automated narrow-viewport tests. Test portrait, landscape, safe areas, 15 themes, assistive technology, and timing/scoring behavior. Do not claim native-keyboard compatibility from browser-emulation screenshots alone.
@@ -42,44 +42,32 @@ Shipped refers to code merged and/or a GitHub Pages deployment—not a claim tha
 **Exit criteria:** Clear loading, timeout, empty-result, blocked-media and rate-limit states; stale requests do not replace newer searches; built-in demo remains usable; meaningful automated fallback tests.
 
 ### 4. Speed Lab numpad number-entry challenge
-**Tracking:** [Issue #6 — Numpad typing game](https://github.com/MasynNay/Keystoria/issues/6) · [Draft PR #8](https://github.com/MasynNay/Keystoria/pull/8)  
+**Tracking:** [Issue #6 — Numpad typing game](https://github.com/MasynNay/Keystoria/issues/6) · [PR #8](https://github.com/MasynNay/Keystoria/pull/8)  
 **Why:** Number entry is a distinct skill in finance, administration, and data-entry jobs.  
-**Status:** **In development**, with an independently scheduled release review; not yet publicly shipped.  
+**Status:** **Merged into main** at [92e8bda](https://github.com/MasynNay/Keystoria/commit/92e8bda120e7520f0a9ac8556e5660d9add27b86) after passing [CI run 42661101795](https://github.com/MasynNay/Keystoria/actions/runs/42661101795). Production Pages deployment has not been independently verified; public shipment remains unconfirmed.  
 **Exit criteria:** Timed digit drills, correct numeric speed/accuracy units, optional separators, local history, accessible desktop/mobile interaction, and verified CI before publication.
 
 ### 5. Industry-specific Speed Lab vocabulary
-**Tracking:** [Issue #7 — Professional vocabulary packs](https://github.com/MasynNay/Keystoria/issues/7)  
+**Tracking:** [Issue #7 — Professional vocabulary packs](https://github.com/MasynNay/Keystoria/issues/7) (canonical tracker; [#10](https://github.com/MasynNay/Keystoria/issues/10) overlaps and should be consolidated without losing requirements)  
 **Why:** People in legal services, education, government, healthcare, finance, hospitality, and IT should practice words relevant to their work.  
 **Status:** **Planned**.  
 **Exit criteria:** Curated, non-sensitive vocabulary packs, clear category controls, reliable generation, and accurate score/history labels without real client, patient, or student data.
 
-### 6. Speed Lab: numpad number-entry challenge
-**Tracking:** [Issue #6 — Numpad typing game](https://github.com/MasynNay/Keystoria/issues/6)  
-**Why:** Number entry is a distinct workplace skill, especially for finance, records, data entry, and administrative roles.  
-**Status:** **In development on a feature branch**; not yet publicly shipped.  
-**Exit criteria:** A dedicated numeric drill with live feedback, digit-based scoring, local history, responsive UI, and passing browser/unit tests.
-
-### 7. Speed Lab: industry-specific word banks
-**Tracking:** [Issue #7 — Professional vocabulary packs](https://github.com/MasynNay/Keystoria/issues/7)  
-**Why:** Players in schools, law firms, government, healthcare, and other workplaces should be able to practice language they actually use.  
-**Status:** **Planned**.  
-**Exit criteria:** Carefully curated vocabulary groups, reliable word generation, accessibility, and appropriate metrics for each group.
-
 ## Next — accessibility and architecture
 
-### 6. Keyboard-first accessibility review
+### Keyboard-first accessibility review
 **Tracking:** [Issue #3 — Accessibility audit](https://github.com/MasynNay/Keystoria/issues/3)  
 **Why:** Players should be able to navigate the desktop experience without a mouse or motion-heavy effects. Mobile-specific ergonomics are tracked separately in issue #11.  
 **Exit criteria:** Focus, announcements, contrast, keyboard navigation, and reduced-motion support pass a documented checklist across all available themes.
 
-### 7. Secure public story-mode feasibility study
+### Secure public story-mode feasibility study
 **Tracking:** [Issue #4 — Co-op hosting architecture](https://github.com/MasynNay/Keystoria/issues/4)  
 **Why:** GitHub Pages cannot host a persistent Python/WebSocket backend, and public co-op rooms require security and operational work.  
 **Exit criteria:** Document hosting costs, WSS/TLS, rate limits, room expiration, reconnect behavior, single-worker constraints, and monitoring. Run a small proof of concept first. **No public co-op launch is committed.**
 
 ## Later — meaningful long-term progression
 
-### 8. Personal practice goals and useful insights
+### Personal practice goals and useful insights
 **Tracking:** [Issue #5 — Practice goals and progression](https://github.com/MasynNay/Keystoria/issues/5)  
 **Why:** Useful learning feedback goes beyond a streak or score.  
 **Status:** **Concept**.  
