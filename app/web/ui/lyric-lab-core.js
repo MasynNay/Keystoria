@@ -214,3 +214,26 @@ export async function searchTimedLyrics(query,{fetcher=fetch,signal,timeoutMs=12
    if(abortParent)signal?.removeEventListener('abort',abortParent);
  }
 }
+
+/** Local-server video matching. The public static edition never calls it. */
+export async function resolveLocalVideoMatch(track,{fetcher=fetch,signal,timeoutMs=10000}={}){
+ const abortError=()=>Object.assign(new Error('Video lookup cancelled.'),{name:'AbortError'});
+ if(signal?.aborted)throw abortError();
+ const params=new URLSearchParams({title:String(track?.trackName||''),artist:String(track?.artistName||''),duration:String(track?.duration||0)});
+ const own=new AbortController();let timer,abortParent;
+ const deadline=new Promise((_,reject)=>{timer=setTimeout(()=>{
+  reject(new Error('Video matching timed out. Connect a YouTube link manually or practice silently.'));
+  own.abort();
+ },Math.max(20,Math.min(30000,Number.isFinite(+timeoutMs)?+timeoutMs:10000)));});
+ const cancelled=new Promise((_,reject)=>{if(!signal)return;abortParent=()=>{reject(abortError());own.abort();};
+  signal.addEventListener('abort',abortParent,{once:true});if(signal.aborted)abortParent();});
+ const lookup=(async()=>{
+  const response=await fetcher('/api/music/resolve?'+params.toString(),{signal:own.signal});
+  if(!response.ok)throw new Error('Video matching is unavailable. Connect a YouTube link manually or practice silently.');
+  try{return await response.json();}
+  catch{throw new Error('Video matching returned unreadable data. Connect a YouTube link manually.');}
+ })();
+ try{return await Promise.race([lookup,deadline,cancelled]);}
+ catch(error){if(error instanceof TypeError)throw new Error('Cannot reach video matching. Connect a YouTube link manually.');throw error;}
+ finally{clearTimeout(timer);if(abortParent)signal?.removeEventListener('abort',abortParent);}
+}

@@ -10,6 +10,8 @@ on:
       - 'site/play/assets/ui/lyric-lab-controller.js'
       - 'app/tests/test_lyric_provider.mjs'
       - 'scripts/test-lyric-recovery.mjs'
+      - 'scripts/test-lyric-races.mjs'
+      - 'app/tests/test_video_match.mjs'
   pull_request:
     branches: [main]
     paths:
@@ -20,6 +22,8 @@ on:
       - 'site/play/assets/ui/lyric-lab-controller.js'
       - 'app/tests/test_lyric_provider.mjs'
       - 'scripts/test-lyric-recovery.mjs'
+      - 'scripts/test-lyric-races.mjs'
+      - 'app/tests/test_video_match.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -37,7 +41,7 @@ jobs:
           node --check app/web/ui/lyric-lab-core.js
           node --check site/play/assets/ui/lyric-lab-core.js
           node --check site/play/assets/ui/lyric-lab-controller.js
-          node --test app/tests/test_lyric_provider.mjs app/tests/test_lyric_word_feedback.mjs
+          node --test app/tests/test_lyric_provider.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_video_match.mjs
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
       - name: Install Chromium
         run: |
@@ -48,4 +52,6 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/keystoria-lyric.log 2>&1 &
           curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8765/play/ >/dev/null
       - name: Exercise provider failures and offline fallback
-        run: node scripts/test-lyric-recovery.mjs
+        run: |
+          node scripts/test-lyric-recovery.mjs
+          node scripts/test-lyric-races.mjs
