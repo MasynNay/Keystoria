@@ -82,5 +82,5 @@
 @media(prefers-reduced-motion:reduce) {
   .typing-feedback .type-char.current, .typing-feedback .type-end-caret { animation:none; }
 }
-body.reduced-motion .typing-feedback .type-char.current,
-body.reduced-motion .typing-feedback .type-end-caret { animation:none; }
+body.reduce-motion .typing-feedback .type-char.current,
+body.reduce-motion .typing-feedback .type-end-caret { animation:none; }

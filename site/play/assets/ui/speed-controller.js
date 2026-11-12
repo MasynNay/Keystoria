@@ -84,6 +84,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     saveSpeedResult(session.result);
     playSound('success');
     onRender();
+    requestAnimationFrame(()=>node('speed-results-heading')?.focus({preventScroll:true}));
   }
 
   function tick() {

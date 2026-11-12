@@ -1,3 +1,12 @@
+## [Unreleased] — Accessible navigation and motion controls (issue #3)
+
+- Add keyboard-visible Skip to main content links and persistent main landmarks for the home screen and every playable mode.
+- Make completed Speed Lab results a live status and return keyboard focus to the completion heading, so screen reader users do not lose their place when the typing field is replaced.
+- Correct the explicit Reduce Motion class selector for typing carets and provide strong focus outlines for textareas and selection controls.
+- Add Chromium checks at 320px, 390px and desktop widths for navigation, score feedback, motion and basic skip-link contrast.
+- Document assistive-technology, contrast and real-phone checks that cannot be verified by browser emulation.
+- Development candidate only until release CI passes and GitHub Pages deployment is verified.
+
 ## [Feature milestone] — Lyric Lab silent fallback — 2026-11-11 (America/Denver)
 
 - Add a direct **PRACTICE WITHOUT VIDEO** control when a track's YouTube player is blocked, unavailable or unwanted.

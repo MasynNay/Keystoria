@@ -279,6 +279,9 @@ function render() {
  if (layout === "home" && !state.modal) {
    const status=$("#header-status"); if(status) status.textContent=state.online?"SERVER ONLINE":"CONNECTING";
  }
+ // Keep a single keyboard-accessible main landmark across route rerenders.
+ const landmark=app.querySelector('main');
+ if(landmark){landmark.id='app-main';landmark.tabIndex=-1;}
  document.body.classList.toggle("modal-open", Boolean(state.modal));
  if (state.modal) {
    const old = $(".modal-backdrop");

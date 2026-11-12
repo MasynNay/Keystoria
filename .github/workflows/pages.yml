@@ -49,6 +49,7 @@ jobs:
           node scripts/test-vocabulary-browser.mjs
           node scripts/test-lyric-races.mjs
           node scripts/test-dialog-keyboard.mjs
+          node scripts/test-navigation-accessibility.mjs
 
   deploy:
     needs: browser-regression
