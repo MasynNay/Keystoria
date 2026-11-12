@@ -26,6 +26,7 @@ node scripts/test-release-browser.mjs
 node scripts/test-release-negative.mjs
 node scripts/test-vocabulary-browser.mjs
 node scripts/test-lyric-recovery.mjs
+node scripts/test-dialog-keyboard.mjs
 ```
 
 ## What the negative controls prove

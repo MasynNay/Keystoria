@@ -1,3 +1,10 @@
+## [Unreleased] — Keyboard-accessible dialog behavior (issue #3)
+
+- Trap Tab/Shift+Tab inside an active dialog so keyboard users cannot tab behind a modal.
+- Return focus to the invoking control, or the accessible settings shortcut, after Escape or Close.
+- Regression-test initial welcome and all-theme settings dialogs at phone and desktop widths.
+- This remains a development candidate until CI, merge, and Pages deployment verification succeed.
+
 ## [Unreleased] — Lyric Lab video match resilience (issue #2)
 
 - Bound local Python video resolution requests and JSON parsing; guide manual YouTube linking on timeout and failure.

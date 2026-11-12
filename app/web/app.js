@@ -356,7 +356,19 @@ async function copy(text, success) {
  try {await navigator.clipboard.writeText(text);toast(success,"success");}
  catch {toast("Clipboard unavailable. Copy the room code on screen.","error");}
 }
-function showModal(which){state.modal=which;render();}
+let modalReturnAction=null;
+function showModal(which){
+ // Preserve the invoking control across a dialog even if the view is repainted.
+ if(!state.modal)modalReturnAction=document.activeElement?.dataset?.action||null;
+ state.modal=which;render();
+}
+function dismissModal(){
+ const action=modalReturnAction;
+ modalReturnAction=null;
+ state.modal=null;render();
+ const origin=action?app.querySelector('[data-action="'+action+'"]'):null;
+ (origin||app.querySelector('.prefs-toggle'))?.focus({preventScroll:true});
+}
 function resetHome(){sessionStorage.removeItem("panic.session");location.href="/";}
 
 app.addEventListener("click",event=>{
@@ -399,7 +411,7 @@ app.addEventListener("click",event=>{
   case "speed-home":speedController.close();showModal("welcome");break;
   case "create":showModal("create");break;
   case "show-join":showModal("join");break;
-  case "close-modal":state.modal=null;render();break;
+  case "close-modal":dismissModal();break;
   case "edit-mission":state.modal=null;render();document.getElementById("operations")?.scrollIntoView({behavior:"smooth"});break;
   case "toggle-missions":state.missionsExpanded=!state.missionsExpanded;state.layout="";render();document.getElementById("operations")?.scrollIntoView({block:"start",behavior:"instant"});break;
   case "choose-mission":setTheme(item.dataset.mission);state.layout="";render();break;
@@ -579,7 +591,20 @@ function submitTyping(value){
 }
 app.addEventListener("keydown",event=>{
  if(state.lyric && lyricController.handleKeydown(event))return;
- if (event.key === "Escape" && state.modal) { event.preventDefault(); state.modal=null; render(); return; }
+ if(state.modal && event.key==='Tab'){
+  const dialog=app.querySelector('.modal-backdrop [role="dialog"]');
+  if(dialog){
+   const focusable=[...dialog.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+    .filter(element=>element.getClientRects().length>0&&!element.closest('[hidden]'));
+   if(focusable.length){
+    const first=focusable[0],last=focusable.at(-1),current=document.activeElement;
+    if(!dialog.contains(current)){event.preventDefault();(event.shiftKey?last:first).focus();return;}
+    if(event.shiftKey&&current===first){event.preventDefault();last.focus();return;}
+    if(!event.shiftKey&&current===last){event.preventDefault();first.focus();return;}
+   }
+  }
+ }
+ if(event.key==='Escape'&&state.modal){event.preventDefault();dismissModal();return;}
  if (state.speed && event.ctrlKey && event.key === "Enter") {
    event.preventDefault();speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});return;
  }
@@ -604,7 +629,7 @@ app.addEventListener("keydown",event=>{
    else submitLesson();
    return;
  }
- if(event.key === "Escape" && state.modal){state.modal=null;render();return;}
+
  if(event.key === "/" && state.room?.phase === "playing" && !["INPUT","TEXTAREA"].includes(event.target.tagName)){
    event.preventDefault(); $("#task-input")?.focus(); return;
  }
