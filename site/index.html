@@ -36,7 +36,7 @@
       <div class="modes">
         <article class="mode mode-story"><span class="mode-index">01 / IMMERSIVE</span><div class="mode-icon" aria-hidden="true">✧</div><h3>Story Worlds</h3><p>Twenty-four original adventures with illustrated scenes and cooperative typing. Run the local server to play solo with ECHO or invite a friend by room code.</p><span class="mode-foot">LOCAL STORY CAMPAIGN <b>→</b></span></article>
         <article class="mode mode-music"><span class="mode-index">02 / RHYTHMIC</span><div class="mode-icon" aria-hidden="true">♫</div><h3>Lyric Lab</h3><p>Type along with timed lyrics. A flashing next-letter cue, color-coded accuracy, and an original offline demo make rhythm practice feel intuitive.</p><span class="mode-foot">MUSIC + TYPING <b>→</b></span></article>
-        <article class="mode mode-speed"><span class="mode-index">03 / FOCUSED</span><div class="mode-icon" aria-hidden="true">⌨</div><h3>Speed Lab</h3><p>Choose a 15-, 30-, 60-, or 120-second typing challenge with live feedback, WPM, accuracy, and personal-best tracking.</p><span class="mode-foot">PURE TYPING PRACTICE <b>→</b></span></article>
+        <article class="mode mode-speed"><span class="mode-index">03 / FOCUSED</span><div class="mode-icon" aria-hidden="true">⌨</div><h3>Speed Lab</h3><p>Choose a 15-, 30-, 60-, or 120-second typing challenge. Practice words or numeric Numpad drills with live feedback, WPM or CPM, accuracy, and local records.</p><span class="mode-foot">PURE TYPING PRACTICE <b>→</b></span></article>
         <article class="mode mode-academy"><span class="mode-index">04 / PRACTICAL</span><div class="mode-icon" aria-hidden="true">{ }</div><h3>Field Academy</h3><p>Learn real command patterns across Windows, macOS, and Linux inside a safe teaching simulation. Nothing is executed on your device.</p><span class="mode-foot">SKILLS + INTERACTION <b>→</b></span></article>
       </div>
     </section>
@@ -49,20 +49,20 @@
     <section class="section wrap roadmap-section" id="roadmap" aria-labelledby="roadmap-heading">
       <div class="section-header"><div><p class="eyebrow">04 / WHAT COMES NEXT</p><h2 id="roadmap-heading">BUILT TO<br><em>KEEP GROWING.</em></h2></div><p>A public record of what has shipped, what's planned, and the engineering work behind each improvement.</p></div>
       <div class="roadmap-release" aria-label="Recently shipped">
-        <div><span class="roadmap-kicker">SHIPPED · NOVEMBER 2026</span><h3>From concept to playable portfolio</h3><p>Keystoria v0.24 brought the rebrand and public GitHub Pages deployment. The browser edition then opened Lyric Lab, Speed Lab, and Field Academy with the original game interface.</p></div>
-        <a href="https://github.com/MasynNay/Keystoria/commit/9b4362c448fdb3b87befc61738ec2a85f6011a0a" target="_blank" rel="noopener noreferrer" aria-label="View the browser edition release commit">VIEW RELEASE COMMIT ↗</a>
+        <div><span class="roadmap-kicker">SHIPPED · NOVEMBER 2026</span><h3>Mobile practice and Numpad now live</h3><p>The Numpad challenge shipped November 9. Mobile input cues and touch controls for Speed Lab, Lyric Lab, and Field Academy followed through verified GitHub Pages deployment November 11 (Mountain Time). Real phone keyboard tests remain on the roadmap.</p></div>
+        <a href="https://github.com/MasynNay/Keystoria/commit/042148c5d452fc96307c49ded1db4ce75f410322" target="_blank" rel="noopener noreferrer" aria-label="View mobile practice release commit">VIEW RELEASE COMMIT ↗</a>
       </div>
       <div class="roadmap-grid">
         <article class="roadmap-card roadmap-card--priority">
-          <div class="roadmap-top"><span class="roadmap-phase">01 / MOBILE FIRST</span><span class="roadmap-state">IN DEVELOPMENT</span></div>
+          <div class="roadmap-top"><span class="roadmap-phase">01 / MOBILE FIRST</span><span class="roadmap-state">PHASE 1 SHIPPED</span></div>
           <h3>Make typing feel natural on a phone.</h3>
-          <p>Redesign Lyric Lab, Speed Lab, and Field Academy around real software keyboards: keep the current prompt visible, avoid scroll jumps, and offer thumb-friendly actions instead of relying on desktop shortcuts.</p>
+          <p>Input-adjacent prompts, mobile touch actions, and viewport-aware scrolling are now in the browser edition. Physical iPhone/Android keyboard checks, landscape details, and accessibility refinements remain open.</p>
           <div class="roadmap-links"><a href="https://github.com/MasynNay/Keystoria/issues/11" target="_blank" rel="noopener noreferrer">Mobile gameplay redesign ↗</a><a href="https://github.com/MasynNay/Keystoria/issues/3" target="_blank" rel="noopener noreferrer">Accessibility companion ↗</a></div>
         </article>
         <article class="roadmap-card">
-          <div class="roadmap-top"><span class="roadmap-phase">02 / RELIABILITY</span><span class="roadmap-state">PLANNED</span></div>
+          <div class="roadmap-top"><span class="roadmap-phase">02 / RELIABILITY</span><span class="roadmap-state">IN PROGRESS</span></div>
           <h3>Make every session reliable.</h3>
-          <p>Extend automated browser testing and improve Lyric Lab recovery when lyrics, media, or network services are unavailable.</p>
+          <p>Numpad, Mobile, and 15-theme browser tests now run for relevant pull requests. Next: broader release gates and better Lyric Lab recovery when media or network services fail.</p>
           <div class="roadmap-links"><a href="https://github.com/MasynNay/Keystoria/issues/1" target="_blank" rel="noopener noreferrer">CI browser tests ↗</a><a href="https://github.com/MasynNay/Keystoria/issues/2" target="_blank" rel="noopener noreferrer">Lyric Lab resilience ↗</a></div>
         </article>
         <article class="roadmap-card">
@@ -72,9 +72,9 @@
           <div class="roadmap-links"><a href="https://github.com/MasynNay/Keystoria/issues/3" target="_blank" rel="noopener noreferrer">Accessibility ↗</a><a href="https://github.com/MasynNay/Keystoria/issues/4" target="_blank" rel="noopener noreferrer">Co-op feasibility ↗</a></div>
         </article>
         <article class="roadmap-card">
-          <div class="roadmap-top"><span class="roadmap-phase">04 / SPEED LAB</span><span class="roadmap-state">IN DEVELOPMENT</span></div>
+          <div class="roadmap-top"><span class="roadmap-phase">04 / SPEED LAB</span><span class="roadmap-state">NEXT / PLANNED</span></div>
           <h3>Practice the skills your work needs.</h3>
-          <p>Build a dedicated numpad challenge with meaningful numeric speed metrics, then expand word banks for schools, legal offices, government, healthcare, and other professions.</p>
+          <p>The Numpad challenge is shipped with numeric CPM scoring. Next: carefully curated practice vocabulary for schools, legal offices, government, healthcare, finance, and hospitality.</p>
           <div class="roadmap-links"><a href="https://github.com/MasynNay/Keystoria/issues/6" target="_blank" rel="noopener noreferrer">Numpad typing ↗</a><a href="https://github.com/MasynNay/Keystoria/issues/7" target="_blank" rel="noopener noreferrer">Industry word banks ↗</a></div>
         </article>
         <article class="roadmap-card">
