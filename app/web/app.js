@@ -1,7 +1,7 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js";
-import { speedTemplate } from "./ui/speed-view.js";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.27.1";
+import { speedTemplate } from "./ui/speed-view.js?v=0.28.0";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.28.0";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js";
 import { paintTypingFeedback } from "./ui/typing-feedback.js";
 import { sound, toggleSound, isSoundOn } from "./sound.js";
@@ -408,6 +408,7 @@ app.addEventListener("click",event=>{
   case "lyric-open":lyricController.open();break;
   case "speed-open":speedController.open();break;
   case "speed-space":speedController.insertSpace();break;
+  case "speed-assist":speedController.toggleKeyboardAssist();break;
   case "speed-duration":if(state.speed)speedController.open({pack:state.speed.pack,seconds:Number(item.dataset.seconds)});break;
   case "speed-pack":if(state.speed)speedController.open({pack:item.dataset.pack,seconds:state.speed.seconds});break;
   case "speed-restart":if(state.speed)speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});break;

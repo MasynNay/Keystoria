@@ -1,3 +1,10 @@
+## [Unreleased] — Native keyboard help for mobile Speed Lab (issue #11)
+
+- Phone word drills default to native keyboard assistance where supported (spellcheck, device predictions and autocorrect).
+- A clearly labeled, one-tap Keyboard Help switch disables assistance for exact typing and preserves the input node/text and stored preference.
+- Numpad and desktop remain in exact typing; score history and completion states label assisted runs separately, including toggles during the session.
+- Browser regression tests check the markup, mode switching, retained input, preference persistence and honest scoring labels. Actual keyboard suggestions require device-level testing.
+
 ## [Feature milestone] — Speed Lab mobile latency hotfix — 2026-11-11 (America/Denver)
 
 - Replace the thousands-of-elements mobile Speed Lab display with a 220-character rolling view. Keep the full 700-word exercise in memory for correct scoring, Numpad separators, and long 120-second sessions.

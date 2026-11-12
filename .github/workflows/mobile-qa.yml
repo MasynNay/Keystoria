@@ -9,6 +9,7 @@ on:
       - 'app/tests/test_mobile_typing.mjs'
       - 'scripts/test-mobile-typing.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
+      - 'scripts/test-speed-keyboard-assist.mjs'
       - 'scripts/test-numpad-browser.mjs'
   pull_request:
     branches: [main]
@@ -19,6 +20,7 @@ on:
       - 'app/tests/test_mobile_typing.mjs'
       - 'scripts/test-mobile-typing.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
+      - 'scripts/test-speed-keyboard-assist.mjs'
       - 'scripts/test-numpad-browser.mjs'
   workflow_dispatch:
 permissions:
@@ -60,4 +62,5 @@ jobs:
         run: |
           node scripts/test-mobile-typing.mjs
           node scripts/test-speed-mobile-performance.mjs
+          node scripts/test-speed-keyboard-assist.mjs
           node scripts/test-numpad-browser.mjs
