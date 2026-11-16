@@ -16,6 +16,10 @@ The user reported that Speed Lab was **unusable due to mobile lag**. [PR #23](ht
 
 After [PR #23](https://github.com/MasynNay/Keystoria/pull/23), the user confirmed mobile Speed Lab performance was **much better**, but the native keyboard lacked suggestions and autocorrect. New native keyboard assist work enables those device features for phone word drills by default, with an exact-typing toggle and clearly separated score labels. This follow-up shipped in [PR #24](https://github.com/MasynNay/Keystoria/pull/24), passed six PR test suites, and [production Pages deployment 43150052557](https://github.com/MasynNay/Keystoria/actions/runs/43150052557) succeeded. **Real mobile keyboards are still not testable via Chromium automation.** Check the actual phone's keyboard settings and test the feature on iOS/Android, and keep issue #11 open.
 
+## Current roadmap feature in progress — Practice Compass
+
+Following the co-op hosting proposal PR #25 and accessibility reflow regression PR #26, a lightweight #5 Practice Compass pilot is being tested. It offers progress summaries only for comparable Speed Lab records (same category/duration/input mode), an on-device 90/95/98% accuracy goal, manual JSON export and confirmation-protected local history deletion. Storage remains capped at 25. Do not claim it shipped until the new PR is merged and Pages deployment succeeds; do not close issue #5 until real user feedback is obtained.
+
 ## Release state at this checkpoint
 
 - All development PRs from tonight through [#22](https://github.com/MasynNay/Keystoria/pull/22) have been merged into `main`; **no open pull requests** were present at the checkpoint.

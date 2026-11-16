@@ -1,0 +1,67 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {chromium} from 'playwright';
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const errors=[];
+try {
+ for(const width of [390,1440]){
+  const mobile=width<800;
+  const context=await browser.newContext({viewport:{width,height:844},isMobile:mobile,hasTouch:mobile,acceptDownloads:true});
+  const page=await context.newPage();
+  page.setDefaultTimeout(12000);
+  page.on('pageerror',e=>errors.push(String(e)));
+  await page.goto('http://127.0.0.1:8765/play/',{waitUntil:'domcontentloaded'});
+  await page.locator('#app .brand-name').waitFor();
+  const welcome=page.locator('.welcome-continue');
+  if(await welcome.count()&&await welcome.isVisible())await welcome.click();
+  await page.locator('[data-action="speed-open"]').first().click();
+  const insight=page.locator('#speed-practice-insights');
+  const input=page.locator('#speed-input');
+  assert.equal(await insight.getAttribute('data-matches'),'0','new visitors have no comparable progress yet');
+  assert.match(await insight.innerText(),/Finish a run/);
+  await page.evaluate(()=>{window.__speedInputNode=document.getElementById('speed-input')});
+  await input.fill('a');
+  await page.locator('[data-action="speed-goal"][data-goal="90"]').click();
+  assert.equal(await input.inputValue(),'a','goal change must not clear an active session');
+  assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__speedInputNode),true,'goal change must not replace focused input');
+  assert.equal(await insight.locator('[data-goal="90"]').getAttribute('aria-pressed'),'true');
+  const reference=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+  await input.fill(reference);
+  await page.locator('#speed-results-heading').waitFor();
+  assert.equal(await insight.getAttribute('data-matches'),'1','saved run appears as a comparable insight');
+  assert.match(await insight.innerText(),/AVERAGE ACCURACY/);
+
+  // Export is an intentional user gesture; verify the file is valid JSON,
+  // without making network requests or sending the saved record elsewhere.
+  const [download]=await Promise.all([
+   page.waitForEvent('download'),
+   page.locator('[data-action="speed-export"]').click(),
+  ]);
+  assert.equal(download.suggestedFilename(),'keystoria-speed-results.json');
+  const exportData=JSON.parse(await readFile(await download.path(),'utf8'));
+  assert.equal(exportData.format,'keystoria.speed.history');
+  assert.equal(exportData.records.length,1);
+  assert.equal(exportData.records[0].pack,'everyday');
+
+  // Clearing needs explicit confirmation; cancelling must retain the score.
+  page.once('dialog',dialog=>dialog.dismiss());
+  await page.locator('[data-action="speed-clear"]').click();
+  assert.equal(await insight.getAttribute('data-matches'),'1');
+  page.once('dialog',dialog=>dialog.accept());
+  await page.locator('[data-action="speed-clear"]').click();
+  assert.equal(await insight.getAttribute('data-matches'),'0');
+  assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
+  assert.equal(await page.locator('#speed-history-panel .speed-empty').count(),1);
+
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#app .brand-name').waitFor();
+  const welcomeAgain=page.locator('.welcome-continue');
+  if(await welcomeAgain.count()&&await welcomeAgain.isVisible())await welcomeAgain.click();
+  await page.locator('[data-action="speed-open"]').first().click();
+  assert.equal(await page.locator('[data-action="speed-goal"][data-goal="90"]').getAttribute('aria-pressed'),'true','accuracy goal persists independently of result history');
+  assert.equal(await page.locator('#speed-practice-insights').getAttribute('data-matches'),'0');
+  await context.close();
+ }
+ assert.deepEqual(errors,[],'practice progress browser actions must be error-free');
+ console.log('PASS: private practice insights, accuracy goal, JSON export, confirmed clear, and active typing continuity on phone/desktop viewports');
+}finally{await browser.close();}

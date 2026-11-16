@@ -1,6 +1,6 @@
 # Keystoria development roadmap
 
-**Last reviewed:** November 11, 2026  
+**Last reviewed:** November 16, 2026  
 **Status:** Actively maintained portfolio project; upcoming items are planned work, **not completed features**.  
 **Play the browser edition:** https://keystoria.masynnay.com/play/  
 **Tracked work:** https://github.com/MasynNay/Keystoria/issues
@@ -18,6 +18,12 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 **Shipped:** Default-on **Keyboard Help** for phone word drills, with native spelling/autocorrect requests, a one-tap Exact Typing opt-out, and distinct Assisted score labels. [PR #24](https://github.com/MasynNay/Keystoria/pull/24) passed [mobile browser QA](https://github.com/MasynNay/Keystoria/actions/runs/43149820811) and the [production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43150052557). The user confirmed prior mobile lag was **much better**, but has not yet verified this new keyboard help on the physical phone. Device-native suggestions remain dependent on system keyboard preferences. Numpad and desktop stay exact.
 
 **Important:** Browsers cannot force a disabled predictive keyboard or guarantee how keyboard vendors display suggestions. The game's toggle only requests native support. Keep [mobile issue #11](https://github.com/MasynNay/Keystoria/issues/11) open until real iOS Safari and Android Chrome testing.
+
+## Practice Compass pilot — local-first progression (#5)
+
+A first implementation is in the release pipeline: category/duration/input-mode-matched Speed Lab insights, last-five comparable run summary, adjustable on-device accuracy goal (90/95/98%), actionable accuracy-first feedback, and one-click JSON export/confirmed deletion for the existing bounded 25-result history. Assisted phone runs, exact desktop runs and Numpad CPM must never be compared as the same metric.
+
+Automated unit tests cover filters, storage failures, Numpad and history deletion; Playwright at phone and desktop widths covers actual controls, persistence, downloading, confirmed deletion and preservation of an active typing input. This is a **pilot**, not the completed long-term progression system; actual usability feedback and phone testing are still needed. See [issue #5](https://github.com/MasynNay/Keystoria/issues/5).
 
 ## Next session — prioritized execution plan
 

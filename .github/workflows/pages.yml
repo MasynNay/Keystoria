@@ -30,11 +30,12 @@ jobs:
           node --check scripts/test-release-browser.mjs
           node --check site/play/assets/app.js
           node --check app/web/app.js
-          node --test app/tests/test_lyric_word_feedback.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs app/tests/test_lyric_provider.mjs app/tests/test_video_match.mjs app/tests/test_theme_contrast.mjs
+          node --test app/tests/test_lyric_word_feedback.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs app/tests/test_lyric_provider.mjs app/tests/test_video_match.mjs app/tests/test_theme_contrast.mjs app/tests/test_speed_insights.mjs
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
           diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
           diff app/web/ui/speed-flow.js site/play/assets/ui/speed-flow.js
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
+          diff app/web/ui/speed-insights.js site/play/assets/ui/speed-insights.js
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
       - name: Install Playwright Chromium
         run: |
@@ -54,6 +55,7 @@ jobs:
           node scripts/test-navigation-accessibility.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-keyboard-assist.mjs
+          node scripts/test-speed-insights-browser.mjs
 
   deploy:
     needs: browser-regression
