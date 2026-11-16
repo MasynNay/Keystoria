@@ -1,26 +1,34 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 11, 2026 (America/Denver) — stable stopping point for the night.  
+**Checkpoint:** November 16, 2026 (America/Denver) — merged and verified production milestone.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## Most recent Speed Lab fix — November 11, 2026
+## Current November 16, 2026 milestone
+
+**Published feature:** [Practice Compass in PR #27](https://github.com/MasynNay/Keystoria/pull/27), passing [Mobile QA](https://github.com/MasynNay/Keystoria/actions/runs/43981317208) and [gated GitHub Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43981861050). Speed Lab offers local-only comparable session insights, accuracy goals, JSON export and confirmed history deletion, without replacing the native typing field. No remote storage was introduced; local history stays capped at 25.
+
+**Other merged work:** [PR #26](https://github.com/MasynNay/Keystoria/pull/26) adds keyboard input at narrow desktop widths, and [PR #25](https://github.com/MasynNay/Keystoria/pull/25) proposes local-only co-op hosting and security gates in [COOP-HOSTING-DECISION.md](../docs/COOP-HOSTING-DECISION.md). Neither certifies real device accessibility nor hosts multiplayer.
+
+**Next priorities:** Verify phone native keyboard prediction strip and full virtual-keyboard usability in [issue #11](https://github.com/MasynNay/Keystoria/issues/11); complete screen-reader and real zoom checks [#3](https://github.com/MasynNay/Keystoria/issues/3); obtain real feedback before expanding Practice Compass [#5](https://github.com/MasynNay/Keystoria/issues/5); review co-op threat model and security design before any public proof [#4](https://github.com/MasynNay/Keystoria/issues/4). All remain open. Keep the release honest: passing Chromium is not real iOS/Android QA.
+
+## Previous Speed Lab mobile fixes — November 11, 2026
 
 The user reported that Speed Lab was **unusable due to mobile lag**. [PR #23](https://github.com/MasynNay/Keystoria/pull/23) was merged, and [production GitHub Pages run 43148220125](https://github.com/MasynNay/Keystoria/actions/runs/43148220125) passed. A mobile-sized DOM window now renders no more than 220 characters from the full 700-word exercise, clock-only updates avoid redundant text/layout work, and the timer updates at 250ms. Full reference/scoring and desktop behavior are preserved; the new long-session browser QA passed.
 
-**First action when resuming:** Ask the user to retest **Speed Lab** on the same phone and browser, including typing for 30–60 seconds with the software keyboard open. If it remains laggy, investigate input-event duration and visualViewport scroll loops on a real device. **Issue #11 stays open** until actual mobile performance and keyboard behavior are verified. Do not substitute Chromium emulation for device testing.
+**Subsequent user feedback:** The user confirmed the Speed Lab lag was **much better**. The remaining open question is whether native keyboard predictions actually appear and typing stays usable during longer sessions. Do not substitute Chromium emulation for device testing.
 
 ## Mobile keyboard usability follow-up
 
 After [PR #23](https://github.com/MasynNay/Keystoria/pull/23), the user confirmed mobile Speed Lab performance was **much better**, but the native keyboard lacked suggestions and autocorrect. New native keyboard assist work enables those device features for phone word drills by default, with an exact-typing toggle and clearly separated score labels. This follow-up shipped in [PR #24](https://github.com/MasynNay/Keystoria/pull/24), passed six PR test suites, and [production Pages deployment 43150052557](https://github.com/MasynNay/Keystoria/actions/runs/43150052557) succeeded. **Real mobile keyboards are still not testable via Chromium automation.** Check the actual phone's keyboard settings and test the feature on iOS/Android, and keep issue #11 open.
 
-## Current roadmap feature in progress — Practice Compass
+## Practice Compass development history (now shipped)
 
-Following the co-op hosting proposal PR #25 and accessibility reflow regression PR #26, a lightweight #5 Practice Compass pilot is being tested. It offers progress summaries only for comparable Speed Lab records (same category/duration/input mode), an on-device 90/95/98% accuracy goal, manual JSON export and confirmation-protected local history deletion. Storage remains capped at 25. Do not claim it shipped until the new PR is merged and Pages deployment succeeds; do not close issue #5 until real user feedback is obtained.
+A lightweight Practice Compass pilot was shipped in [PR #27](https://github.com/MasynNay/Keystoria/pull/27), with production Pages deployment verified. It offers progress summaries only for comparable Speed Lab records (same category/duration/input mode), an on-device 90/95/98% accuracy goal, manual JSON export and confirmation-protected local history deletion. Storage remains capped at 25. Do not close issue #5 until real user feedback is obtained.
 
-## Release state at this checkpoint
+## Historical November 11 checkpoint (preserved for provenance)
 
 - All development PRs from tonight through [#22](https://github.com/MasynNay/Keystoria/pull/22) have been merged into `main`; **no open pull requests** were present at the checkpoint.
 - Last verified gated Pages release before this documentation checkpoint: [GitHub Actions run 43146026599](https://github.com/MasynNay/Keystoria/actions/runs/43146026599), conclusion **success** for commit `150333b913b6ea6002b1d351a4e57164549606d6`. The browser regression and deploy jobs both passed.

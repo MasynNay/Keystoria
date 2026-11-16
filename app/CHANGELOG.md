@@ -1,10 +1,15 @@
-## [Unreleased] — Practice Compass, local-only progress pilot (#5)
+## [Feature milestone] — Practice Compass local-only progress pilot — 2026-11-16 (America/Denver)
 
 - Add per-category/duration/input-mode Speed Lab insights: comparable runs, best WPM/CPM, average accuracy, and accuracy-first practice guidance.
 - Add optional 90/95/98% accuracy targets, saved only on this device; change goals without replacing the active input.
 - Provide explicit JSON result export and confirmation-protected deletion of up to 25 local Speed Lab records. Goals persist when results are cleared.
 - Keep phone Assisted, phone Exact, desktop Exact and Numpad scoring separate in insights.
-- Add pure storage/insights regression tests plus mobile/desktop Playwright browser tests for goal persistence, active typing continuity, export and deletion. Physical-device and user feedback are still required before wider progression work.
+- Added pure storage/insights regression tests plus mobile/desktop Playwright browser tests for goal persistence, active typing continuity, export and deletion. [PR #27](https://github.com/MasynNay/Keystoria/pull/27) merged after six successful checks, and [GitHub Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43981861050) succeeded. Physical-device and user feedback remain necessary before wider progression work.
+
+## [Documentation / QA milestone] — Co-op safety planning and Speed Lab reflow checks — 2026-11-16 (America/Denver)
+
+- [PR #25](https://github.com/MasynNay/Keystoria/pull/25) records a proposed local-only co-op hosting decision and necessary security/resource gates; no public multiplayer deployment.
+- [PR #26](https://github.com/MasynNay/Keystoria/pull/26) adds narrow desktop CSS viewport reflow typing/focus regression tests; these are not real zoom or assistive technology tests.
 
 ## [Feature milestone] — Native keyboard help for mobile Speed Lab — 2026-11-11 (America/Denver)
 
