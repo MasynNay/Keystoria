@@ -68,6 +68,11 @@ try{
   await page.locator('[data-action="speed-open"]').first().click();
   const input=page.locator('#speed-input');
   await input.focus();
+  // Exercise real keyboard input, not only programmatic focus. A narrow
+  // desktop viewport must keep the field editable after the first keystroke.
+  await page.keyboard.type('a');
+  assert.equal(await input.inputValue(),'a',
+   'Speed Lab accepts keyboard input at narrow desktop width '+width);
   assert.equal(await input.evaluate(el=>document.activeElement===el),true,
    'Speed Lab input retains keyboard focus at narrow desktop width '+width);
   const bounds=await input.evaluate(el=>({left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,viewport:document.documentElement.clientWidth}));
