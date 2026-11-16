@@ -12,6 +12,7 @@ on:
       - 'scripts/test-speed-keyboard-assist.mjs'
       - 'scripts/test-speed-insights-browser.mjs'
       - 'app/tests/test_speed_insights.mjs'
+      - 'app/tests/test_speed_history_restore.mjs'
       - 'scripts/test-numpad-browser.mjs'
   pull_request:
     branches: [main]
@@ -25,6 +26,7 @@ on:
       - 'scripts/test-speed-keyboard-assist.mjs'
       - 'scripts/test-speed-insights-browser.mjs'
       - 'app/tests/test_speed_insights.mjs'
+      - 'app/tests/test_speed_history_restore.mjs'
       - 'scripts/test-numpad-browser.mjs'
   workflow_dispatch:
 permissions:
@@ -48,7 +50,7 @@ jobs:
           node --check site/play/assets/ui/lyric-lab-controller.js
           node --check app/web/ui/training-view.js
           node --check site/play/assets/ui/training-view.js
-          node --test app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_numpad.mjs app/tests/test_speed_insights.mjs
+          node --test app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_numpad.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_history_restore.mjs
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js

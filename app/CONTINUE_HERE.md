@@ -6,6 +6,10 @@
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
+## In-progress local-first history portability milestone
+
+Practice Compass now has an export button, but the exported file was not restorable on a different phone or computer. A versioned RESTORE EXPORT flow is being developed with strict validation, replacement confirmation and release regressions. Keep [issue #5](https://github.com/MasynNay/Keystoria/issues/5) open. Do not describe the enhancement as shipped until PR merge and production Pages success.
+
 ## Current November 16, 2026 milestone
 
 **Published feature:** [Practice Compass in PR #27](https://github.com/MasynNay/Keystoria/pull/27), passing [Mobile QA](https://github.com/MasynNay/Keystoria/actions/runs/43981317208) and [gated GitHub Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43981861050). Speed Lab offers local-only comparable session insights, accuracy goals, JSON export and confirmed history deletion, without replacing the native typing field. No remote storage was introduced; local history stays capped at 25.
