@@ -1,7 +1,9 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js";
-import { speedTemplate } from "./ui/speed-view.js?v=0.28.0";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.29.0";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.28.0";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults } from "./ui/speed-insights.js";
+import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js";
 import { paintTypingFeedback } from "./ui/typing-feedback.js";
 import { sound, toggleSound, isSoundOn } from "./sound.js";
@@ -199,6 +201,14 @@ const speedController=createSpeedController({
   onRender:()=>{state.layout="";render();},
   playSound:sound,
 });
+
+function refreshSpeedInsights() {
+  if(!state.speed)return;
+  const pulse=document.getElementById("speed-practice-insights");
+  if(pulse)pulse.outerHTML=speedInsightsPanel(state.speed);
+  const history=document.getElementById("speed-history-panel");
+  if(history)history.innerHTML=speedHistoryPanel();
+}
 
 function render() {
  const r = state.room;
@@ -410,6 +420,33 @@ app.addEventListener("click",event=>{
   case "speed-open":speedController.open();break;
   case "speed-space":speedController.insertSpace();break;
   case "speed-assist":speedController.toggleKeyboardAssist();break;
+  case "speed-goal": {
+    const goal=Number(item.dataset.goal);
+    if(!state.speed||!saveAccuracyGoal(goal))break;
+    refreshSpeedInsights();
+    document.querySelector('[data-action="speed-goal"][data-goal="'+goal+'"]')?.focus({preventScroll:true});
+    break;
+  }
+  case "speed-export": {
+    const records=readSpeedHistory();
+    if(!records.length){toast("Complete a Speed Lab run before exporting results.","error");break;}
+    const json=JSON.stringify(exportSpeedResults(records),null,2);
+    const blob=new Blob([json],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement("a");
+    link.href=url;link.download="keystoria-speed-results.json";
+    document.body.appendChild(link);link.click();link.remove();
+    window.setTimeout(()=>URL.revokeObjectURL(url),3000);
+    toast("Speed Lab results exported from this device.");
+    break;
+  }
+  case "speed-clear": {
+    if(!window.confirm("Clear all saved Speed Lab results on this device? This cannot be undone."))break;
+    if(!clearSpeedResults()){toast("Could not clear saved results in this browser.","error");break;}
+    refreshSpeedInsights();
+    toast("Saved Speed Lab results cleared.");
+    break;
+  }
   case "speed-duration":if(state.speed)speedController.open({pack:state.speed.pack,seconds:Number(item.dataset.seconds)});break;
   case "speed-pack":if(state.speed)speedController.open({pack:item.dataset.pack,seconds:state.speed.seconds});break;
   case "speed-restart":if(state.speed)speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});break;

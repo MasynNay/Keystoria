@@ -1,6 +1,7 @@
 /** Stateless presentation for the solo Speed Lab. */
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -12,10 +13,35 @@ export function speedLibrary() {
   </section>`;
 }
 
-function historyPanel() {
+export function speedHistoryPanel() {
   const history = readSpeedHistory();
   if (!history.length) return `<div class="speed-empty">Your personal records appear here after your first completed run. Scores are kept on this device.</div>`;
   return `<div class="speed-history">${history.slice(0, 5).map(run => `<div><strong>${run.pack==="numpad"?Number(run.cpm??0):Number(run.wpm)} <small>${run.pack==="numpad"?"CPM":"WPM"}</small></strong><span>${safe(PACKS[run.pack]?.title || 'EVERYDAY')} · ${Number(run.seconds)}s</span><b>${Number(run.accuracy)}% accuracy · ${run.keyboardAssisted===true?"ASSISTED":"EXACT"}</b></div>`).join('')}</div>`;
+}
+
+export function speedInsightsPanel(session) {
+  const goal = readAccuracyGoal();
+  const pulse = summarizeSpeedPractice(readSpeedHistory(),session,goal);
+  const mode = practiceMode(session);
+  const friendlyMode = mode === 'mobile-assisted' ? 'PHONE ASSISTED'
+    : mode === 'mobile-exact' ? 'PHONE EXACT' : 'DESKTOP EXACT';
+  return `<section id="speed-practice-insights" class="speed-insights" aria-label="Practice Compass" data-matches="${pulse.count}">
+    <span>// PRACTICE COMPASS · PRIVATE BY DEFAULT</span>
+    <h3>BUILD YOUR NEXT BEST.</h3>
+    <p class="speed-insight-scope">${safe(PACKS[session.pack]?.title || 'EVERYDAY')} · ${Number(session.seconds)}s · ${friendlyMode}. Compare matching sessions only.</p>
+    <div class="speed-insight-stats">
+      <div><small>COMPARABLE RUNS</small><strong>${pulse.count}</strong></div>
+      <div><small>BEST ${pulse.metric}</small><strong>${pulse.best ?? '—'}</strong></div>
+      <div><small>AVERAGE ACCURACY</small><strong>${pulse.averageAccuracy == null?'—':pulse.averageAccuracy+'%'}</strong></div>
+    </div>
+    <div class="speed-insight-goals"><span>ACCURACY GOAL</span><div class="speed-insight-buttons" role="group" aria-label="Accuracy goal">
+      ${ACCURACY_GOALS.map(value=>`<button type="button" data-action="speed-goal" data-goal="${value}" aria-pressed="${value===goal}">${value}%</button>`).join('')}
+    </div></div>
+    <p class="speed-insight-tip" role="status">${pulse.message}</p>
+    <div class="speed-insight-privacy"><button type="button" data-action="speed-export">EXPORT RESULTS</button>
+      <button type="button" data-action="speed-clear">CLEAR SAVED RESULTS</button></div>
+    <p class="speed-insight-footnote">Only stored in this browser. Keeps at most 25 runs. Export downloads a JSON file; clear requires confirmation. Assisted, exact and number drills are not mixed.</p>
+  </section>`;
 }
 
 function speedPackChoices(professional, selected) {
@@ -47,6 +73,6 @@ export function speedTemplate(session, header) {
         </div>
         <div class="speed-controls"><span>TIME STARTS ON FIRST KEY · CTRL + ENTER TO RESTART</span><button class="btn btn-outline" data-action="speed-restart">${ico('refresh',16)} RESTART</button></div>`}
     </section>
-    <div class="speed-bottom"><section><span>// YOUR RECENT RESULTS</span><h2>PERSONAL RECORDS.</h2>${historyPanel()}</section><aside><span>// PRACTICE PROFILE</span><h2>${safe(PACKS[session.pack].title)}</h2><p>${safe(PACKS[session.pack].description)}</p><p>Timed solo drills use local browser storage, so you can train without an account. None of these words are shell commands.</p></aside></div>
+    <div class="speed-bottom"><section><span>// YOUR RECENT RESULTS</span><h2>PERSONAL RECORDS.</h2><div id="speed-history-panel">${speedHistoryPanel()}</div>${speedInsightsPanel(session)}</section><aside><span>// PRACTICE PROFILE</span><h2>${safe(PACKS[session.pack].title)}</h2><p>${safe(PACKS[session.pack].description)}</p><p>Timed solo drills use local browser storage, so you can train without an account. None of these words are shell commands.</p></aside></div>
   </main>`;
 }

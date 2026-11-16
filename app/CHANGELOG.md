@@ -1,3 +1,11 @@
+## [Unreleased] — Practice Compass, local-only progress pilot (#5)
+
+- Add per-category/duration/input-mode Speed Lab insights: comparable runs, best WPM/CPM, average accuracy, and accuracy-first practice guidance.
+- Add optional 90/95/98% accuracy targets, saved only on this device; change goals without replacing the active input.
+- Provide explicit JSON result export and confirmation-protected deletion of up to 25 local Speed Lab records. Goals persist when results are cleared.
+- Keep phone Assisted, phone Exact, desktop Exact and Numpad scoring separate in insights.
+- Add pure storage/insights regression tests plus mobile/desktop Playwright browser tests for goal persistence, active typing continuity, export and deletion. Physical-device and user feedback are still required before wider progression work.
+
 ## [Feature milestone] — Native keyboard help for mobile Speed Lab — 2026-11-11 (America/Denver)
 
 - Phone word drills default to native keyboard assistance where supported (spellcheck, device predictions and autocorrect).
