@@ -58,6 +58,29 @@ try{
   await context.close();
  }
 
+ // Reflow regression: narrow desktop CSS viewports approximate the layout space
+ // available at 200% and 400% browser zoom on a 1280px-wide desktop.
+ // This does NOT emulate browser text zoom or certify WCAG 1.4.10.
+ for(const width of [640,320]){
+  const context=await browser.newContext({viewport:{width,height:800},isMobile:false,hasTouch:false});
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(String(e)));
+  await page.goto(origin,{waitUntil:'domcontentloaded'});
+  await page.locator('[data-action="speed-open"]').first().click();
+  const input=page.locator('#speed-input');
+  await input.focus();
+  // Exercise real keyboard input, not only programmatic focus. A narrow
+  // desktop viewport must keep the field editable after the first keystroke.
+  await page.keyboard.type('a');
+  assert.equal(await input.inputValue(),'a',
+   'Speed Lab accepts keyboard input at narrow desktop width '+width);
+  assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+   'Speed Lab input retains keyboard focus at narrow desktop width '+width);
+  const bounds=await input.evaluate(el=>({left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,viewport:document.documentElement.clientWidth}));
+  assert.ok(bounds.left>=-1&&bounds.right<=bounds.viewport+1,
+   'Speed Lab input stays within narrow desktop viewport '+width+': '+JSON.stringify(bounds));
+  await context.close();
+ }
+
  // User-facing Reduce Motion setting must also work when the OS preference is off.
  const context=await browser.newContext({viewport:{width:1440,height:850},reducedMotion:'no-preference'});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(String(e)));
