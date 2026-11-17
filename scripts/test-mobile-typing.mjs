@@ -21,11 +21,30 @@ async function checkRotationFocus(page,fieldId,portraitWidth){
  assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-typing-active')),true,
   fieldId+' is active in portrait');
  const before=await input.inputValue();
- // Landscape crosses the layout breakpoint without blurring or replacing input.
+ // Touch landscape is wider than 760px but shallow; keep thumb controls and
+ // the active word/command visible next to the real focused field.
  await page.setViewportSize({width:844,height:390});
- await page.waitForFunction(()=>!document.body.classList.contains('mobile-typing-active'));
+ await page.waitForFunction(()=>document.body.classList.contains('mobile-typing-active'));
+ const cueSelector={'speed-input':'.mobile-speed-cue','lyric-input':'.mobile-lyric-word',
+  'lesson-input':'.mobile-academy-target'}[fieldId];
+ assert.equal(await page.locator(cueSelector).isVisible(),true,
+  fieldId+' keeps its compact cue visible in touch landscape');
+ assert.equal(await input.locator('xpath=ancestor::*[contains(@class,"mobile-typing-entry")]')
+   .locator('.mobile-entry-actions').isVisible(),true,
+  fieldId+' keeps its thumb actions visible in touch landscape');
  assert.equal(await input.evaluate(el=>document.activeElement===el),true,
-  fieldId+' stays focused when crossing into landscape');
+  fieldId+' stays focused in landscape');
+ const landscapeOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+ assert.ok(landscapeOverflow<=2,fieldId+' overflows landscape viewport by '+landscapeOverflow+'px');
+
+ // A taller layout past both breakpoints turns off compact mode. Returning
+ // to portrait must recover it even without a fresh focus event.
+ await page.setViewportSize({width:844,height:640});
+ await page.waitForFunction(()=>!document.body.classList.contains('mobile-typing-active'));
+ assert.equal(await page.locator(cueSelector).isVisible(),false,
+  fieldId+' hides compact cue on wider tall layouts');
+ assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+  fieldId+' still owns focus in the wider layout');
  await page.setViewportSize({width:portraitWidth,height:844});
  await page.waitForFunction(()=>document.body.classList.contains('mobile-typing-active'));
  assert.equal(await input.evaluate(el=>document.activeElement===el),true,
@@ -160,6 +179,14 @@ try{
    assert.ok((await page.locator('.terminal-bar').innerText()).includes('STEP 02'));
    assert.equal(await page.evaluate(()=>document.querySelector('#lesson-input')===window.__academyInput),true,'Academy must preserve native input after advancing');
    assert.equal(await page.locator('#lesson-input').inputValue(),'');
+  }
+  if(!isPhone){
+   // A desktop window that happens to be short must not become phone mode.
+   await page.setViewportSize({width:844,height:390});
+   assert.equal(await page.locator('.mobile-academy-target').isVisible(),false,
+    'desktop short window must keep native desktop layout');
+   assert.equal(await page.locator('.academy-mobile-entry .mobile-entry-actions').isVisible(),false,
+    'desktop short window must not expose phone-only touch actions');
   }
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
   assert.ok(overflow<=2,'no horizontal overflow at width '+width+': '+overflow);

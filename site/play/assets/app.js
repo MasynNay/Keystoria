@@ -17,7 +17,7 @@ import { createViews } from "./ui/views.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
-import { setupMobileTyping, patchMobileTraining } from "./ui/mobile-typing.js?v=0.28.0";
+import { setupMobileTyping, patchMobileTraining } from "./ui/mobile-typing.js?v=0.29.0";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
