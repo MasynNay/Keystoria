@@ -22,6 +22,8 @@ A separate test checks the 15 palette definitions for at least 4.5:1 text/muted/
 
 The same checks run in GitHub Pages pull-request CI before deployment. These are *Chromium simulations*, not device or screen-reader certification.
 
+**IME composition safety:** Automated Chromium tests now synthesize `compositionstart`, interim `input` events (including `isComposing`), conversion Enter/keyCode 229 and `compositionend` across Speed Lab, Lyric Lab and Field Academy in touch-phone and desktop layouts. Uncommitted candidate text is excluded from score/timer, live correctness feedback and command submission; finalized text is reconciled. These are event-ordering tests and **do not prove native IME behavior** for Chinese, Japanese, Korean or other input methods on real iOS, Android, Windows or macOS keyboards. Physical testing remains required in issue #11.
+
 ## Manual assistive technology checklist (not yet verified)
 
 - **Screen readers:** Test NVDA with Firefox or Chrome, VoiceOver with macOS Safari, VoiceOver with actual iPhone Safari, and TalkBack with actual Android Chrome. Verify controls are announced by name, role, state and instructions.

@@ -17,6 +17,7 @@ node scripts/test-vocabulary-browser.mjs
 node scripts/test-lyric-recovery.mjs
 node scripts/test-dialog-keyboard.mjs
 node scripts/test-navigation-accessibility.mjs
+node scripts/test-practice-composition.mjs
 node scripts/test-speed-mobile-performance.mjs
 node scripts/test-speed-keyboard-assist.mjs
 node scripts/test-speed-insights-browser.mjs
