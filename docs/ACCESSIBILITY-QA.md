@@ -18,6 +18,8 @@ These tests model a *reduced CSS viewport*, **not actual 200%/400% browser zoom,
 
 A separate test checks the 15 palette definitions for at least 4.5:1 text/muted/accent contrast on the background and two panel surfaces, and compares CSS theme tokens with the JavaScript palette. This only validates defined colors, not every rendered element.
 
+**Field Academy focus and step transitions:** A dedicated browser test now completes all commands in a randomized Linux course on portrait phone, short touch landscape, narrow mouse desktop, and wide desktop. It checks that keyboard input stays focused when advancing, that the original native phone input remains attached, and that a click on **Check Command** transfers focus to the newly available **Next Command** control instead of the document body. The polite step cue announces a new command only on advancement, and the completed course focuses the success heading so Tab proceeds naturally to **Replay Lesson**. Screen-reader speech ordering and physical soft-keyboard behavior remain manual checks.
+
 **Lyric Lab announced target:** The focused native lyric input is associated with a visually hidden, polite live region containing only the current target word and the responsive submission instructions. The word cue changes on progression, not with each typed character. Browser QA validates initial target exposure and target changes after submitting words in portrait, touch landscape, wide desktop, and 320px/640px reflow. Actual pronunciation, announcement timing, verbosity, and live-region behavior in NVDA, VoiceOver, and TalkBack still need manual testing.
 
 The same checks run in GitHub Pages pull-request CI before deployment. These are *Chromium simulations*, not device or screen-reader certification.
