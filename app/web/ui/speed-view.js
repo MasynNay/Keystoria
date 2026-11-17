@@ -1,6 +1,7 @@
 /** Stateless presentation for the solo Speed Lab. */
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
+import { speedSpokenTarget } from './mobile-typing.js?v=0.36.0';
 import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.32.0';
 
 export function speedLibrary() {
@@ -81,7 +82,8 @@ export function speedTemplate(session, header) {
         <div class="speed-mobile-entry mobile-typing-entry" id="speed-mobile-entry">
           <div class="mobile-speed-cue" aria-hidden="true"><small>NEXT CHARACTERS · TYPE WHAT YOU SEE</small><div><span id="speed-mobile-first"></span><span id="speed-mobile-rest"></span></div></div>
         ${session.pack!=="numpad"?`<div class="speed-assist-settings" role="group" aria-label="Phone keyboard assistance"><button id="speed-assist-toggle" type="button" data-action="speed-assist" aria-pressed="${session.keyboardAssist===true}">KEYBOARD HELP: ${session.keyboardAssist===true?"ON":"OFF"}</button><p id="speed-assist-detail" role="note">${session.keyboardAssist===true?"Phone predictions and autocorrect allowed. Score marked Assisted; suggestions depend on your keyboard settings.":"Exact typing. Native keyboard assistance is off."}</p></div>`:""}<label id="speed-input-instructions" for="speed-input" class="speed-input-label">${session.pack==="numpad"?"TYPE THE DIGITS ABOVE — SPACE OR NUMPAD ENTER BETWEEN GROUPS":"TYPE THE WORDS ABOVE — USE BACKSPACE TO FIX MISTAKES"}</label>
-        <textarea id="speed-input" class="speed-input" rows="2" spellcheck="${session.keyboardAssist===true?"true":"false"}" autocorrect="${session.keyboardAssist===true?"on":"off"}" autocapitalize="off" autocomplete="${session.keyboardAssist===true?"on":"off"}" inputmode="${session.pack==="numpad"?"numeric":"text"}" enterkeyhint="next" aria-label="${session.pack==="numpad"?"Type the displayed number groups":"Type the displayed words"}" aria-describedby="speed-input-instructions speed-mode" placeholder="Click here or start typing to begin..."></textarea>
+        <span id="speed-screenreader-target" class="practice-sr-only" role="status" aria-live="polite" aria-atomic="true">${safe(speedSpokenTarget(session.reference,session.typed,session.pack==="numpad"))}</span>
+        <textarea id="speed-input" class="speed-input" rows="2" spellcheck="${session.keyboardAssist===true?"true":"false"}" autocorrect="${session.keyboardAssist===true?"on":"off"}" autocapitalize="off" autocomplete="${session.keyboardAssist===true?"on":"off"}" inputmode="${session.pack==="numpad"?"numeric":"text"}" enterkeyhint="next" aria-label="${session.pack==="numpad"?"Type the displayed number groups":"Type the displayed words"}" aria-describedby="speed-input-instructions speed-mode speed-screenreader-target" placeholder="Click here or start typing to begin..."></textarea>
           <div class="mobile-entry-actions mobile-entry-actions--three"><button type="button" data-action="speed-space" aria-label="Type a space character">SPACE / NEXT</button><button type="button" data-action="speed-back-word" aria-label="Delete previous word or number group at the cursor">BACK WORD</button><button type="button" data-action="speed-restart">RESTART</button></div>
         </div>
         <div class="speed-controls"><span>TIME STARTS ON FIRST KEY · CTRL + ENTER TO RESTART</span><button class="btn btn-outline" data-action="speed-restart">${ico('refresh',16)} RESTART</button></div>`}
