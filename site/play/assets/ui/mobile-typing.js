@@ -3,6 +3,10 @@
  * when a native visualViewport shrinks or shifts. No imitation keyboard.
  */
 export const MOBILE_TYPING_FIELDS=Object.freeze(['speed-input','lyric-input','lesson-input']);
+/** Keep thumb controls on shallow touch landscapes without switching desktop
+ * windows merely because they are short. Match the CSS media query exactly.
+ */
+export const MOBILE_TYPING_MEDIA='(max-width: 760px), (max-height: 520px) and (pointer: coarse)';
 export function nextSpeedCue(reference,typed,visible=38) {
  const source=String(reference??'');
  const offset=Math.max(0,Math.min(source.length,String(typed??'').length));
@@ -82,7 +86,7 @@ export function patchMobileTraining(current,next){
 export function setupMobileTyping(root) {
  if(typeof window==='undefined'||!root)return ()=>{};
  const selector=MOBILE_TYPING_FIELDS.map(id=>`#${id}`).join(',');
- const isMobile=()=>window.matchMedia('(max-width: 760px)').matches;
+ const isMobile=()=>window.matchMedia(MOBILE_TYPING_MEDIA).matches;
  let active=null,queued=false,blurToken=0;
  const viewport=window.visualViewport;
  function position() {
