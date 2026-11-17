@@ -639,7 +639,38 @@ app.addEventListener("change",event=>{
   if(event.target.id==="speed-import-file"){void restoreSpeedFile(event.target);return;}
   if(state.lyric)lyricController.handleChange(event);
 });
+// An IME may send multiple input/Enter events while a word is still being
+// composed. Score and validate only committed text; preserve the native input
+// and let the browser complete its composition rather than stealing Enter.
+const practiceFields=new Set(["lyric-input","speed-input","lesson-input"]);
+let composingPractice=null;
+app.addEventListener("compositionstart",event=>{
+ if(!practiceFields.has(event.target?.id))return;
+ composingPractice=event.target;
+ if(event.target.id==="lyric-input"){
+   event.target.dataset.imeCommitted=event.target.value;
+   event.target.dataset.imeComposing="true";
+ }
+});
+app.addEventListener("compositionend",event=>{
+ const field=event.target;
+ if(field!==composingPractice)return;
+ composingPractice=null;
+ if(field.id==="lyric-input"){
+   delete field.dataset.imeComposing;
+   delete field.dataset.imeCommitted;
+ }
+ // Browsers differ about whether the final native input fires before or after
+ // compositionend. Reconcile once after the commit; a later native input is
+ // idempotent. A detached input must never restart a departed practice mode.
+ queueMicrotask(()=>{
+   if(field.isConnected && composingPractice!==field)
+     field.dispatchEvent(new Event("input",{bubbles:true}));
+ });
+});
 app.addEventListener("input",event=>{
+ if(practiceFields.has(event.target?.id) &&
+    (event.isComposing || event.target===composingPractice))return;
  if(state.lyric && lyricController.handleInput(event))return;
  if(event.target.id === "lesson-input" && state.lesson) {
    state.lesson.draft=event.target.value;
@@ -666,6 +697,10 @@ function submitTyping(value){
  const input=$("#task-input"); if(input)input.disabled=true;
 }
 app.addEventListener("keydown",event=>{
+ // Legacy IME keyCode 229 is common during East Asian text conversion;
+ // Ctrl+Enter, Space and other practice shortcuts must not intercept it.
+ if(practiceFields.has(event.target?.id) &&
+    (event.isComposing || event.keyCode===229 || event.target===composingPractice))return;
  if(state.lyric && lyricController.handleKeydown(event))return;
  if(state.modal && event.key==='Tab'){
   const dialog=app.querySelector('.modal-backdrop [role="dialog"]');
