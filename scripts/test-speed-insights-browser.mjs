@@ -31,6 +31,41 @@ try {
   assert.equal(await insight.getAttribute('data-matches'),'1','saved run appears as a comparable insight');
   assert.match(await insight.innerText(),/AVERAGE ACCURACY/);
 
+  const oneRun=insight.locator('.speed-insight-trail li');
+  assert.equal(await oneRun.count(),1,'first comparable run appears in the progress trail');
+  assert.match(await oneRun.first().innerText(),/WPM/);
+  assert.equal(await insight.locator('.speed-insight-trend').count(),1);
+
+  // Exercise the ordinary on-device saved-record path. The trail is bounded
+  // and chronologically ordered without detaching the practice textarea.
+  await page.locator('[data-action="speed-restart"]').click();
+  await page.evaluate((mode)=>{
+    localStorage.setItem('panic.speed.results.v1',JSON.stringify([
+      {pack:'everyday',seconds:30,practiceMode:mode,wpm:50,accuracy:97},
+      {pack:'everyday',seconds:30,practiceMode:mode,wpm:40,accuracy:96},
+      {pack:'everyday',seconds:30,practiceMode:mode,wpm:30,accuracy:95},
+      {pack:'everyday',seconds:30,practiceMode:mode,wpm:20,accuracy:90},
+      {pack:'everyday',seconds:30,practiceMode:mode,wpm:10,accuracy:99},
+      {pack:'numpad',seconds:30,practiceMode:'standard-exact',wpm:900,cpm:900,accuracy:100},
+    ]));
+    window.__speedInputNode=document.getElementById('speed-input');
+  },mobile?'mobile-assisted':'standard-exact');
+  await page.locator('[data-action="speed-goal"][data-goal="95"]').click();
+  assert.equal(await insight.getAttribute('data-matches'),'5');
+  assert.deepEqual((await insight.locator('.speed-insight-bar-label').allTextContents()).map(x=>x.trim()),[
+    '10 WPM','20 WPM','30 WPM','40 WPM','50 WPM'
+  ]);
+  assert.match(await insight.locator('.speed-insight-trend').innerText(),/\\+10 WPM/);
+  assert.match(await insight.locator('.speed-insight-trend').innerText(),/3 consecutive runs/);
+  assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__speedInputNode),true,
+   'changing the goal preserves the original practice textarea');
+  await page.locator('[data-action="speed-goal"][data-goal="98"]').click();
+  assert.match(await insight.locator('.speed-insight-trend').innerText(),/0 consecutive runs/,
+   'streak recalculates when accuracy goal increases');
+  assert.equal(await insight.locator('.speed-insight-trail li').count(),5,'a long history uses at most five bars');
+  const horizontalOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert.ok(horizontalOverflow<=2,'progress trail must not cause horizontal overflow: '+horizontalOverflow);
+
   // Export is an intentional user gesture; verify the file is valid JSON,
   // without making network requests or sending the saved record elsewhere.
   const [download]=await Promise.all([
@@ -40,13 +75,13 @@ try {
   assert.equal(download.suggestedFilename(),'keystoria-speed-results.json');
   const exportData=JSON.parse(await readFile(await download.path(),'utf8'));
   assert.equal(exportData.format,'keystoria.speed.history');
-  assert.equal(exportData.records.length,1);
+  assert.equal(exportData.records.length,6);
   assert.equal(exportData.records[0].pack,'everyday');
 
   // Clearing needs explicit confirmation; cancelling must retain the score.
   page.once('dialog',dialog=>dialog.dismiss());
   await page.locator('[data-action="speed-clear"]').click();
-  assert.equal(await insight.getAttribute('data-matches'),'1');
+  assert.equal(await insight.getAttribute('data-matches'),'5');
   page.once('dialog',dialog=>dialog.accept());
   await page.locator('[data-action="speed-clear"]').click();
   assert.equal(await insight.getAttribute('data-matches'),'0');
@@ -58,7 +93,7 @@ try {
   const welcomeAgain=page.locator('.welcome-continue');
   if(await welcomeAgain.count()&&await welcomeAgain.isVisible())await welcomeAgain.click();
   await page.locator('[data-action="speed-open"]').first().click();
-  assert.equal(await page.locator('[data-action="speed-goal"][data-goal="90"]').getAttribute('aria-pressed'),'true','accuracy goal persists independently of result history');
+  assert.equal(await page.locator('[data-action="speed-goal"][data-goal="98"]').getAttribute('aria-pressed'),'true','accuracy goal persists independently of result history');
   assert.equal(await page.locator('#speed-practice-insights').getAttribute('data-matches'),'0');
   await context.close();
  }
