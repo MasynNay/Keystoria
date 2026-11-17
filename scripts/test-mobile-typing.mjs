@@ -135,7 +135,8 @@ try{
   assert.equal(await readerWord.getAttribute('aria-live'),'polite');
   assert.equal(await readerWord.getAttribute('aria-atomic'),'true');
   assert.equal(await readerWord.textContent(),'Current word: Signals');
-  assert.equal(await readerWord.isVisible(),false,'spoken word is not an extra visible lyric cue');
+  assert.equal(await readerWord.evaluate(el=>getComputedStyle(el).clipPath),'inset(50%)',
+   'spoken word is visually clipped but remains in the accessibility tree');
   assert.equal(await page.locator('.lyric-enter-compact').isVisible(),isPhone,
    'Enter-to-submit instruction appears only for compact layout');
   assert.equal(await page.locator('.lyric-enter-wide').isVisible(),!isPhone,
