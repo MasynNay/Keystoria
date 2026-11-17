@@ -438,7 +438,10 @@ app.addEventListener("click",event=>{
     if(!Object.hasOwn(state.preferences,key)) break;
     state.preferences=savePreferences({...state.preferences,[key]:!state.preferences[key]});
     applyPreferences(state.preferences);
-    $(".modal-backdrop")?.remove();render();
+    // Style-only preferences do not require rebuilding the dialog. Keep the
+    // activated button, keyboard focus and scroll position intact.
+    item.setAttribute("aria-pressed",String(state.preferences[key]));
+    item.querySelector(".setting-switch")?.classList.toggle("on",state.preferences[key]);
     break;
   }
   case "lyric-open":lyricController.open();break;
