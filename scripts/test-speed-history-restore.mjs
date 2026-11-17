@@ -90,10 +90,15 @@ try {
   await page.locator('#toast-layer').getByText(/Use a Keystoria Speed Lab/).waitFor();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')).length),3);
 
-  // Clearing saved history recreates the panel; focus must not be lost.
-  await page.locator('[data-action="speed-clear"]').focus();
+  // Clearing history rebuilds the panel. Drive Enter on the actual control,
+  // not the page-wide keyboard: pending focus restoration from a file picker
+  // can otherwise redirect Enter and intermittently time out this release gate.
+  const clearButton=page.locator('[data-action="speed-clear"]');
+  await clearButton.focus();
+  assert.equal(await clearButton.evaluate(el=>document.activeElement===el),true,
+    'Clear Saved Results must be focusable before keyboard activation');
   const clearing=page.waitForEvent('dialog');
-  const clearAction=page.keyboard.press('Enter');
+  const clearAction=clearButton.press('Enter');
   const clearDialog=await clearing;
   assert.match(clearDialog.message(),/Clear all saved Speed Lab results/);
   await clearDialog.accept();
