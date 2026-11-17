@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js?v=0.27.1';
-import { MOBILE_TYPING_MEDIA, nextSpeedCue } from './mobile-typing.js?v=0.29.0';
+import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange } from './mobile-typing.js?v=0.34.0';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
@@ -152,6 +152,23 @@ export function createSpeedController({ state, onRender, playSound }) {
     if(field.isConnected&&!field.disabled)field.focus({preventScroll:true});
   }
 
+
+  /** Correct an entire preceding word or number group without restarting the
+   * exercise. Keep text after the caret and the same native input element, so
+   * the software keyboard can remain open when a touch action is used.
+   */
+  function backWord(){
+    const session=state.speed,field=node('speed-input');
+    if(!session||session.status==='complete'||!field||field.disabled)return;
+    const {start,end}=previousWordRange(field.value,field.selectionStart,field.selectionEnd);
+    if(start!==end){
+      field.setRangeText('',start,end,'start');
+      session.keystrokes++;
+      input(field.value);
+    }
+    if(field.isConnected&&!field.disabled)field.focus({preventScroll:true});
+  }
+
   /** Toggle phone native predictions without detaching the focused field.
    * A score stays marked assisted if predictions were enabled at any point.
    */
@@ -178,5 +195,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,input,keystroke,insertSpace,toggleKeyboardAssist,finish,tick};
+  return {open,close,paint,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,finish,tick};
 }
