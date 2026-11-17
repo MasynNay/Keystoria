@@ -72,6 +72,42 @@ try{
   await open(page);
   await check(page);
   await close(page);
+
+  // Real computed mobile typing surfaces must follow every user palette,
+  // instead of retaining navy/purple hard-coded colors from the original UI.
+  const mobileThemes=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:"reduce"});
+  mobileThemes.on("pageerror",err=>errors.push(String(err)));
+  await mobileThemes.goto(base+"/play/",{waitUntil:"domcontentloaded"});
+  if(await mobileThemes.locator(".welcome-continue").isVisible())await mobileThemes.locator(".welcome-continue").click();
+  await mobileThemes.locator('[data-action="speed-open"]').first().click();
+  await mobileThemes.locator("#speed-input").focus();
+  await open(mobileThemes);
+  for(const theme of themes){
+    await mobileThemes.locator('.theme-choice[data-theme-id="'+theme.id+'"]').click();
+    const result=await mobileThemes.evaluate(()=>{
+      const css=el=>getComputedStyle(document.querySelector(el));
+      const body=getComputedStyle(document.body);
+      const isVisible=el=>el.getBoundingClientRect().height>0;
+      const rgb=s=>{const match=s.match(/[0-9.]+/g);return match?.slice(0,3).map(Number).join(',');};
+      const panel=body.getPropertyValue('--theme-panel-2').trim();
+      const surface=css('.mobile-speed-cue');
+      const action=css('.speed-mobile-entry .mobile-entry-actions button:last-child');
+      return {
+        visible:isVisible(document.querySelector('.mobile-speed-cue')),
+        panel:rgb(panel),surface:rgb(surface.backgroundColor),
+        text:rgb(body.getPropertyValue('--theme-text')),actualText:rgb(surface.color),
+        actionBackground:rgb(action.backgroundColor),expectedAction:rgb(body.getPropertyValue('--theme-panel')),
+        actionText:rgb(action.color),accent:rgb(body.getPropertyValue('--theme-accent'))
+      };
+    });
+    assert.equal(result.visible,true,'phone cue visible for '+theme.id);
+    assert.equal(result.surface,result.panel,'mobile cue uses selected theme panel for '+theme.id);
+    assert.equal(result.actualText,result.text,'mobile cue uses selected theme foreground for '+theme.id);
+    assert.equal(result.actionBackground,result.expectedAction,'secondary touch action uses selected theme panel for '+theme.id);
+    assert.equal(result.actionText,result.text,'secondary touch action uses selected theme foreground for '+theme.id);
+  }
+  await close(mobileThemes);
+  await mobileThemes.close();
   // Mission-colored art and user color schemes are independent.
   await page.locator('[data-action="choose-mission"][data-mission="hollow"]').first().click();
   assert.equal(await page.locator("body").getAttribute("data-theme"),"hollow");
