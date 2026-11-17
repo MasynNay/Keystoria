@@ -118,9 +118,9 @@ try{
    assert.equal(bounds.focus.top,bounds.cueTop,'Lyric focus rectangle must include active lyric');
    assert.ok(bounds.focus.bottom<bounds.wrapperBottom,'Lyric touch actions must not displace lyric cue');
   }
-  if(isPhone)await checkRotationFocus(page,'lyric-input',width);
   if(isPhone){
    await page.locator('[data-action="lyric-mobile-toggle"]').click();
+   await checkRotationFocus(page,'lyric-input',width);
    await page.locator('#lyric-input').fill('Signals');
    await page.locator('[data-action="lyric-mobile-submit"]').click();
    assert.equal(await page.locator('#lyric-input').inputValue(),'');
