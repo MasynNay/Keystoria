@@ -570,12 +570,24 @@ app.addEventListener("click",event=>{
 function renderTrainingInPlace() {
   const top=window.scrollY;
   const focused=$("#lesson-input");
+  // Clicking CHECK replaces that button with NEXT. Focus the next available
+  // action for keyboard/screen-reader users instead of dropping to <body>.
+  // Enter from the input itself continues to keep focus on the native field.
+  const checkedFromButton=document.activeElement?.matches?.('button[data-action="training-submit"]')===true;
+  const focusAfterUpdate=()=>{
+    if(checkedFromButton && state.lesson?.answered){
+      const next=$('.academy-mobile-entry [data-action="training-next"]')
+        ||$('.terminal-inner > .training-buttons [data-action="training-next"]');
+      if(next){next.focus({preventScroll:true});return;}
+    }
+    $("#lesson-input")?.focus({preventScroll:true});
+  };
   // Never remove the focused native input while a phone's keyboard is up.
   if (focused && !state.lesson?.completed && window.matchMedia("(max-width:760px)").matches) {
     const draft=document.createElement("div");
     draft.innerHTML=trainingTemplate(state.lesson,header);
     if(patchMobileTraining($(".academy-play"),draft.querySelector(".academy-play"))){
-      if(!focused.readOnly)focused.focus({preventScroll:true});
+      focusAfterUpdate();
       return;
     }
   }
@@ -589,7 +601,7 @@ function renderTrainingInPlace() {
     return;
   }
   window.scrollTo({top,behavior:"instant"});
-  $("#lesson-input")?.focus({preventScroll:true});
+  focusAfterUpdate();
 }
 
 function advanceLesson() {
