@@ -43,7 +43,7 @@ export function speedInsightsPanel(session) {
         ${pulse.recent.map((run,index)=>`<li>
           <div class="speed-insight-bar" aria-hidden="true"><span style="height:${Math.max(6,Math.round(run.speed / Math.max(1,pulse.best) * 100))}%"></span></div>
           <span class="speed-insight-bar-label">${run.speed} ${pulse.metric}</span>
-          <small>RUN ${index+1}${run.metGoal?' · GOAL MET':''}</small>
+          <small>${index===pulse.recent.length-1?'LATEST':'RUN '+(index+1)} · ${run.metGoal?'GOAL MET':'BELOW GOAL'}</small>
         </li>`).join('')}
       </ol>
       <p class="speed-insight-trend">LAST VS PREVIOUS: <strong>${pulse.paceChange===null?'Need two runs':(pulse.paceChange>0?'+':'')+pulse.paceChange+' '+pulse.metric}</strong> · ACCURACY GOAL: <strong>${pulse.goalStreak} consecutive ${pulse.goalStreak===1?'run':'runs'} (max 5)</strong></p>
