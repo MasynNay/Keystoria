@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js?v=0.27.1';
-import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange } from './mobile-typing.js?v=0.34.0';
+import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget } from './mobile-typing.js?v=0.36.0';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
@@ -86,6 +86,9 @@ export function createSpeedController({ state, onRender, playSound }) {
     const cue=nextSpeedCue(session.reference,session.typed);
     text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
     text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
+    // Update the existing polite region only when the active word/group changes.
+    // Repeating it for every letter would drown out the screen reader's input.
+    text('speed-screenreader-target',speedSpokenTarget(session.reference,session.typed,session.pack==='numpad'));
     text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));
     text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
