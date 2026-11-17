@@ -24,7 +24,7 @@ async function assertRenderedSettingsContrast(page,themeId){
    ['Done action','.settings-modal > button.btn-primary','.settings-modal > button.btn-primary']
   ];
   const luminance=(css)=>{
-   const channels=(css.match(/[\\d.]+/g)||[]).slice(0,3).map(Number);
+   const channels=(css.match(/[0-9.]+/g)||[]).slice(0,3).map(Number);
    if(channels.length!==3)throw new Error('Cannot parse computed color: '+css);
    const [r,g,b]=channels.map(c=>{const n=c/255;return n<=.04045?n/12.92:((n+.055)/1.055)**2.4;});
    return r*.2126+g*.7152+b*.0722;
