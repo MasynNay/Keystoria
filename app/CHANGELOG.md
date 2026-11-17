@@ -1,9 +1,9 @@
-## [Unreleased] — Portable Speed Lab results restore (#5)
+## [Feature milestone] — Portable Speed Lab results restore — 2026-11-16 (America/Denver)
 
 - Add Restore Export to the local-only Practice Compass to complete export/restore portability without accounts or backend.
 - Validate the v1 JSON format, permitted categories/durations/modes, bounded numeric metrics and maximum 25 results. Strip unknown keys and reject invalid, oversized or malformed data without changing existing records.
 - Confirm explicitly before replacing the current device's results; preserve accuracy goals, unrelated browser data, and active typing input.
-- Add Node validation/storage regression tests and Playwright mobile/desktop import/download tests gated before GitHub Pages deployment. Do not claim native phone UI verification.
+- Added Node validation/storage regression tests and Playwright mobile/desktop import/download tests gated before GitHub Pages deployment. [PR #28](https://github.com/MasynNay/Keystoria/pull/28) merged after six successful checks; [production Pages run 43984376330](https://github.com/MasynNay/Keystoria/actions/runs/43984376330) passed. Physical phone file-picker verification remains outstanding.
 
 ## [Feature milestone] — Practice Compass local-only progress pilot — 2026-11-16 (America/Denver)
 

@@ -6,9 +6,9 @@
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## In-progress local-first history portability milestone
+## Latest shipped milestone — Practice Compass portable results (November 16, 2026)
 
-Practice Compass now has an export button, but the exported file was not restorable on a different phone or computer. A versioned RESTORE EXPORT flow is being developed with strict validation, replacement confirmation and release regressions. Keep [issue #5](https://github.com/MasynNay/Keystoria/issues/5) open. Do not describe the enhancement as shipped until PR merge and production Pages success.
+The versioned **RESTORE EXPORT** flow shipped via [PR #28](https://github.com/MasynNay/Keystoria/pull/28) and [successful gated Pages deployment 43984376330](https://github.com/MasynNay/Keystoria/actions/runs/43984376330). It validates and sanitizes a maximum of 25 Speed Lab records from a JSON export (128 KB cap), confirms before overwriting history, preserves accuracy goals and typing focus, and has mobile/desktop browser regression tests. It is manual data portability, **not account sync**. Keep [issue #5](https://github.com/MasynNay/Keystoria/issues/5) open for user feedback and broader progression; physical phone picker behavior is not yet verified.
 
 ## Current November 16, 2026 milestone
 
