@@ -11,6 +11,7 @@ on:
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
       - 'scripts/test-speed-insights-browser.mjs'
+      - 'scripts/test-speed-history-restore.mjs'
       - 'app/tests/test_speed_insights.mjs'
       - 'app/tests/test_speed_history_restore.mjs'
       - 'scripts/test-numpad-browser.mjs'
@@ -25,6 +26,7 @@ on:
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
       - 'scripts/test-speed-insights-browser.mjs'
+      - 'scripts/test-speed-history-restore.mjs'
       - 'app/tests/test_speed_insights.mjs'
       - 'app/tests/test_speed_history_restore.mjs'
       - 'scripts/test-numpad-browser.mjs'
@@ -42,6 +44,7 @@ jobs:
           node-version: '22'
       - name: Validate source and pure mobile helpers
         run: |
+          node --check scripts/test-speed-history-restore.mjs
           node --check app/web/app.js
           node --check site/play/assets/app.js
           node --check app/web/ui/mobile-typing.js
@@ -71,4 +74,5 @@ jobs:
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-keyboard-assist.mjs
           node scripts/test-speed-insights-browser.mjs
+          node scripts/test-speed-history-restore.mjs
           node scripts/test-numpad-browser.mjs

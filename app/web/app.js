@@ -205,6 +205,8 @@ async function restoreSpeedFile(field) {
   const file=field.files?.[0];
   field.value=''; // Allow choosing the same file again after cancel/error.
   if(!state.speed || !file)return;
+  const activeSession=state.speed;
+  try {
   if(file.size>SPEED_IMPORT_MAX_BYTES) {
     toast("Import file exceeds the 128 KB safety limit.","error"); return;
   }
@@ -215,8 +217,13 @@ async function restoreSpeedFile(field) {
   if(!window.confirm("Replace "+previous+" saved Speed Lab result(s) with "+records.length+" from this export? Export your current results first if you want a backup.")) return;
   if(!restoreSpeedHistory(records)) { toast("Could not save imported results on this device.","error"); return; }
   refreshSpeedInsights();
-  document.querySelector('[data-action="speed-import"]')?.focus({preventScroll:true});
   toast("Restored "+records.length+" Speed Lab result(s) on this device.");
+  } finally {
+    // File-picker errors and cancelled confirmations must return keyboard focus.
+    // Do not steal focus if the user navigated to a different session meanwhile.
+    if (state.speed===activeSession)
+      document.querySelector('[data-action="speed-import"]')?.focus({preventScroll:true});
+  }
 }
 
 function refreshSpeedInsights() {
@@ -466,6 +473,8 @@ app.addEventListener("click",event=>{
     if(!window.confirm("Clear all saved Speed Lab results on this device? This cannot be undone."))break;
     if(!clearSpeedResults()){toast("Could not clear saved results in this browser.","error");break;}
     refreshSpeedInsights();
+    // The refresh replaced the focused button; keep keyboard users in place.
+    document.querySelector('[data-action="speed-clear"]')?.focus({preventScroll:true});
     toast("Saved Speed Lab results cleared.");
     break;
   }
