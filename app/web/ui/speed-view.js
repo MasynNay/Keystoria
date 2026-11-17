@@ -48,7 +48,7 @@ export function speedInsightsPanel(session) {
       </ol>
       <p class="speed-insight-trend">LAST VS PREVIOUS: <strong>${pulse.paceChange===null?'Need two runs':(pulse.paceChange>0?'+':'')+pulse.paceChange+' '+pulse.metric}</strong> · ACCURACY GOAL: <strong>${pulse.goalStreak} consecutive ${pulse.goalStreak===1?'run':'runs'} (max 5)</strong></p>
     </div>` : ''}
-    <p class="speed-insight-tip" role="status">${pulse.message}</p>
+    <p class="speed-insight-tip" role="status" aria-live="polite" aria-atomic="true">Accuracy goal ${goal}%: ${pulse.message}</p>
     <div class="speed-insight-privacy"><button type="button" data-action="speed-export">EXPORT RESULTS</button>
       <button type="button" data-action="speed-import">RESTORE EXPORT</button>
       <input id="speed-import-file" class="speed-import-file" type="file" accept=".json,application/json" tabindex="-1" aria-label="Select a Speed Lab results JSON export" />
