@@ -9,6 +9,40 @@ const { THEMES: themes } = await import("../app/web/ui/themes.js");
 const ids = themes.map(t=>t.id);
 const errors=[];
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+
+/** Contrast of actual computed text and painted control backgrounds, not
+ * merely palette tokens. Samples flat opaque surfaces; see accessibility QA
+ * for gradients, overlays and physical-screen limitations.
+ */
+async function assertRenderedSettingsContrast(page,themeId){
+ const results=await page.evaluate((id)=>{
+  const samples=[
+   ['theme choice', '.theme-choice[data-theme-id="'+id+'"] .theme-choice-name', '.theme-choice[data-theme-id="'+id+'"]'],
+   ['selection status','#theme-selection-status','.settings-modal'],
+   ['setting title','.settings-list .setting-choice strong','.settings-list .setting-choice'],
+   ['setting help','.settings-list .setting-choice small','.settings-list .setting-choice'],
+   ['Done action','.settings-modal > button.btn-primary','.settings-modal > button.btn-primary']
+  ];
+  const luminance=(css)=>{
+   const channels=(css.match(/[\\d.]+/g)||[]).slice(0,3).map(Number);
+   if(channels.length!==3)throw new Error('Cannot parse computed color: '+css);
+   const [r,g,b]=channels.map(c=>{const n=c/255;return n<=.04045?n/12.92:((n+.055)/1.055)**2.4;});
+   return r*.2126+g*.7152+b*.0722;
+  };
+  return samples.map(([label,foregroundSelector,backgroundSelector])=>{
+   const foreground=document.querySelector(foregroundSelector);
+   const background=document.querySelector(backgroundSelector);
+   if(!foreground||!background)throw new Error('Missing rendered contrast fixture: '+label);
+   const fg=getComputedStyle(foreground).color;
+   const bg=getComputedStyle(background).backgroundColor;
+   const a=luminance(fg),b=luminance(bg);
+   return {label,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),fg,bg};
+  });
+ },themeId);
+ for(const {label,ratio,fg,bg} of results)
+  assert.ok(ratio>=4.5,themeId+' '+label+' contrast '+ratio.toFixed(2)+':1 (text '+fg+' on '+bg+')');
+}
+
 const check=async (page)=>{
   assert.equal(await page.locator(".theme-choice").count(),15,"15 choices must be in the settings dialog");
   for(const theme of themes){
@@ -24,6 +58,7 @@ const check=async (page)=>{
     assert.equal(actual.accent,theme.accent);
     assert.equal(actual.background,theme.bg);
     assert.equal(actual.stored,theme.id);
+    await assertRenderedSettingsContrast(page,theme.id);
   }
 };
 const open=async(page)=>{await page.locator(".prefs-toggle").first().click();await page.locator(".theme-picker").waitFor();};
