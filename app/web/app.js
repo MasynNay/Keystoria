@@ -574,8 +574,10 @@ function renderTrainingInPlace() {
   const checkedFromButton=document.activeElement?.matches?.('button[data-action="training-submit"]')===true;
   const focusAfterUpdate=()=>{
     if(checkedFromButton && state.lesson?.answered){
-      const next=$('.academy-mobile-entry [data-action="training-next"]')
-        ||$('.terminal-inner > .training-buttons [data-action="training-next"]');
+      const next=[
+        $('.academy-mobile-entry [data-action="training-next"]'),
+        $('.terminal-inner > .training-buttons [data-action="training-next"]')
+      ].find(button=>button?.getClientRects().length);
       if(next){next.focus({preventScroll:true});return;}
     }
     $("#lesson-input")?.focus({preventScroll:true});
