@@ -1,7 +1,13 @@
 /* Mobile practice: target, native input, and actions occupy one compact unit.
  * Do not hide the video iframe: display:none can interrupt official embeds. */
 .mobile-speed-cue,.mobile-lyric-word,.mobile-academy-target,.mobile-entry-actions{display:none}
+/* The word-entry instructions mirror the keyboard behavior at each breakpoint.
+ * Hidden alternatives are excluded from accessible input descriptions.
+ */
+.lyric-enter-compact{display:none}
 @media(max-width:760px), (max-height:520px) and (pointer:coarse){
+  .lyric-enter-compact{display:inline}
+  .lyric-enter-wide{display:none}
   html{scroll-padding-bottom:calc(18px + env(safe-area-inset-bottom))}
   .mobile-typing-entry{scroll-margin-top:14px;scroll-margin-bottom:calc(18px + env(safe-area-inset-bottom));min-width:0}
   .mobile-typing-active #app{padding-bottom:calc(45px + env(safe-area-inset-bottom))}

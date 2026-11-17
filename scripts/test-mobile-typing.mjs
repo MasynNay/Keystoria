@@ -65,6 +65,8 @@ try{
   await page.locator('#speed-input').waitFor();
   assert.equal(await page.locator('.mobile-speed-cue').isVisible(),isPhone,'speed cue visible only on phones');
   const input=page.locator('#speed-input');
+  assert.equal(await input.getAttribute('aria-describedby'),'speed-input-instructions speed-mode',
+   'Speed input exposes its typing instructions and timer state');
   await input.focus();
   if(isPhone){
    assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-typing-active')),true);
@@ -126,6 +128,12 @@ try{
   await page.locator('[data-action="lyric-open"]').first().click();
   await page.locator('[data-action="lyric-demo"]').click();
   await page.locator('#lyric-input').waitFor();
+  assert.equal(await page.locator('#lyric-input').getAttribute('aria-describedby'),'lyric-typing-hint',
+   'Lyric input exposes the current keyboard instructions to assistive technology');
+  assert.equal(await page.locator('.lyric-enter-compact').isVisible(),isPhone,
+   'Enter-to-submit instruction appears only for compact layout');
+  assert.equal(await page.locator('.lyric-enter-wide').isVisible(),!isPhone,
+   'Enter-to-skip instruction appears only for wide layout');
   assert.equal(await page.locator('.mobile-lyric-word').isVisible(),isPhone);
   if(isPhone){
    const bounds=await page.locator('#lyric-input').evaluate(async el=>{
@@ -144,16 +152,35 @@ try{
    await page.locator('[data-action="lyric-mobile-submit"]').click();
    assert.equal(await page.locator('#lyric-input').inputValue(),'');
    assert.ok((await page.locator('#lyric-progress').innerText()).startsWith('1/'));
+   // Compact touch landscape uses Enter to submit, not to skip the lyric line.
+   await page.setViewportSize({width:844,height:390});
+   assert.equal(await page.locator('.lyric-enter-compact').isVisible(),true);
+   assert.equal(await page.locator('.lyric-enter-wide').isVisible(),false);
+   await page.locator('#lyric-input').fill('through');
+   await page.locator('#lyric-input').press('Enter');
+   assert.ok((await page.locator('#lyric-progress').innerText()).startsWith('2/'),
+    'Enter in touch landscape submits the next word');
+   await page.setViewportSize({width,height:844});
    await page.locator('.lyric-mobile-entry [data-action="lyric-skip"]').click();
    assert.ok(Number((await page.locator('#lyric-progress').innerText()).split('/')[0])>1);
   }else{
-   await page.locator('#lyric-input').evaluate(el=>el.focus());
+   await page.locator('[data-action="lyric-toggle"]').click();
+   await page.waitForFunction(()=>!document.querySelector('#lyric-input')?.disabled);
+   await page.locator('#lyric-input').fill('Signals');
+   await page.locator('#lyric-input').press('Control+Enter');
+   assert.ok((await page.locator('#lyric-progress').innerText()).startsWith('1/'),
+    'desktop Ctrl+Enter submits the lyric word');
+   await page.locator('#lyric-input').press('Enter');
+   assert.ok(Number((await page.locator('#lyric-progress').innerText()).split('/')[0])>1,
+    'wide desktop Enter skips the remainder of the lyric line');
   }
   await page.locator('[data-action="lyric-back"]').first().click();
   await page.locator('[data-action="lyric-home"]').first().click();
   await homeFromModal(page);
   await page.locator('[data-action="learn"][data-os="linux"]').click();
   await page.locator('#lesson-input').waitFor();
+  assert.equal(await page.locator('#lesson-input').getAttribute('aria-describedby'),
+   'lesson-target-text training-feedback','Academy input exposes its target command and status');
   assert.equal(await page.locator('.mobile-academy-target').isVisible(),isPhone);
   if(isPhone){
    const bounds=await page.locator('#lesson-input').evaluate(async el=>{
