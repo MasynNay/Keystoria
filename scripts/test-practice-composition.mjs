@@ -88,8 +88,8 @@ try{
   assert.ok((await page.locator('#lyric-progress').innerText()).startsWith('0/'),
    'composition Enter must not submit or skip the lyric');
   await commit(page,'#lyric-input','Signals');
-  await page.waitForFunction(()=>document.querySelector('#lyric-current-line')?.innerHTML!==document.body.dataset.beforeLyric,
-   {timeout:1000}).catch(()=>{});
+  await page.waitForFunction(before=>
+   document.querySelector('#lyric-current-line')?.innerHTML!==before,beforeLyrics);
   assert.notEqual(await page.locator('#lyric-current-line').innerHTML(),beforeLyrics,
    'after commitment Lyric Lab displays ordinary partial/complete word feedback');
   if(phone)await page.locator('#lyric-input').press('Enter');
@@ -115,8 +115,8 @@ try{
   assert.equal(await page.locator('#training-feedback').innerText(),beforeStatus,
    'IME conversion Enter must not submit an incomplete Academy command');
   await commit(page,'#lesson-input',target);
-  await page.waitForFunction(()=>document.querySelector('#lesson-target-text')?.querySelector('.correct')!==null)
-   .catch(()=>{});
+  await page.waitForFunction(before=>
+   document.querySelector('#lesson-target-text')?.innerHTML!==before,beforeCommand);
   await page.locator('#lesson-input').press('Enter');
   assert.match(await page.locator('#training-feedback').innerText(),/COMMAND RECOGNIZED/,
    'committed command remains valid and Enter submits after compositionend');
