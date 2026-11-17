@@ -31,6 +31,15 @@ try{
    assert.ok((await page.locator('#speed-mobile-first').textContent())!==null);
    await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
    assert.equal(await input.inputValue(),'abc ','space control must add exactly one space');
+   // A player can correct an earlier separator without losing the suffix or focus.
+   await input.evaluate(el=>el.setSelectionRange(1,1));
+   await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
+   assert.equal(await input.inputValue(),'a bc ','space control must insert at the caret, not append');
+   assert.equal(await input.evaluate(el=>el.selectionStart),2,'caret advances after inserted separator');
+   assert.equal(await input.evaluate(el=>document.activeElement===el),true,'touch separator must return typing focus');
+   await input.evaluate(el=>el.setSelectionRange(1,3));
+   await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
+   assert.equal(await input.inputValue(),'a c ','selected text must be replaced with one separator');
    await page.locator('.speed-mobile-entry [data-action="speed-restart"]').click();
    assert.equal(await page.locator('#speed-input').inputValue(),'');
   } else {
@@ -45,6 +54,13 @@ try{
   if(isPhone){
     await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
     assert.equal(await page.locator('#speed-input').inputValue(),numericReference.slice(0,3)+' ');
+    // Numpad phone keyboards often have no Space key. Repair a missing separator.
+    const digitsWithoutSpace=numericReference.slice(0,3)+numericReference.slice(4,6);
+    await page.locator('#speed-input').fill(digitsWithoutSpace);
+    await page.locator('#speed-input').evaluate(el=>el.setSelectionRange(3,3));
+    await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
+    assert.equal(await page.locator('#speed-input').inputValue(),numericReference.slice(0,6),'Numpad separator inserted between groups');
+    assert.equal(await page.locator('#speed-accuracy').innerText(),'100%','repaired Numpad group scores correctly');
   } else {
     await page.locator('#speed-input').fill(numericReference.slice(0,3)+' ');
   }
