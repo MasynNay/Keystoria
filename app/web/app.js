@@ -1,5 +1,5 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
-import { trainingTemplate } from "./ui/training-view.js?v=0.27.0";
+import { trainingTemplate } from "./ui/training-view.js?v=0.28.0";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.31.0";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.31.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.30.0";
@@ -17,7 +17,7 @@ import { createViews } from "./ui/views.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
-import { setupMobileTyping, patchMobileTraining } from "./ui/mobile-typing.js?v=0.29.0";
+import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.29.0";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
@@ -568,19 +568,40 @@ app.addEventListener("click",event=>{
 function renderTrainingInPlace() {
   const top=window.scrollY;
   const focused=$("#lesson-input");
+  // Clicking CHECK replaces that button with NEXT. Focus the next available
+  // action for keyboard/screen-reader users instead of dropping to <body>.
+  // Enter from the input itself continues to keep focus on the native field.
+  const checkedFromButton=document.activeElement?.matches?.('button[data-action="training-submit"]')===true;
+  const focusAfterUpdate=()=>{
+    if(checkedFromButton && state.lesson?.answered){
+      const next=[
+        $('.academy-mobile-entry [data-action="training-next"]'),
+        $('.terminal-inner > .training-buttons [data-action="training-next"]')
+      ].find(button=>button?.getClientRects().length);
+      if(next){next.focus({preventScroll:true});return;}
+    }
+    $("#lesson-input")?.focus({preventScroll:true});
+  };
   // Never remove the focused native input while a phone's keyboard is up.
-  if (focused && !state.lesson?.completed && window.matchMedia("(max-width:760px)").matches) {
+  if (focused && !state.lesson?.completed && window.matchMedia(MOBILE_TYPING_MEDIA).matches) {
     const draft=document.createElement("div");
     draft.innerHTML=trainingTemplate(state.lesson,header);
     if(patchMobileTraining($(".academy-play"),draft.querySelector(".academy-play"))){
-      if(!focused.readOnly)focused.focus({preventScroll:true});
+      focusAfterUpdate();
       return;
     }
   }
   state.layout="";
   render();
+  if(state.lesson?.completed){
+    // The native input no longer exists on the result screen. Move focus to
+    // the success heading, so keyboard and screen-reader players are not left
+    // on the document body after their final Enter/Finish action.
+    $("#academy-complete-heading")?.focus();
+    return;
+  }
   window.scrollTo({top,behavior:"instant"});
-  $("#lesson-input")?.focus({preventScroll:true});
+  focusAfterUpdate();
 }
 
 function advanceLesson() {
@@ -597,6 +618,14 @@ function advanceLesson() {
   }
   session.referenceIndex=null;
   renderTrainingInPlace();
+  if(!session.completed){
+    // On a phone the original input remains focused (to preserve the soft
+    // keyboard). Announce the new command without blurring it or speaking
+    // every keystroke. This live region survives the mobile in-place patch.
+    const command=LESSONS[session.os].commands[activeCommandIndex(session)].text;
+    const cue=$("#academy-step-announcement");
+    if(cue)cue.textContent=`Step ${session.index+1} of ${LESSONS[session.os].commands.length}. Type: ${command}`;
+  }
 }
 
 function submitLesson() {
