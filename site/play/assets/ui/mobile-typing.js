@@ -22,6 +22,20 @@ export function mobileScrollDelta(rect,visibleTop,visibleHeight,padding=12) {
  if(rect.top<top+margin)return rect.top-(top+margin);
  return 0;
 }
+/** The practice prompt and input are the critical region while a native
+ * software keyboard is visible. Controls below the field remain scrollable,
+ * but must not push the cue above the viewport during focus corrections.
+ */
+export function mobileFocusBounds(field) {
+ if (!field?.getBoundingClientRect) return null;
+ const input=field.getBoundingClientRect();
+ const cue=field.closest?.('.mobile-typing-entry')
+   ?.querySelector?.('.mobile-speed-cue,.mobile-lyric-word,.mobile-academy-target');
+ const target=cue?.getBoundingClientRect?.();
+ if (!target || target.height<=0) return input;
+ return {top:Math.min(target.top,input.top),bottom:Math.max(target.bottom,input.bottom)};
+}
+
 /** Update a mobile Academy lesson without detaching its native text input.
  * Keeping the same focused input node avoids closing the software keyboard
  * between accepted commands on touch devices. Returns false for final screens.
@@ -74,7 +88,7 @@ export function setupMobileTyping(root) {
  function position() {
    queued=false;
    if(!active||!active.isConnected||!isMobile())return;
-   const bounds=active.closest('.mobile-typing-entry')?.getBoundingClientRect()||active.getBoundingClientRect();
+   const bounds=mobileFocusBounds(active);
    const top=viewport?.offsetTop||0;
    const height=viewport?.height||window.innerHeight;
    const delta=mobileScrollDelta(bounds,top,height);
