@@ -89,6 +89,10 @@ try {
   await select(JSON.stringify({...exported,version:99}));
   await page.locator('#toast-layer').getByText(/Use a Keystoria Speed Lab/).waitFor();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')).length),3);
+  // The change event starts an async file reader. Seeing the toast is not proof
+  // its finally-block has restored focus; wait for that work to finish before
+  // moving focus to Clear, or a late restore can steal the next key press.
+  await page.waitForFunction(()=>document.activeElement?.dataset.action==='speed-import');
 
   // Clearing history rebuilds the panel. Drive Enter on the actual control,
   // not the page-wide keyboard: pending focus restoration from a file picker
