@@ -18,6 +18,8 @@ These tests model a *reduced CSS viewport*, **not actual 200%/400% browser zoom,
 
 A separate test checks the 15 palette definitions for at least 4.5:1 text/muted/accent contrast on the background and two panel surfaces, and compares CSS theme tokens with the JavaScript palette. This only validates defined colors, not every rendered element.
 
+**Lyric Lab announced target:** The focused native lyric input is associated with a visually hidden, polite live region containing only the current target word and the responsive submission instructions. The word cue changes on progression, not with each typed character. Browser QA validates initial target exposure and target changes after submitting words in portrait, touch landscape, wide desktop, and 320px/640px reflow. Actual pronunciation, announcement timing, verbosity, and live-region behavior in NVDA, VoiceOver, and TalkBack still need manual testing.
+
 The same checks run in GitHub Pages pull-request CI before deployment. These are *Chromium simulations*, not device or screen-reader certification.
 
 ## Manual assistive technology checklist (not yet verified)
