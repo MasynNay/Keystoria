@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js?v=0.27.1';
-import { nextSpeedCue } from './mobile-typing.js';
+import { MOBILE_TYPING_MEDIA, nextSpeedCue } from './mobile-typing.js?v=0.29.0';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
@@ -38,7 +38,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     clearTimer();
     flow=null;
     const selectedPack=PACKS[pack] ? pack : 'everyday';
-    const phoneLayout=window.matchMedia?.('(max-width: 760px)').matches ?? false;
+    const phoneLayout=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
     const keyboardAssist=phoneLayout && selectedPack!=='numpad' && preferredAssist();
     state.speed={
       pack:selectedPack,
@@ -75,7 +75,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     const seconds=elapsed();
     const metrics=scoreSpeedRun(session.reference,session.typed,Math.max(1,seconds),session.keystrokes);
     // Mount the passage once; only letter classes and vertical scroll update.
-    const mobile=window.matchMedia?.('(max-width: 760px)').matches ?? false;
+    const mobile=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
     if (!flow || flow.windowed !== mobile)
       flow=createSpeedFlow(node('speed-letters'),session.reference,{windowed:mobile});
     flow?.update(session.typed);

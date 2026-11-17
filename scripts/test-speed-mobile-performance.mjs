@@ -4,9 +4,14 @@ import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const errors=[];
 try{
- for(const width of [320,390,1440]){
-  const mobile=width<=760;
-  const ctx=await browser.newContext({viewport:{width,height:844},isMobile:mobile,hasTouch:mobile});
+ // Include short touch landscape and equally short mouse desktop, whose
+ // widths match but whose mobile keyboard/rendering needs differ.
+ for(const {width,height,mobile} of [
+  {width:320,height:844,mobile:true},{width:390,height:844,mobile:true},
+  {width:844,height:390,mobile:true},{width:844,height:390,mobile:false},
+  {width:1440,height:844,mobile:false},
+ ]){
+  const ctx=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile});
   const page=await ctx.newPage();
   page.setDefaultTimeout(12000);
   page.on('pageerror',e=>errors.push(String(e)));
@@ -20,9 +25,11 @@ try{
   const reference=await view.evaluate(el=>el.dataset.fullReference||el.textContent);
   assert.ok(reference.length>2000,'scoring reference must retain all 700 words');
   const initial=await view.locator('.type-char').count();
-  if(mobile) assert.ok(initial<=220,'phone initial DOM must be bounded: '+initial);
+  if(mobile) assert.ok(initial<=220,'phone/touch landscape DOM must be bounded: '+initial+' at '+width+'x'+height);
   else assert.equal(initial,reference.length,'desktop must preserve full passage');
   assert.equal(await view.getAttribute('data-accuracy'),'100');
+  assert.equal(await page.locator('.mobile-speed-cue').isVisible(),mobile,
+   'cue visibility and render-window mode must agree at '+width+'x'+height);
 
   // A single input event after a substantial typing burst still positions the
   // cursor correctly; the reference never shortens as the visual window moves.
