@@ -30,11 +30,35 @@ try{
   await page.keyboard.press('Enter');
   assert.equal(await page.locator('.theme-choice[data-theme-id="aurora"]').getAttribute('aria-pressed'),'true');
   assert.match(await page.locator('#theme-selection-status').innerText(),/Aurora/i);
+  // Every preference must update without detaching the button or closing the
+  // dialog. Rebuilding it used to discard keyboard focus and scroll position.
+  const optionClasses={largerType:'larger-type',highContrast:'high-contrast',reducedMotion:'reduce-motion'};
+  for(const [key,bodyClass] of Object.entries(optionClasses)){
+    const option=page.locator('[data-action="setting"][data-setting="'+key+'"]');
+    await option.focus();
+    await option.evaluate(el=>{
+      window.__optionBefore=el;
+      window.__settingsBefore=el.closest('.settings-modal');
+      // A long settings dialog is scrollable on small screens.
+      if(window.__settingsBefore.scrollHeight>window.__settingsBefore.clientHeight)
+        window.__settingsBefore.scrollTop=40;
+    });
+    const scrollBefore=await page.locator('.settings-modal').evaluate(el=>el.scrollTop);
+    await page.keyboard.press('Enter');
+    assert.equal(await option.getAttribute('aria-pressed'),'true',key+' is activated with Enter');
+    assert.equal(await option.evaluate(el=>el===window.__optionBefore),true,key+' retains its original DOM node');
+    assert.equal(await option.evaluate(el=>document.activeElement===el),true,key+' retains keyboard focus');
+    assert.equal(await page.locator('.settings-modal').evaluate(el=>el===window.__settingsBefore),true,key+' keeps the modal mounted');
+    assert.equal(await option.locator('.setting-switch').evaluate(el=>el.classList.contains('on')),true,key+' updates the visible switch');
+    assert.equal(await page.locator('body').evaluate((el,cls)=>el.classList.contains(cls),bodyClass),true,key+' applies the preference immediately');
+    if(scrollBefore>0)assert.ok(await page.locator('.settings-modal').evaluate(el=>el.scrollTop)>0,key+' keeps settings scrolled');
+    assert.equal(await page.evaluate(k=>JSON.parse(localStorage.getItem('panic.preferences.v1'))[k],key),true,key+' is saved');
+  }
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.settings-modal').count(),0);
   assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.action),'settings','focus returns to opener');
   await context.close();
  }
  assert.deepEqual(errors,[],'no uncaught errors during modal keyboard interaction');
- console.log('PASS: modal focus cycling, focus restoration, keyboard theme activation and mobile/desktop widths.');
+ console.log('PASS: modal focus cycling, theme switching and in-place accessibility preferences at mobile/desktop widths.');
 }finally{await browser.close();}
