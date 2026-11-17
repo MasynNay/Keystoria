@@ -97,9 +97,31 @@ try{
    await input.evaluate(el=>el.setSelectionRange(1,3));
    await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
    assert.equal(await input.inputValue(),'a c ','selected text must be replaced with one separator');
+   // Tap deletion should preserve native input identity, caret and all text
+   // after a middle word. No virtual keyboard or timer restart is requested.
+   await page.evaluate(()=>{window.__speedBackWordField=document.querySelector('#speed-input')});
+   assert.equal(await page.locator('.speed-mobile-entry [data-action="speed-back-word"]').isVisible(),true);
+   await input.fill('alpha beta gamma');
+   await input.evaluate(el=>el.setSelectionRange(10,10));
+   await page.locator('.speed-mobile-entry [data-action="speed-back-word"]').click();
+   assert.equal(await input.inputValue(),'alpha gamma','middle word deletion preserves the suffix');
+   assert.equal(await input.evaluate(el=>el.selectionStart),6,'caret remains at deletion point');
+   assert.equal(await input.evaluate(el=>document.activeElement===el),true,'Back Word restores focus');
+   assert.equal(await input.evaluate(el=>el===window.__speedBackWordField),true,'Back Word does not remount the input');
+   await input.fill('alpha beta');
+   await page.locator('.speed-mobile-entry [data-action="speed-back-word"]').click();
+   assert.equal(await input.inputValue(),'alpha ','end-of-field Back Word removes only the last word');
+   await input.evaluate(el=>el.setSelectionRange(0,6));
+   await page.locator('.speed-mobile-entry [data-action="speed-back-word"]').click();
+   assert.equal(await input.inputValue(),'','selection deletion matches the selection');
+   await page.locator('.speed-mobile-entry [data-action="speed-back-word"]').click();
+   assert.equal(await input.inputValue(),'','empty Back Word has no effect');
+   assert.equal(await input.evaluate(el=>document.activeElement===el),true,'empty Back Word restores focus');
    await page.locator('.speed-mobile-entry [data-action="speed-restart"]').click();
    assert.equal(await page.locator('#speed-input').inputValue(),'');
   } else {
+   assert.equal(await page.locator('.speed-mobile-entry [data-action="speed-back-word"]').isVisible(),false,
+    'Back Word is a touch-layout action, hidden on desktop');
    assert.equal(await page.locator('.mobile-entry-actions').first().isVisible(),false);
   }
   await page.locator('[data-action="speed-pack"][data-pack="numpad"]').click();
@@ -118,6 +140,12 @@ try{
     await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
     assert.equal(await page.locator('#speed-input').inputValue(),numericReference.slice(0,6),'Numpad separator inserted between groups');
     assert.equal(await page.locator('#speed-accuracy').innerText(),'100%','repaired Numpad group scores correctly');
+    await page.locator('#speed-input').evaluate(el=>el.setSelectionRange(el.value.length,el.value.length));
+    await page.locator('.speed-mobile-entry [data-action="speed-back-word"]').click();
+    assert.equal(await page.locator('#speed-input').inputValue(),numericReference.slice(0,4),
+      'Back Word deletes the previous digit group without restarting Numpad');
+    assert.equal(await page.locator('#speed-input').evaluate(el=>document.activeElement===el),true,
+      'Numpad correction retains native typing focus');
   } else {
     await page.locator('#speed-input').fill(numericReference.slice(0,3)+' ');
   }

@@ -13,6 +13,24 @@ export function nextSpeedCue(reference,typed,visible=38) {
  const count=Math.max(2,Math.floor(Number(visible)||38));
  return {next:source[offset]||'',rest:source.slice(offset+1,offset+count),remaining:source.length-offset};
 }
+
+/** Range to delete when a phone player taps Back Word. Mirrors text-editing
+ * keyboard shortcuts, but never deletes text after the caret or changes a
+ * pre-existing selection. Removing a middle word also avoids double spaces.
+ */
+export function previousWordRange(value,start,end=start){
+ const text=String(value??'');
+ const pos=n=>Math.max(0,Math.min(text.length,Number.isFinite(n)?Math.trunc(n):text.length));
+ const a=Math.min(pos(start),pos(end)),b=Math.max(pos(start),pos(end));
+ if(a!==b)return {start:a,end:b};
+ let from=a;
+ while(from>0 && /\s/.test(text[from-1]))from--;
+ while(from>0 && !/\s/.test(text[from-1]))from--;
+ let to=a;
+ if(from<a && from>0 && /\s/.test(text[from-1]) && /\s/.test(text[to]||''))to++;
+ return {start:from,end:to};
+}
+
 /** Positive delta scrolls the document downward; negative scrolls upward. */
 export function mobileScrollDelta(rect,visibleTop,visibleHeight,padding=12) {
  const top=Math.max(0,Number(visibleTop)||0);
