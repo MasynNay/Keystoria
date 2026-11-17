@@ -40,6 +40,8 @@ try {
   // Files with invalid JSON and wrong schema never prompt for overwrite.
   await select('{not-json');
   await page.locator('#toast-layer').getByText(/not valid JSON/).waitFor();
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'speed-import',
+    'invalid file restores focus to the visible Restore Export button');
   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
   await select(JSON.stringify({format:'other',version:1,records}));
   await page.locator('#toast-layer').getByText(/Use a Keystoria Speed Lab/).waitFor();
@@ -53,6 +55,8 @@ try {
   assert.match(cancelDialog.message(),/Replace 0 saved/);
   await cancelDialog.dismiss();
   await cancelUpload;
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'speed-import',
+    'cancelled replacement restores focus to the visible restore button');
   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
 
   const accepted=page.waitForEvent('dialog');
@@ -62,6 +66,8 @@ try {
   await dialog.accept();
   await acceptUpload;
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]').length===3);
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'speed-import',
+    'successful restore preserves keyboard navigation after rebuilding the panel');
   assert.equal(await panel.getAttribute('data-matches'),'1','mode-specific comparisons remain isolated');
   assert.equal(await input.inputValue(),'ke','restoring must not erase active typing');
   assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__typingNode),true,'restoring must not replace the input');
@@ -83,6 +89,19 @@ try {
   await select(JSON.stringify({...exported,version:99}));
   await page.locator('#toast-layer').getByText(/Use a Keystoria Speed Lab/).waitFor();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')).length),3);
+
+  // Clearing saved history recreates the panel; focus must not be lost.
+  await page.locator('[data-action="speed-clear"]').focus();
+  const clearing=page.waitForEvent('dialog');
+  const clearAction=page.keyboard.press('Enter');
+  const clearDialog=await clearing;
+  assert.match(clearDialog.message(),/Clear all saved Speed Lab results/);
+  await clearDialog.accept();
+  await clearAction;
+  await page.waitForFunction(()=>localStorage.getItem('panic.speed.results.v1')===null);
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'speed-clear',
+    'clear action returns focus to the replacement button');
+  assert.equal(await input.inputValue(),'ke','clearing records must preserve ongoing typing');
   await context.close();
  }
  assert.deepEqual(errors,[],'file import must not cause unhandled browser errors');
