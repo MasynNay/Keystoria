@@ -88,7 +88,11 @@ try{
       const css=el=>getComputedStyle(document.querySelector(el));
       const body=getComputedStyle(document.body);
       const isVisible=el=>el.getBoundingClientRect().height>0;
-      const rgb=s=>{const match=s.match(/[0-9.]+/g);return match?.slice(0,3).map(Number).join(',');};
+      const rgb=s=>{
+        const value=s.trim();
+        if(/^#[0-9a-f]{6}$/i.test(value))return [1,3,5].map(i=>parseInt(value.slice(i,i+2),16)).join(',');
+        return (value.match(/[0-9.]+/g)||[]).slice(0,3).map(Number).join(',');
+      };
       const panel=body.getPropertyValue('--theme-panel-2').trim();
       const surface=css('.mobile-speed-cue');
       const action=css('.speed-mobile-entry .mobile-entry-actions button:last-child');
