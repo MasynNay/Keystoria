@@ -11,6 +11,7 @@ try {
  for(const {width,height,mobile} of [
   {width:320,height:844,mobile:true},{width:390,height:844,mobile:true},
   {width:844,height:390,mobile:true},{width:844,height:390,mobile:false},
+  {width:320,height:844,mobile:false},
   {width:1440,height:844,mobile:false},
  ]){
   const ctx=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile});
@@ -57,9 +58,9 @@ try {
    await page.locator('[data-action="speed-open"]').first().click();
    assert.equal(await toggle.getAttribute('aria-pressed'),'true','native assist preference survives a page refresh');
   }else{
-   assert.equal(await toggle.isVisible(),false,'desktop must not show phone assistance');
-   assert.equal(await page.locator('.mobile-speed-cue').isVisible(),false,
-    'short non-touch desktop must not switch to compact layout');
+   assert.equal(await toggle.isVisible(),false,'desktop must not show phone assistance, even at narrow zoom-equivalent widths');
+   assert.equal(await page.locator('.mobile-speed-cue').isVisible(),width<=760,
+    'short mouse desktop stays full-layout; zoom-narrowed desktop keeps its compact cue');
    assert.deepEqual(await props(),{spellcheck:false,autocorrect:'off',autocomplete:'off',autocapitalize:'off'});
   }
 
@@ -88,7 +89,7 @@ try {
   }else{
    assert.match(await page.locator('.speed-assist-result-label').innerText(),/EXACT TYPING/);
    const records=await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]'));
-   assert.equal(records[0].practiceMode,'standard-exact');
+   assert.equal(records[0].practiceMode,'standard-exact','non-touch desktop must score as exact typing, even when zoom-narrowed');
   }
   await ctx.close();
  }

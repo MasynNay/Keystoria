@@ -9,6 +9,7 @@ try{
  for(const {width,height,mobile} of [
   {width:320,height:844,mobile:true},{width:390,height:844,mobile:true},
   {width:844,height:390,mobile:true},{width:844,height:390,mobile:false},
+  {width:320,height:844,mobile:false},
   {width:1440,height:844,mobile:false},
  ]){
   const ctx=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile});
@@ -25,10 +26,11 @@ try{
   const reference=await view.evaluate(el=>el.dataset.fullReference||el.textContent);
   assert.ok(reference.length>2000,'scoring reference must retain all 700 words');
   const initial=await view.locator('.type-char').count();
-  if(mobile) assert.ok(initial<=220,'phone/touch landscape DOM must be bounded: '+initial+' at '+width+'x'+height);
-  else assert.equal(initial,reference.length,'desktop must preserve full passage');
+  const compact=mobile||width<=760;
+  if(compact) assert.ok(initial<=220,'compact/zoom DOM must be bounded: '+initial+' at '+width+'x'+height);
+  else assert.equal(initial,reference.length,'wide desktop must preserve full passage');
   assert.equal(await view.getAttribute('data-accuracy'),'100');
-  assert.equal(await page.locator('.mobile-speed-cue').isVisible(),mobile,
+  assert.equal(await page.locator('.mobile-speed-cue').isVisible(),compact,
    'cue visibility and render-window mode must agree at '+width+'x'+height);
 
   // A single input event after a substantial typing burst still positions the
@@ -38,7 +40,7 @@ try{
   assert.equal(await view.getAttribute('data-accuracy'),'100');
   assert.equal(await view.locator('.type-char.incorrect').count(),0);
   assert.equal(await view.locator('.type-char.current').count(),1);
-  if(mobile){
+  if(compact){
    assert.ok(await view.locator('.type-char').count()<=220,'must not grow DOM after 330 chars');
    assert.equal(await page.locator('#speed-mobile-first').textContent(),reference[330]===' '?'␣':reference[330]);
   }
@@ -47,14 +49,14 @@ try{
   await input.fill(reference.slice(0,25));
   assert.equal(await view.getAttribute('data-accuracy'),'100');
   assert.equal(await view.locator('.type-char.current').count(),1);
-  if(mobile)assert.ok(await view.locator('.type-char').count()<=220,'backspace must not expand DOM');
+  if(compact)assert.ok(await view.locator('.type-char').count()<=220,'backspace must not expand DOM');
 
   // Deliberate wrong character must still score as an error.
   await input.fill(reference.slice(0,40)+'!');
   assert.ok(Number(await view.getAttribute('data-accuracy'))<100);
   await input.fill(reference.slice(0,620));
   assert.equal(await view.getAttribute('data-accuracy'),'100');
-  if(mobile)assert.ok(await view.locator('.type-char').count()<=220,'must stay bounded after 620 chars');
+  if(compact)assert.ok(await view.locator('.type-char').count()<=220,'must stay bounded after 620 chars');
 
   // The browser can finish and score the entire original stream, not only
   // the visible 220 characters.

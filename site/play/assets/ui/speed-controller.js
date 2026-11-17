@@ -38,7 +38,11 @@ export function createSpeedController({ state, onRender, playSound }) {
     clearTimer();
     flow=null;
     const selectedPack=PACKS[pack] ? pack : 'everyday';
-    const phoneLayout=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
+    const compact=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
+    // Browser zoom can shrink a mouse desktop to 320 CSS pixels. Keep the
+    // fast compact renderer, but never request phone autocorrect or label
+    // physical-keyboard scores as Assisted unless the primary pointer is touch.
+    const phoneLayout=compact && (window.matchMedia?.('(pointer: coarse)').matches ?? false);
     const keyboardAssist=phoneLayout && selectedPack!=='numpad' && preferredAssist();
     state.speed={
       pack:selectedPack,

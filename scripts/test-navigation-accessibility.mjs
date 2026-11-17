@@ -61,6 +61,18 @@ try{
  // Reflow regression: narrow desktop CSS viewports approximate the layout space
  // available at 200% and 400% browser zoom on a 1280px-wide desktop.
  // This does NOT emulate browser text zoom or certify WCAG 1.4.10.
+ async function assertReflow(page,selector,mode,width){
+  const box=await page.locator(selector).first().evaluate(el=>{
+   const r=el.getBoundingClientRect();
+   return {left:r.left,right:r.right,width:r.width,
+    viewport:document.documentElement.clientWidth,
+    documentWidth:document.documentElement.scrollWidth};
+  });
+  assert.ok(box.width>0&&box.left>=-2&&box.right<=box.viewport+2,
+   mode+' control '+selector+' must fit '+width+'px zoom-equivalent view: '+JSON.stringify(box));
+  assert.ok(box.documentWidth<=box.viewport+2,
+   mode+' must not require horizontal page scrolling at '+width+'px: '+JSON.stringify(box));
+ }
  for(const width of [640,320]){
   const context=await browser.newContext({viewport:{width,height:800},isMobile:false,hasTouch:false});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(String(e)));
@@ -78,6 +90,44 @@ try{
   const bounds=await input.evaluate(el=>({left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,viewport:document.documentElement.clientWidth}));
   assert.ok(bounds.left>=-1&&bounds.right<=bounds.viewport+1,
    'Speed Lab input stays within narrow desktop viewport '+width+': '+JSON.stringify(bounds));
+  await assertReflow(page,'#speed-input','Speed Lab',width);
+  await assertReflow(page,'.speed-mobile-entry [data-action="speed-space"]','Speed Lab touch separator',width);
+  assert.equal(await page.locator('#speed-assist-toggle').isVisible(),false,
+   'zoom-narrowed desktop must not present an inoperative phone keyboard toggle');
+
+  // Exercise the playable lyric demo, not just its homepage layout. Word and
+  // touch-submit controls must be horizontally reachable without page panning.
+  await page.locator('[data-action="speed-home"]').first().click();
+  if(await page.locator('.welcome-continue').isVisible())await page.locator('.welcome-continue').click();
+  await page.locator('[data-action="lyric-open"]').first().click();
+  await page.locator('[data-action="lyric-demo"]').click();
+  await page.locator('#lyric-input').waitFor();
+  await page.locator('[data-action="lyric-mobile-toggle"]').click();
+  await page.waitForFunction(()=>!document.querySelector('#lyric-input')?.disabled);
+  const lyric=page.locator('#lyric-input');
+  await lyric.focus();
+  await page.keyboard.type('S');
+  assert.equal(await lyric.inputValue(),'S','Lyric typing remains editable at '+width+'px');
+  await assertReflow(page,'#lyric-input','Lyric Lab',width);
+  await assertReflow(page,'.lyric-mobile-entry [data-action="lyric-mobile-submit"]','Lyric Lab word submission',width);
+  await page.locator('[data-action="lyric-back"]').first().click();
+  await page.locator('[data-action="lyric-home"]').first().click();
+  if(await page.locator('.welcome-continue').isVisible())await page.locator('.welcome-continue').click();
+
+  // The Academy's command, real input, and submission controls all need to
+  // fit at high zoom. Accepting a command must not induce horizontal overflow.
+  await page.locator('[data-action="learn"][data-os="linux"]').click();
+  const academy=page.locator('#lesson-input');
+  await academy.focus();
+  await page.keyboard.type('l');
+  assert.equal(await academy.inputValue(),'l','Academy typing stays editable at '+width+'px');
+  await assertReflow(page,'#lesson-input','Field Academy',width);
+  await assertReflow(page,'.academy-mobile-entry [data-action="training-submit"]','Field Academy submission',width);
+  const command=await page.locator('#lesson-target-text').textContent();
+  await academy.fill(command);
+  await page.locator('.academy-mobile-entry [data-action="training-submit"]').click();
+  assert.match(await page.locator('#training-feedback').innerText(),/COMMAND RECOGNIZED/);
+  await assertReflow(page,'#lesson-input','Field Academy completed command',width);
   await context.close();
  }
 
