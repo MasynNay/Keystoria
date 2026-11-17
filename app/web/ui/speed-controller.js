@@ -131,14 +131,21 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (session.typed.length===session.reference.length) finish();
   }
 
-  /** Mobile separator stays a real input character, included in accuracy. */
+  /** Insert a real separator at the textarea selection, like a physical Space.
+   * A phone player may return to an earlier word or number group to correct it.
+   */
   function insertSpace(){
     const session=state.speed;
-    if(!session||session.status==='complete'||session.typed.length>=session.reference.length)return;
-    session.keystrokes++;
-    input(session.typed+' ');
     const field=node('speed-input');
-    if(field&&!field.disabled)field.focus({preventScroll:true});
+    if(!session||session.status==='complete'||!field||field.disabled)return;
+    const start=Number.isInteger(field.selectionStart)?field.selectionStart:field.value.length;
+    const end=Number.isInteger(field.selectionEnd)?field.selectionEnd:start;
+    // Replacing selected text is allowed at the reference limit; overflowing is not.
+    if(field.value.length-(end-start)+1>session.reference.length)return;
+    field.setRangeText(' ',start,end,'end');
+    session.keystrokes++;
+    input(field.value);
+    if(field.isConnected&&!field.disabled)field.focus({preventScroll:true});
   }
 
   /** Toggle phone native predictions without detaching the focused field.
