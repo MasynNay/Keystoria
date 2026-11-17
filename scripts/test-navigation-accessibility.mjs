@@ -106,7 +106,16 @@ try{
   await page.locator('[data-action="lyric-open"]').first().click();
   await page.locator('[data-action="lyric-demo"]').click();
   await page.locator('#lyric-input').waitFor();
-  assert.equal(await page.locator('#lyric-input').getAttribute('aria-describedby'),'lyric-typing-hint');
+  assert.equal(await page.locator('#lyric-input').getAttribute('aria-describedby'),
+   'lyric-screenreader-word lyric-typing-hint');
+  assert.equal(await page.locator('#lyric-screenreader-word').textContent(),'Current word: Signals');
+  // Reading/typing a partial word must not flood polite live announcements.
+  await page.evaluate(()=>{
+   window.__lyricWordChanges=0;
+   const cue=document.querySelector('#lyric-screenreader-word');
+   window.__lyricWordObserver=new MutationObserver(records=>{window.__lyricWordChanges+=records.length;});
+   window.__lyricWordObserver.observe(cue,{subtree:true,characterData:true,childList:true});
+  });
   assert.equal(await page.locator('.lyric-enter-compact').isVisible(),true);
   assert.equal(await page.locator('.lyric-enter-wide').isVisible(),false);
   await page.locator('[data-action="lyric-mobile-toggle"]').click();
@@ -115,10 +124,18 @@ try{
   await lyric.focus();
   await page.keyboard.type('S');
   assert.equal(await lyric.inputValue(),'S','Lyric typing remains editable at '+width+'px');
+  assert.equal(await page.evaluate(()=>window.__lyricWordChanges),0,
+   'typing a character must not repeat the word announcement');
   await lyric.fill('Signals');
+  assert.equal(await page.evaluate(()=>window.__lyricWordChanges),0,
+   'typing the complete word must not repeat its announcement before submission');
   await lyric.press('Enter');
   assert.ok((await page.locator('#lyric-progress').innerText()).startsWith('1/'),
    'compact non-touch zoom layout Enter submits word at '+width+'px');
+  await page.waitForFunction(()=>window.__lyricWordChanges>0);
+  assert.equal(await page.locator('#lyric-screenreader-word').textContent(),'Current word: through',
+   'new word is accessible after submission');
+  await page.evaluate(()=>window.__lyricWordObserver.disconnect());
   await assertReflow(page,'#lyric-input','Lyric Lab',width);
   await assertReflow(page,'.lyric-mobile-entry [data-action="lyric-mobile-submit"]','Lyric Lab word submission',width);
   await page.locator('[data-action="lyric-back"]').first().click();
