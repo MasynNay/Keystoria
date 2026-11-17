@@ -12,6 +12,10 @@ bash scripts/run-browser-qa.sh
 
 The `scripts/test-navigation-accessibility.mjs` test exercises 320px, 390px and 1440px browser widths. It verifies a visible-on-focus skip link that moves focus to the current page's main landmark, a keyboard-focused Speed Lab completion announcement, Field Academy status, system reduced-motion settings, user-selected reduced motion, and high-contrast skip-link text. Existing dialog focus cycling is covered by `scripts/test-dialog-keyboard.mjs`.
 
+**Desktop reflow simulations:** At 640px and 320px CSS viewport widths (roughly the space available at 200% and 400% zoom in a 1280px-wide window), automated tests now navigate through **Speed Lab, Lyric Lab and Field Academy** using a mouse/keyboard desktop browser. They check keyboard editing, that each active text field and primary touch/submit action fits horizontally, no page-wide horizontal scrolling, and successful Academy command submission. The Speed Lab checks also distinguish its compact rolling renderer from actual phone keyboard help: a zoom-narrowed *mouse desktop* must still be scored as exact desktop typing, with no inoperative phone-assist control. Phone keyboard help remains available on coarse-pointer touch devices.
+
+These tests model a *reduced CSS viewport*, **not actual 200%/400% browser zoom, text-only scaling, larger system fonts, or physical keyboard/screen-reader tests**. Those manual checks remain open in issue #3.
+
 A separate test checks the 15 palette definitions for at least 4.5:1 text/muted/accent contrast on the background and two panel surfaces, and compares CSS theme tokens with the JavaScript palette. This only validates defined colors, not every rendered element.
 
 The same checks run in GitHub Pages pull-request CI before deployment. These are *Chromium simulations*, not device or screen-reader certification.
