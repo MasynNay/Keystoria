@@ -1,5 +1,5 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
-import { trainingTemplate } from "./ui/training-view.js?v=0.27.0";
+import { trainingTemplate } from "./ui/training-view.js?v=0.28.0";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.31.0";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.31.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.30.0";
@@ -581,6 +581,13 @@ function renderTrainingInPlace() {
   }
   state.layout="";
   render();
+  if(state.lesson?.completed){
+    // The native input no longer exists on the result screen. Move focus to
+    // the success heading, so keyboard and screen-reader players are not left
+    // on the document body after their final Enter/Finish action.
+    $("#academy-complete-heading")?.focus();
+    return;
+  }
   window.scrollTo({top,behavior:"instant"});
   $("#lesson-input")?.focus({preventScroll:true});
 }
@@ -599,6 +606,14 @@ function advanceLesson() {
   }
   session.referenceIndex=null;
   renderTrainingInPlace();
+  if(!session.completed){
+    // On a phone the original input remains focused (to preserve the soft
+    // keyboard). Announce the new command without blurring it or speaking
+    // every keystroke. This live region survives the mobile in-place patch.
+    const command=LESSONS[session.os].commands[activeCommandIndex(session)].text;
+    const cue=$("#academy-step-announcement");
+    if(cue)cue.textContent=`Step ${session.index+1} of ${LESSONS[session.os].commands.length}. Type: ${command}`;
+  }
 }
 
 function submitLesson() {
