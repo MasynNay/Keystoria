@@ -237,7 +237,11 @@ export function createLyricLabController({state,onRender}){
   if(!chart)return;
   const lyricTime=Math.max(0,time+offset);
   const audioLine=currentLineAt(chart.lines,lyricTime),typeLine=index>=chart.words.length?chart.lines.length-1:chart.words[index]?.line??0;
-  const typed=$('lyric-input')?.value||'';
+  // The timed lyric repaint can run while native IME composition is active.
+  // Keep displaying the previously committed draft until compositionend.
+  const field=$('lyric-input');
+  const typed=field?.dataset.imeComposing==="true"
+    ? (field.dataset.imeCommitted||"") : (field?.value||"");
   const key=`${index}|${audioLine}|${typeLine}|${phase}|${wrong}|${offset}|${strict}|${typed}|${active}`;
   const live=$('lyric-live-text'),liveTime=$('lyric-live-time'),liveFill=$('lyric-live-fill');
   if(liveFill){const l=chart.lines[audioLine];const ratio=l&&lyricTime>=chart.lines[0].time?Math.max(0,Math.min(1,(lyricTime-l.time)/Math.max(.5,l.end-l.time))):0;liveFill.style.width=(ratio*100).toFixed(2)+'%';}
