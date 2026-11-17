@@ -23,7 +23,18 @@ try{
   assert.equal(await page.locator('.mobile-speed-cue').isVisible(),isPhone,'speed cue visible only on phones');
   const input=page.locator('#speed-input');
   await input.focus();
-  if(isPhone)assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-typing-active')),true);
+  if(isPhone){
+   assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-typing-active')),true);
+   const bounds=await input.evaluate(async el=>{
+    const {mobileFocusBounds}=await import('./assets/ui/mobile-typing.js');
+    const focus=mobileFocusBounds(el);
+    const cue=el.closest('.mobile-typing-entry').querySelector('.mobile-speed-cue').getBoundingClientRect();
+    const full=el.closest('.mobile-typing-entry').getBoundingClientRect();
+    return {focus,top:cue.top,fullBottom:full.bottom};
+   });
+   assert.equal(bounds.focus.top,bounds.top,'Speed Lab keyboard scrolling must include its current prompt');
+   assert.ok(bounds.focus.bottom<bounds.fullBottom,'Speed Lab keyboard scrolling must exclude actions below input');
+  }
   const next=await page.locator('#speed-mobile-first').textContent();
   assert.ok(next?.length===1 || next==='␣','a next character must be visible');
   await input.fill('abc');
@@ -73,6 +84,16 @@ try{
   await page.locator('#lyric-input').waitFor();
   assert.equal(await page.locator('.mobile-lyric-word').isVisible(),isPhone);
   if(isPhone){
+   const bounds=await page.locator('#lyric-input').evaluate(async el=>{
+    const {mobileFocusBounds}=await import('./assets/ui/mobile-typing.js');
+    const cue=el.closest('.mobile-typing-entry').querySelector('.mobile-lyric-word').getBoundingClientRect();
+    const wrapper=el.closest('.mobile-typing-entry').getBoundingClientRect();
+    return {focus:mobileFocusBounds(el),cueTop:cue.top,wrapperBottom:wrapper.bottom};
+   });
+   assert.equal(bounds.focus.top,bounds.cueTop,'Lyric focus rectangle must include active lyric');
+   assert.ok(bounds.focus.bottom<bounds.wrapperBottom,'Lyric touch actions must not displace lyric cue');
+  }
+  if(isPhone){
    await page.locator('[data-action="lyric-mobile-toggle"]').click();
    await page.locator('#lyric-input').fill('Signals');
    await page.locator('[data-action="lyric-mobile-submit"]').click();
@@ -89,6 +110,16 @@ try{
   await page.locator('[data-action="learn"][data-os="linux"]').click();
   await page.locator('#lesson-input').waitFor();
   assert.equal(await page.locator('.mobile-academy-target').isVisible(),isPhone);
+  if(isPhone){
+   const bounds=await page.locator('#lesson-input').evaluate(async el=>{
+    const {mobileFocusBounds}=await import('./assets/ui/mobile-typing.js');
+    const cue=el.closest('.mobile-typing-entry').querySelector('.mobile-academy-target').getBoundingClientRect();
+    const wrapper=el.closest('.mobile-typing-entry').getBoundingClientRect();
+    return {focus:mobileFocusBounds(el),cueTop:cue.top,wrapperBottom:wrapper.bottom};
+   });
+   assert.equal(bounds.focus.top,bounds.cueTop,'Academy focus rectangle must include active command');
+   assert.ok(bounds.focus.bottom<bounds.wrapperBottom,'Academy controls must not hide command prompt');
+  }
   const target=await page.locator('#lesson-target-text').textContent();
   assert.equal(await page.locator('#lesson-mobile-target').textContent(),target);
   await page.locator('#lesson-input').fill(target);
