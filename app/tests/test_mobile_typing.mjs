@@ -79,7 +79,7 @@ test('Back Word deletes prior token while preserving suffix, grouping and select
   'delete a middle word and its following separator to avoid duplicate spaces');
  assert.deepEqual(previousWordRange('alpha beta gamma',8),{start:6,end:8},
   'an in-word caret removes only text before the caret');
- assert.deepEqual(previousWordRange('123 4567 890',8),{start:4,end:8},
+ assert.deepEqual(previousWordRange('123 4567 890',8),{start:4,end:9},
   'number-pad groups are treated as words');
  assert.deepEqual(previousWordRange('alpha beta',6,10),{start:6,end:10},
   'a selection is deleted exactly rather than expanding to a full word');
