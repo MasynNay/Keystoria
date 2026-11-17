@@ -19,12 +19,31 @@ try {
   const input=page.locator('#speed-input');
   assert.equal(await insight.getAttribute('data-matches'),'0','new visitors have no comparable progress yet');
   assert.match(await insight.innerText(),/Finish a run/);
-  await page.evaluate(()=>{window.__speedInputNode=document.getElementById('speed-input')});
+  await page.evaluate(()=>{
+    window.__speedInputNode=document.getElementById('speed-input');
+    window.__compassBefore=document.getElementById('speed-practice-insights');
+    window.__goal90Before=document.querySelector('[data-action="speed-goal"][data-goal="90"]');
+    window.__statusBefore=document.querySelector('.speed-insight-tip');
+    window.__pickerBefore=document.getElementById('speed-import-file');
+    window.__clearBefore=document.querySelector('[data-action="speed-clear"]');
+  });
+  assert.equal(await insight.locator('.speed-insight-tip').getAttribute('aria-live'),'polite');
+  assert.equal(await insight.locator('.speed-insight-tip').getAttribute('aria-atomic'),'true');
   await input.fill('a');
   await page.locator('[data-action="speed-goal"][data-goal="90"]').click();
   assert.equal(await input.inputValue(),'a','goal change must not clear an active session');
   assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__speedInputNode),true,'goal change must not replace focused input');
   assert.equal(await insight.locator('[data-goal="90"]').getAttribute('aria-pressed'),'true');
+  assert.deepEqual(await page.evaluate(()=>({
+    panel:document.getElementById('speed-practice-insights')===window.__compassBefore,
+    goalButton:document.querySelector('[data-action="speed-goal"][data-goal="90"]')===window.__goal90Before,
+    liveStatus:document.querySelector('.speed-insight-tip')===window.__statusBefore,
+    filePicker:document.getElementById('speed-import-file')===window.__pickerBefore,
+    clearButton:document.querySelector('[data-action="speed-clear"]')===window.__clearBefore,
+    focused:document.activeElement===window.__goal90Before,
+  })),{panel:true,goalButton:true,liveStatus:true,filePicker:true,clearButton:true,focused:true},
+   'updating a practice goal must preserve all focusable controls and the live region');
+  assert.match(await insight.locator('.speed-insight-tip').innerText(),/Accuracy goal 90%:/);
   const reference=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
   await input.fill(reference);
   await page.locator('#speed-results-heading').waitFor();
@@ -62,6 +81,8 @@ try {
   await page.locator('[data-action="speed-goal"][data-goal="98"]').click();
   assert.match(await insight.locator('.speed-insight-trend').innerText(),/0 consecutive runs/,
    'streak recalculates when accuracy goal increases');
+  assert.match(await insight.locator('.speed-insight-tip').innerText(),/Accuracy goal 98%:/,
+   'a goal change updates the existing polite screen-reader announcement');
   assert.equal(await insight.locator('.speed-insight-trail li').count(),5,'a long history uses at most five bars');
   const horizontalOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert.ok(horizontalOverflow<=2,'progress trail must not cause horizontal overflow: '+horizontalOverflow);
@@ -79,12 +100,29 @@ try {
   assert.equal(exportData.records[0].pack,'everyday');
 
   // Clearing needs explicit confirmation; cancelling must retain the score.
+  await page.evaluate(()=>{
+    window.__compassBeforeClear=document.getElementById('speed-practice-insights');
+    window.__statusBeforeClear=document.querySelector('.speed-insight-tip');
+    window.__clearBeforeClear=document.querySelector('[data-action="speed-clear"]');
+    window.__pickerBeforeClear=document.getElementById('speed-import-file');
+  });
   page.once('dialog',dialog=>dialog.dismiss());
   await page.locator('[data-action="speed-clear"]').click();
   assert.equal(await insight.getAttribute('data-matches'),'5');
   page.once('dialog',dialog=>dialog.accept());
   await page.locator('[data-action="speed-clear"]').click();
   assert.equal(await insight.getAttribute('data-matches'),'0');
+  assert.equal(await insight.locator('.speed-insight-trail').count(),0,'clearing removes the stale trend');
+  assert.deepEqual(await page.evaluate(()=>({
+    panel:document.getElementById('speed-practice-insights')===window.__compassBeforeClear,
+    liveStatus:document.querySelector('.speed-insight-tip')===window.__statusBeforeClear,
+    clear:document.querySelector('[data-action="speed-clear"]')===window.__clearBeforeClear,
+    picker:document.getElementById('speed-import-file')===window.__pickerBeforeClear,
+    focused:document.activeElement===window.__clearBeforeClear,
+  })),{panel:true,liveStatus:true,clear:true,picker:true,focused:true},
+   'clearing history changes summary in place and preserves the focusable clear control');
+  assert.equal(await page.evaluate(()=>document.getElementById('speed-practice-insights')===window.__compassBefore),false,
+   'a completed run and restart legitimately remount the session view');
   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
   assert.equal(await page.locator('#speed-history-panel .speed-empty').count(),1);
 
