@@ -73,3 +73,52 @@ test('export contains only bounded saved records; clearing does not clear goals'
  assert.equal(readAccuracyGoal(s),98);
  assert.equal(clearSpeedResults({removeItem(){throw Error('blocked')}}),false);
 });
+
+
+test('recent trail compares only five matching runs in chronological display order',()=>{
+ const s={pack:'everyday',seconds:30,phoneLayout:true,keyboardAssistedEver:true};
+ const records=[
+  {pack:'everyday',seconds:30,practiceMode:'mobile-assisted',wpm:53,accuracy:97},
+  {pack:'everyday',seconds:30,practiceMode:'mobile-exact',wpm:480,accuracy:100},
+  {pack:'everyday',seconds:30,practiceMode:'mobile-assisted',wpm:47,accuracy:96},
+  {pack:'numpad',seconds:30,practiceMode:'standard-exact',wpm:999,cpm:999,accuracy:100},
+  {pack:'everyday',seconds:30,practiceMode:'mobile-assisted',wpm:45,accuracy:95},
+  {pack:'everyday',seconds:30,practiceMode:'mobile-assisted',wpm:40,accuracy:90},
+  {pack:'everyday',seconds:30,practiceMode:'mobile-assisted',wpm:38,accuracy:98},
+  {pack:'everyday',seconds:30,practiceMode:'mobile-assisted',wpm:22,accuracy:99}
+ ];
+ const summary=summarizeSpeedPractice(records,s,95);
+ assert.equal(summary.count,5);
+ assert.equal(summary.paceChange,6);
+ assert.equal(summary.goalStreak,3);
+ assert.deepEqual(summary.recent.map(run=>run.speed),[38,40,45,47,53]);
+ assert.deepEqual(summary.recent.map(run=>run.metGoal),[true,false,true,true,true]);
+ assert.equal(summarizeSpeedPractice(records,s,98).goalStreak,0,'changing goal recomputes streak without changing scores');
+ assert.equal(summarizeSpeedPractice(records,s,90).goalStreak,5,'goal streak is bounded by last five comparable runs');
+ assert.equal(summarizeSpeedPractice(records,{...s,keyboardAssistedEver:false},95).count,1,'assisted and exact remain separate');
+});
+
+test('trail handles empty, single, identical, malformed and numpad runs',()=>{
+ const s={pack:'everyday',seconds:30};
+ const empty=summarizeSpeedPractice([],s);
+ assert.deepEqual(empty.recent,[]);
+ assert.equal(empty.paceChange,null);
+ assert.equal(empty.goalStreak,0);
+ const one=summarizeSpeedPractice([{pack:'everyday',seconds:30,practiceMode:'standard-exact',wpm:35,accuracy:96}],s);
+ assert.equal(one.paceChange,null);
+ assert.equal(one.goalStreak,1);
+ const same=summarizeSpeedPractice([
+  {pack:'everyday',seconds:30,practiceMode:'standard-exact',wpm:35,accuracy:96},
+  {pack:'everyday',seconds:30,practiceMode:'standard-exact',wpm:35,accuracy:95},
+  {pack:'everyday',seconds:30,practiceMode:'standard-exact',wpm:999999,accuracy:100},
+ ],s);
+ assert.equal(same.paceChange,0);
+ assert.equal(same.count,2,'absurd tampered data is not visualized');
+ const numpad=summarizeSpeedPractice([
+  {pack:'numpad',seconds:15,wpm:9,cpm:120,accuracy:98},
+  {pack:'numpad',seconds:15,wpm:100,cpm:105,accuracy:97},
+ ],{pack:'numpad',seconds:15},95);
+ assert.equal(numpad.metric,'CPM');
+ assert.equal(numpad.paceChange,15);
+ assert.deepEqual(numpad.recent.map(r=>r.speed),[105,120]);
+});
