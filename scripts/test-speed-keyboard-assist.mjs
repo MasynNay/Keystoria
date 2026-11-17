@@ -6,9 +6,14 @@ import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const errors=[];
 try {
- for(const width of [320,390,1440]){
-  const mobile=width<=760;
-  const ctx=await browser.newContext({viewport:{width,height:844},isMobile:mobile,hasTouch:mobile});
+ // Include short touch landscape and equally short mouse desktop, whose
+ // widths match but whose mobile keyboard/rendering needs differ.
+ for(const {width,height,mobile} of [
+  {width:320,height:844,mobile:true},{width:390,height:844,mobile:true},
+  {width:844,height:390,mobile:true},{width:844,height:390,mobile:false},
+  {width:1440,height:844,mobile:false},
+ ]){
+  const ctx=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile});
   const page=await ctx.newPage();
   page.setDefaultTimeout(10000);
   page.on('pageerror',e=>errors.push(String(e)));
@@ -22,6 +27,8 @@ try {
   const props=async()=>field.evaluate(el=>({spellcheck:el.spellcheck,autocorrect:el.getAttribute('autocorrect'),autocomplete:el.getAttribute('autocomplete'),autocapitalize:el.getAttribute('autocapitalize')}));
   if(mobile){
    assert.equal(await toggle.isVisible(),true,'mobile assist switch must be visible');
+   assert.equal(await page.locator('.mobile-speed-cue').isVisible(),true,
+    'phone/touch-landscape typing cue must agree with keyboard assist');
    assert.equal(await toggle.getAttribute('aria-pressed'),'true','phone assistance defaults on');
    assert.deepEqual(await props(),{spellcheck:true,autocorrect:'on',autocomplete:'on',autocapitalize:'off'});
    await field.fill('test');
@@ -51,6 +58,8 @@ try {
    assert.equal(await toggle.getAttribute('aria-pressed'),'true','native assist preference survives a page refresh');
   }else{
    assert.equal(await toggle.isVisible(),false,'desktop must not show phone assistance');
+   assert.equal(await page.locator('.mobile-speed-cue').isVisible(),false,
+    'short non-touch desktop must not switch to compact layout');
    assert.deepEqual(await props(),{spellcheck:false,autocorrect:'off',autocomplete:'off',autocapitalize:'off'});
   }
 
@@ -62,7 +71,8 @@ try {
    assert.match(await page.locator('.speed-history').innerText(),/ASSISTED/);
    const history=await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]'));
    assert.equal(history[0].keyboardAssisted,true);
-   assert.equal(history[0].practiceMode,'mobile-assisted');
+   assert.equal(history[0].practiceMode,'mobile-assisted',
+    'touch landscape must keep assisted scores out of exact desktop comparisons');
    await page.locator('[data-action="speed-restart"]').first().click();
    await page.locator('#speed-assist-toggle').click();
    await page.locator('[data-action="speed-restart"]').first().click();
