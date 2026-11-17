@@ -24,10 +24,10 @@ export function previousWordRange(value,start,end=start){
  const a=Math.min(pos(start),pos(end)),b=Math.max(pos(start),pos(end));
  if(a!==b)return {start:a,end:b};
  let from=a;
- while(from>0 && /\\s/.test(text[from-1]))from--;
- while(from>0 && !/\\s/.test(text[from-1]))from--;
+ while(from>0 && /\s/.test(text[from-1]))from--;
+ while(from>0 && !/\s/.test(text[from-1]))from--;
  let to=a;
- if(from<a && from>0 && /\\s/.test(text[from-1]) && /\\s/.test(text[to]||''))to++;
+ if(from<a && from>0 && /\s/.test(text[from-1]) && /\s/.test(text[to]||''))to++;
  return {start:from,end:to};
 }
 
