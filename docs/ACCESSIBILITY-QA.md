@@ -2,6 +2,12 @@
 
 Keystoria is a typing-based portfolio application. This document distinguishes **automated evidence** from human testing that remains necessary.
 
+## Practice Compass live-update regression
+
+The Speed Lab's accuracy target, local result import and confirmed history deletion must update **the existing** Practice Compass DOM rather than reconstructing its interactive controls. A persistent `role="status"` element with `aria-live="polite"` announces the selected accuracy goal and current guidance. Keeping the live region mounted allows assistive technology to observe text changes; keeping the goal buttons, import picker and Clear control mounted protects keyboard focus, file-picker continuity and scroll position.
+
+`scripts/test-speed-insights-browser.mjs` and `scripts/test-speed-history-restore.mjs` check node identity, live-region semantics and focus retention at simulated 390px touch and 1440px desktop layouts. These checks cannot establish what VoiceOver, NVDA or TalkBack actually announces; assistive-technology and physical-phone checks remain required under [issue #3](https://github.com/MasynNay/Keystoria/issues/3).
+
 ## Automated browser checks
 
 From the repository root, install Node 22 and Playwright Chromium using the instructions in [QA.md](QA.md), then run:
