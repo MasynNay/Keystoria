@@ -45,6 +45,8 @@ try{
   assert.equal(await page.locator('main#app-main').count(),1,'Speed Lab main landmark');
   const text=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
   assert.ok(text.length>30,'a real timed Speed Lab prompt is available');
+  assert.equal(await page.locator('#speed-input').getAttribute('aria-describedby'),
+   'speed-input-instructions speed-mode','Speed instructions are linked to the focused text field');
   await page.locator('#speed-input').fill(text);
   await page.locator('#speed-results-heading').waitFor();
   await page.waitForFunction(()=>document.activeElement?.id==='speed-results-heading');
@@ -55,6 +57,8 @@ try{
   await page.locator('[data-action="learn"][data-os="linux"]').click();
   assert.equal(await page.locator('main#app-main').count(),1,'Field Academy main landmark');
   assert.equal(await page.locator('#training-feedback[role="status"]').count(),1,'Academy has accessible submission feedback');
+  assert.equal(await page.locator('#lesson-input').getAttribute('aria-describedby'),
+   'lesson-target-text training-feedback','Academy command and feedback are linked to the text field');
   await context.close();
  }
 
@@ -102,12 +106,19 @@ try{
   await page.locator('[data-action="lyric-open"]').first().click();
   await page.locator('[data-action="lyric-demo"]').click();
   await page.locator('#lyric-input').waitFor();
+  assert.equal(await page.locator('#lyric-input').getAttribute('aria-describedby'),'lyric-typing-hint');
+  assert.equal(await page.locator('.lyric-enter-compact').isVisible(),true);
+  assert.equal(await page.locator('.lyric-enter-wide').isVisible(),false);
   await page.locator('[data-action="lyric-mobile-toggle"]').click();
   await page.waitForFunction(()=>!document.querySelector('#lyric-input')?.disabled);
   const lyric=page.locator('#lyric-input');
   await lyric.focus();
   await page.keyboard.type('S');
   assert.equal(await lyric.inputValue(),'S','Lyric typing remains editable at '+width+'px');
+  await lyric.fill('Signals');
+  await lyric.press('Enter');
+  assert.ok((await page.locator('#lyric-progress').innerText()).startsWith('1/'),
+   'compact non-touch zoom layout Enter submits word at '+width+'px');
   await assertReflow(page,'#lyric-input','Lyric Lab',width);
   await assertReflow(page,'.lyric-mobile-entry [data-action="lyric-mobile-submit"]','Lyric Lab word submission',width);
   await page.locator('[data-action="lyric-back"]').first().click();
