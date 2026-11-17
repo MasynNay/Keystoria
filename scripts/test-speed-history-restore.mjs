@@ -21,7 +21,14 @@ try {
   const panel=page.locator('#speed-practice-insights');
   assert.equal(await page.locator('[data-action="speed-import"]').count(),1,'restore control must exist');
   await input.fill('ke');
-  await page.evaluate(()=>{window.__typingNode=document.getElementById('speed-input');});
+  await page.evaluate(()=>{
+    window.__typingNode=document.getElementById('speed-input');
+    window.__compassBefore=document.getElementById('speed-practice-insights');
+    window.__compassStatusBefore=document.querySelector('.speed-insight-tip');
+    window.__filePickerBefore=document.getElementById('speed-import-file');
+    window.__importBefore=document.querySelector('[data-action="speed-import"]');
+    window.__clearBefore=document.querySelector('[data-action="speed-clear"]');
+  });
   const mode=mobile?'mobile-assisted':'standard-exact';
   const records=[
    {pack:'everyday',seconds:30,wpm:42,rawWpm:48,accuracy:96,
@@ -69,6 +76,14 @@ try {
   assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'speed-import',
     'successful restore preserves keyboard navigation after rebuilding the panel');
   assert.equal(await panel.getAttribute('data-matches'),'1','mode-specific comparisons remain isolated');
+  assert.deepEqual(await page.evaluate(()=>({
+    panel:document.getElementById('speed-practice-insights')===window.__compassBefore,
+    status:document.querySelector('.speed-insight-tip')===window.__compassStatusBefore,
+    filePicker:document.getElementById('speed-import-file')===window.__filePickerBefore,
+    importButton:document.querySelector('[data-action="speed-import"]')===window.__importBefore,
+    clearButton:document.querySelector('[data-action="speed-clear"]')===window.__clearBefore,
+  })),{panel:true,status:true,filePicker:true,importButton:true,clearButton:true},
+   'restoring results must not reconstruct existing Practice Compass controls or live region');
   assert.equal(await input.inputValue(),'ke','restoring must not erase active typing');
   assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__typingNode),true,'restoring must not replace the input');
   const restored=await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')));
@@ -109,7 +124,11 @@ try {
   await clearAction;
   await page.waitForFunction(()=>localStorage.getItem('panic.speed.results.v1')===null);
   assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'speed-clear',
-    'clear action returns focus to the replacement button');
+    'clear action keeps focus on the original button');
+  assert.equal(await page.evaluate(()=>document.activeElement===window.__clearBefore),true,
+    'clear history does not replace its focused control');
+  assert.equal(await page.evaluate(()=>document.querySelector('.speed-insight-tip')===window.__compassStatusBefore),true,
+    'clear history updates the original screen-reader status');
   assert.equal(await input.inputValue(),'ke','clearing records must preserve ongoing typing');
   await context.close();
  }

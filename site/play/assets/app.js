@@ -1,6 +1,6 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js?v=0.28.0";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.34.0";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.35.0";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.34.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.32.0";
 import { readSpeedHistory } from "./ui/speed-engine.js";
@@ -230,7 +230,36 @@ async function restoreSpeedFile(field) {
 function refreshSpeedInsights() {
   if(!state.speed)return;
   const pulse=document.getElementById("speed-practice-insights");
-  if(pulse)pulse.outerHTML=speedInsightsPanel(state.speed);
+  if(pulse){
+    // Keep the live status, file picker and focusable goal buttons mounted.
+    // Replacing the entire panel discards the focused button and makes screen
+    // readers miss updates to a newly inserted role=status element.
+    const host=document.createElement("div");
+    host.innerHTML=speedInsightsPanel(state.speed);
+    const next=host.firstElementChild;
+    if(next){
+      pulse.dataset.matches=next.dataset.matches;
+      for(const selector of [".speed-insight-scope",".speed-insight-stats"]){
+        const current=pulse.querySelector(selector);
+        const updated=next.querySelector(selector);
+        if(current&&updated&&current.innerHTML!==updated.innerHTML)
+          current.innerHTML=updated.innerHTML;
+      }
+      const previousTrail=pulse.querySelector(".speed-insight-trail");
+      const nextTrail=next.querySelector(".speed-insight-trail");
+      if(previousTrail&&nextTrail)previousTrail.replaceWith(nextTrail);
+      else if(previousTrail)previousTrail.remove();
+      else if(nextTrail)pulse.querySelector(".speed-insight-tip")?.before(nextTrail);
+      for(const button of pulse.querySelectorAll('[data-action="speed-goal"]')){
+        const updated=next.querySelector('[data-action="speed-goal"][data-goal="'+button.dataset.goal+'"]');
+        if(updated)button.setAttribute("aria-pressed",updated.getAttribute("aria-pressed"));
+      }
+      const status=pulse.querySelector(".speed-insight-tip");
+      const updatedStatus=next.querySelector(".speed-insight-tip");
+      if(status&&updatedStatus&&status.textContent!==updatedStatus.textContent)
+        status.textContent=updatedStatus.textContent;
+    }
+  }
   const history=document.getElementById("speed-history-panel");
   if(history)history.innerHTML=speedHistoryPanel();
 }
