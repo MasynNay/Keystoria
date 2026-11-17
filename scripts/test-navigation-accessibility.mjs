@@ -98,6 +98,7 @@ try{
   // Exercise the playable lyric demo, not just its homepage layout. Word and
   // touch-submit controls must be horizontally reachable without page panning.
   await page.locator('[data-action="speed-home"]').first().click();
+  if(await page.locator('.welcome-continue').isVisible())await page.locator('.welcome-continue').click();
   await page.locator('[data-action="lyric-open"]').first().click();
   await page.locator('[data-action="lyric-demo"]').click();
   await page.locator('#lyric-input').waitFor();
@@ -111,6 +112,7 @@ try{
   await assertReflow(page,'.lyric-mobile-entry [data-action="lyric-mobile-submit"]','Lyric Lab word submission',width);
   await page.locator('[data-action="lyric-back"]').first().click();
   await page.locator('[data-action="lyric-home"]').first().click();
+  if(await page.locator('.welcome-continue').isVisible())await page.locator('.welcome-continue').click();
 
   // The Academy's command, real input, and submission controls all need to
   // fit at high zoom. Accepting a command must not induce horizontal overflow.
