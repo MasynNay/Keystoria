@@ -17,7 +17,7 @@ import { createViews } from "./ui/views.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
-import { setupMobileTyping, patchMobileTraining } from "./ui/mobile-typing.js?v=0.29.0";
+import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.29.0";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
@@ -583,7 +583,7 @@ function renderTrainingInPlace() {
     $("#lesson-input")?.focus({preventScroll:true});
   };
   // Never remove the focused native input while a phone's keyboard is up.
-  if (focused && !state.lesson?.completed && window.matchMedia("(max-width:760px)").matches) {
+  if (focused && !state.lesson?.completed && window.matchMedia(MOBILE_TYPING_MEDIA).matches) {
     const draft=document.createElement("div");
     draft.innerHTML=trainingTemplate(state.lesson,header);
     if(patchMobileTraining($(".academy-play"),draft.querySelector(".academy-play"))){
