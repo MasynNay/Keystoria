@@ -46,7 +46,12 @@ try{
   const text=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
   assert.ok(text.length>30,'a real timed Speed Lab prompt is available');
   assert.equal(await page.locator('#speed-input').getAttribute('aria-describedby'),
-   'speed-input-instructions speed-mode','Speed instructions are linked to the focused text field');
+   'speed-input-instructions speed-mode speed-screenreader-target',
+   'Speed instructions, status and current word are linked to the focused text field');
+  assert.equal(await page.locator('#speed-screenreader-target').getAttribute('aria-live'),'polite');
+  assert.equal(await page.locator('#speed-screenreader-target').getAttribute('aria-atomic'),'true');
+  assert.match(await page.locator('#speed-screenreader-target').textContent(),/^Current word: /,
+   'the active Speed Lab target is reachable in the input description');
   await page.locator('#speed-input').fill(text);
   await page.locator('#speed-results-heading').waitFor();
   await page.waitForFunction(()=>document.activeElement?.id==='speed-results-heading');
