@@ -117,8 +117,25 @@ export function setupMobileTyping(root) {
    },180);
  }
  function onResize(){
-   if(!isMobile()){active=null;document.body.classList.remove('mobile-typing-active');return;}
-   queue();
+   // A physical phone may cross the 760px breakpoint while rotating. Returning
+   // to portrait does not fire focusin again if the native input stayed focused.
+   // Reconcile with the actual focused element on every viewport change.
+   const focused=document.activeElement;
+   if(!isMobile()){
+     active=null;
+     document.body.classList.remove('mobile-typing-active');
+     return;
+   }
+   if(focused?.isConnected&&focused.matches?.(selector)){
+     if(active!==focused)blurToken++;
+     active=focused;
+     document.body.classList.add('mobile-typing-active');
+     queue();
+     return;
+   }
+   // Do not resurrect the keyboard-active UI for a stale or detached input.
+   active=null;
+   document.body.classList.remove('mobile-typing-active');
  }
  root.addEventListener('focusin',focus);
  root.addEventListener('focusout',blur);

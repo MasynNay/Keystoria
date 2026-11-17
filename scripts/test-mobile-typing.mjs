@@ -14,6 +14,30 @@ async function launch(width){
 async function homeFromModal(page){
  if(await page.locator('.welcome-continue').count() && await page.locator('.welcome-continue').isVisible())await page.locator('.welcome-continue').click();
 }
+/** Viewport rotation is emulated here; this does not open a real OS keyboard. */
+async function checkRotationFocus(page,fieldId,portraitWidth){
+ const input=page.locator('#'+fieldId);
+ await input.focus();
+ assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-typing-active')),true,
+  fieldId+' is active in portrait');
+ const before=await input.inputValue();
+ // Landscape crosses the layout breakpoint without blurring or replacing input.
+ await page.setViewportSize({width:844,height:390});
+ await page.waitForFunction(()=>!document.body.classList.contains('mobile-typing-active'));
+ assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+  fieldId+' stays focused when crossing into landscape');
+ await page.setViewportSize({width:portraitWidth,height:844});
+ await page.waitForFunction(()=>document.body.classList.contains('mobile-typing-active'));
+ assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+  fieldId+' stays focused after returning to portrait');
+ assert.equal(await input.inputValue(),before,fieldId+' retains typed content');
+ // A keyboard-sized short viewport must not drop the active state either.
+ await page.setViewportSize({width:portraitWidth,height:420});
+ await page.waitForFunction(()=>document.body.classList.contains('mobile-typing-active'));
+ assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+  fieldId+' retains focus during a short-height viewport resize');
+ await page.setViewportSize({width:portraitWidth,height:844});
+}
 try{
  for(const width of [320,390,1440]){
   const {page,ctx}=await launch(width);
@@ -35,6 +59,7 @@ try{
    assert.equal(bounds.focus.top,bounds.top,'Speed Lab keyboard scrolling must include its current prompt');
    assert.ok(bounds.focus.bottom<bounds.fullBottom,'Speed Lab keyboard scrolling must exclude actions below input');
   }
+  if(isPhone)await checkRotationFocus(page,'speed-input',width);
   const next=await page.locator('#speed-mobile-first').textContent();
   assert.ok(next?.length===1 || next==='␣','a next character must be visible');
   await input.fill('abc');
@@ -95,6 +120,7 @@ try{
   }
   if(isPhone){
    await page.locator('[data-action="lyric-mobile-toggle"]').click();
+   await checkRotationFocus(page,'lyric-input',width);
    await page.locator('#lyric-input').fill('Signals');
    await page.locator('[data-action="lyric-mobile-submit"]').click();
    assert.equal(await page.locator('#lyric-input').inputValue(),'');
@@ -120,6 +146,7 @@ try{
    assert.equal(bounds.focus.top,bounds.cueTop,'Academy focus rectangle must include active command');
    assert.ok(bounds.focus.bottom<bounds.wrapperBottom,'Academy controls must not hide command prompt');
   }
+  if(isPhone)await checkRotationFocus(page,'lesson-input',width);
   const target=await page.locator('#lesson-target-text').textContent();
   assert.equal(await page.locator('#lesson-mobile-target').textContent(),target);
   await page.locator('#lesson-input').fill(target);
