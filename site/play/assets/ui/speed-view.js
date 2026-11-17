@@ -37,6 +37,17 @@ export function speedInsightsPanel(session) {
     <div class="speed-insight-goals"><span>ACCURACY GOAL</span><div class="speed-insight-buttons" role="group" aria-label="Accuracy goal">
       ${ACCURACY_GOALS.map(value=>`<button type="button" data-action="speed-goal" data-goal="${value}" aria-pressed="${value===goal}">${value}%</button>`).join('')}
     </div></div>
+    ${pulse.recent.length ? `<div class="speed-insight-trail">
+      <div class="speed-insight-trail-heading"><strong>RECENT MATCHING RUNS</strong><small>Oldest to newest · up to five</small></div>
+      <ol aria-label="Recent comparable typing scores, oldest to newest">
+        ${pulse.recent.map((run,index)=>`<li>
+          <div class="speed-insight-bar" aria-hidden="true"><span style="height:${Math.max(6,Math.round(run.speed / Math.max(1,pulse.best) * 100))}%"></span></div>
+          <span class="speed-insight-bar-label">${run.speed} ${pulse.metric}</span>
+          <small>RUN ${index+1}${run.metGoal?' · GOAL MET':''}</small>
+        </li>`).join('')}
+      </ol>
+      <p class="speed-insight-trend">LAST VS PREVIOUS: <strong>${pulse.paceChange===null?'Need two runs':(pulse.paceChange>0?'+':'')+pulse.paceChange+' '+pulse.metric}</strong> · ACCURACY GOAL: <strong>${pulse.goalStreak} consecutive ${pulse.goalStreak===1?'run':'runs'} (max 5)</strong></p>
+    </div>` : ''}
     <p class="speed-insight-tip" role="status">${pulse.message}</p>
     <div class="speed-insight-privacy"><button type="button" data-action="speed-export">EXPORT RESULTS</button>
       <button type="button" data-action="speed-import">RESTORE EXPORT</button>
