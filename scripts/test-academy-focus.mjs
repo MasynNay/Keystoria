@@ -24,6 +24,8 @@ try {
   if(await welcome.count()&&await welcome.isVisible())await welcome.click();
   await page.locator('[data-action="learn"][data-os="linux"]').click();
   const input=page.locator('#lesson-input');
+  // Zoom-narrowed desktop uses the compact action layout even with a mouse.
+  const compact=width<=760||(phone&&height<=520);
   const cue=page.locator('#academy-step-announcement');
   assert.equal(await input.getAttribute('aria-describedby'),'lesson-target-text training-feedback');
   assert.equal(await cue.getAttribute('role'),'status');
@@ -46,7 +48,7 @@ try {
    if(i===0){
     // Clicking CHECK replaces the activated button with a NEXT button.
     // Focus must follow that new action rather than falling back to the body.
-    const selector=phone
+    const selector=compact
      ?'.academy-mobile-entry .mobile-entry-actions [data-action="training-submit"]'
      :'.terminal-inner > .training-buttons [data-action="training-submit"]';
     const check=page.locator(selector);
@@ -55,7 +57,7 @@ try {
     assert.match(await page.locator('#training-feedback').innerText(),/COMMAND RECOGNIZED/);
     assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'training-next',
      'button activation must focus visible NEXT action at '+width+'x'+height);
-    const next=page.locator(phone
+    const next=page.locator(compact
      ?'.academy-mobile-entry .mobile-entry-actions [data-action="training-next"]'
      :'.terminal-inner > .training-buttons [data-action="training-next"]');
     await next.click();
