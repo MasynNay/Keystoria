@@ -1,7 +1,7 @@
 /** Stateless presentation for the solo Speed Lab. */
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.32.0';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
