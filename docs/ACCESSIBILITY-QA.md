@@ -2,6 +2,12 @@
 
 Keystoria is a typing-based portfolio application. This document distinguishes **automated evidence** from human testing that remains necessary.
 
+## Speed Lab spoken target at word boundaries
+
+The Speed Lab input now references the existing instructions, session status and a persistent **Current word** / **Current number group** status using `aria-describedby`. The visually hidden element is present at both desktop and phone sizes, including the static GitHub Pages edition. The displayed reference passage and fast visual letter feedback remain unchanged.
+
+Only a change of the target word or digit group updates the `aria-live="polite"`, `aria-atomic="true"` node. In-progress character edits do **not** repeatedly reannounce the same target. Backspacing over a separator can announce the preceding word again. `app/tests/test_mobile_typing.mjs` covers boundary behavior; `scripts/test-mobile-typing.mjs` checks persistent element identity, mutation frequency and Numpad/word transitions at 320px, 390px and 1440px Chromium sizes; navigation tests confirm the input linkage. This does not establish actual NVDA, VoiceOver, TalkBack or physical mobile keyboard behavior.
+
 ## Practice Compass live-update regression
 
 The Speed Lab's accuracy target, local result import and confirmed history deletion must update **the existing** Practice Compass DOM rather than reconstructing its interactive controls. A persistent `role="status"` element with `aria-live="polite"` announces the selected accuracy goal and current guidance. Keeping the live region mounted allows assistive technology to observe text changes; keeping the goal buttons, import picker and Clear control mounted protects keyboard focus, file-picker continuity and scroll position.

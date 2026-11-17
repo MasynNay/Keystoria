@@ -14,6 +14,29 @@ export function nextSpeedCue(reference,typed,visible=38) {
  return {next:source[offset]||'',rest:source.slice(offset+1,offset+count),remaining:source.length-offset};
 }
 
+/** Accessible Speed Lab target. Unlike the per-character visible cursor, the
+ * spoken target changes only at a word/number-group boundary; otherwise a
+ * screen reader would be interrupted after every keystroke.
+ */
+export function speedSpokenTarget(reference, typed, numpad=false){
+ const source=String(reference??'');
+ const offset=Math.min(source.length,String(typed??'').length);
+ const prefix=numpad?'Current number group: ':'Current word: ';
+ if(offset>=source.length)return 'Passage complete';
+ let start=offset,end=offset;
+ while(start>0 && !/\s/.test(source[start-1]))start--;
+ while(end<source.length && !/\s/.test(source[end]))end++;
+ let target=source.slice(start,end);
+ if(!target){
+   start=offset;
+   while(start<source.length && /\s/.test(source[start]))start++;
+   end=start;
+   while(end<source.length && !/\s/.test(source[end]))end++;
+   target=source.slice(start,end);
+ }
+ return target?prefix+target:'Passage complete';
+}
+
 /** Range to delete when a phone player taps Back Word. Mirrors text-editing
  * keyboard shortcuts, but never deletes text after the caret or changes a
  * pre-existing selection. Removing a middle word also avoids double spaces.

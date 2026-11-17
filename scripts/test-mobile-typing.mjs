@@ -65,8 +65,8 @@ try{
   await page.locator('#speed-input').waitFor();
   assert.equal(await page.locator('.mobile-speed-cue').isVisible(),isPhone,'speed cue visible only on phones');
   const input=page.locator('#speed-input');
-  assert.equal(await input.getAttribute('aria-describedby'),'speed-input-instructions speed-mode',
-   'Speed input exposes its typing instructions and timer state');
+  assert.equal(await input.getAttribute('aria-describedby'),'speed-input-instructions speed-mode speed-screenreader-target',
+   'Speed input exposes its typing instructions, timer state and current target');
   await input.focus();
   if(isPhone){
    assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-typing-active')),true);
@@ -83,6 +83,37 @@ try{
   if(isPhone)await checkRotationFocus(page,'speed-input',width);
   const next=await page.locator('#speed-mobile-first').textContent();
   assert.ok(next?.length===1 || next==='␣','a next character must be visible');
+  const spoken=page.locator('#speed-screenreader-target');
+  assert.equal(await spoken.getAttribute('role'),'status');
+  assert.equal(await spoken.getAttribute('aria-live'),'polite');
+  assert.equal(await spoken.getAttribute('aria-atomic'),'true');
+  assert.equal(await spoken.evaluate(el=>getComputedStyle(el).clipPath),'inset(50%)',
+   'spoken target is clipped visually but available to assistive technologies');
+  const wordReference=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+  const [firstWord,secondWord]=wordReference.split(/\s+/);
+  assert.ok(firstWord&&secondWord,'Speed Lab exposes at least two drill words');
+  assert.equal(await spoken.textContent(),'Current word: '+firstWord);
+  await page.evaluate(()=>{
+   window.__speedSpokenMutations=0;
+   window.__spokenNode=document.querySelector('#speed-screenreader-target');
+   window.__speedWordObserver=new MutationObserver(entries=>{window.__speedSpokenMutations+=entries.length});
+   window.__speedWordObserver.observe(window.__spokenNode,{characterData:true,childList:true,subtree:true});
+  });
+  await input.fill(firstWord.slice(0,Math.max(1,firstWord.length-1)));
+  await input.fill(firstWord);
+  assert.equal(await page.evaluate(()=>window.__speedSpokenMutations),0,
+   'per-character typing must not repeatedly announce the same word');
+  await input.fill(firstWord+' ');
+  assert.equal(await spoken.textContent(),'Current word: '+secondWord,
+   'a completed word announces the next target');
+  assert.ok(await page.evaluate(()=>window.__speedSpokenMutations)>0,
+   'word boundary updates the mounted polite live region');
+  assert.equal(await spoken.evaluate(el=>el===window.__spokenNode),true,
+   'word transition never remounts the screen-reader status');
+  await input.fill(firstWord);
+  assert.equal(await spoken.textContent(),'Current word: '+firstWord,
+   'backspace across the separator restores the previous target');
+  await page.evaluate(()=>window.__speedWordObserver.disconnect());
   await input.fill('abc');
   if(isPhone){
    assert.ok((await page.locator('#speed-mobile-first').textContent())!==null);
@@ -129,6 +160,10 @@ try{
   assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),'numeric');
   const numericReference=await page.locator('#speed-letters').innerText();
   assert.match(numericReference,/^\d{3} \d{4}/);
+  const secondGroup=numericReference.split(/\s+/)[1];
+  assert.equal(await page.locator('#speed-screenreader-target').textContent(),
+   'Current number group: '+numericReference.slice(0,3),
+   'Numpad target uses number-group language');
   await page.locator('#speed-input').fill(numericReference.slice(0,3));
   if(isPhone){
     await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
@@ -149,6 +184,9 @@ try{
   } else {
     await page.locator('#speed-input').fill(numericReference.slice(0,3)+' ');
   }
+  assert.equal(await page.locator('#speed-screenreader-target').textContent(),
+   'Current number group: '+secondGroup,
+   'Numpad announcement advances when a group separator is entered');
   assert.equal(await page.locator('#speed-wpm').locator('xpath=following-sibling::small').innerText(),'CPM');
   await page.locator('[data-action="speed-pack"][data-pack="everyday"]').click();
   await page.locator('[data-action="speed-home"]').first().click();
