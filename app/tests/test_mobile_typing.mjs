@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta, mobileFocusBounds, patchMobileTraining } from '../web/ui/mobile-typing.js';
+import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta, mobileFocusBounds, patchMobileTraining, previousWordRange } from '../web/ui/mobile-typing.js';
 
 test('every practice input is tracked for keyboard visibility',()=>{
  assert.deepEqual([...MOBILE_TYPING_FIELDS],['speed-input','lyric-input','lesson-input']);
@@ -70,4 +70,24 @@ test('Academy completion does not patch or detach its input',()=>{
  assert.equal(patchMobileTraining(old,next),false);
  assert.equal(original.value,'keep');
  assert.equal(original.disabled,false);
+});
+
+test('Back Word deletes prior token while preserving suffix, grouping and selections',()=>{
+ assert.deepEqual(previousWordRange('alpha beta',10),{start:6,end:10});
+ assert.deepEqual(previousWordRange('alpha beta ',11),{start:6,end:11});
+ assert.deepEqual(previousWordRange('alpha beta gamma',10),{start:6,end:11},
+  'delete a middle word and its following separator to avoid duplicate spaces');
+ assert.deepEqual(previousWordRange('alpha beta gamma',8),{start:6,end:8},
+  'an in-word caret removes only text before the caret');
+ assert.deepEqual(previousWordRange('123 4567 890',8),{start:4,end:8},
+  'number-pad groups are treated as words');
+ assert.deepEqual(previousWordRange('alpha beta',6,10),{start:6,end:10},
+  'a selection is deleted exactly rather than expanding to a full word');
+ assert.deepEqual(previousWordRange('alpha beta',10,6),{start:6,end:10},
+  'backward selections are normalized');
+ assert.deepEqual(previousWordRange('alpha beta',0),{start:0,end:0},
+  'start-of-field is a no-op');
+ assert.deepEqual(previousWordRange('',0),{start:0,end:0});
+ assert.deepEqual(previousWordRange('word',100),{start:0,end:4},
+  'out-of-range caret positions cannot delete past the field');
 });
