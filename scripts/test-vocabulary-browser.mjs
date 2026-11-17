@@ -31,8 +31,12 @@ try {
   }
   // The workplace selector must also work with a hardware keyboard, not only pointer clicks.
   const keyboardChoice=page.locator('[data-action="speed-pack"][data-pack="legal"]');
-  await keyboardChoice.focus();
-  await page.keyboard.press('Enter');
+  // Speed Lab repaints its metrics during an active timed run. Keypress on
+  // the locator refocuses its live button; wait for the async paint before
+  // examining the replacement selector rather than racing the old DOM node.
+  await keyboardChoice.press('Enter');
+  await page.waitForFunction(()=>document.querySelector('.speed-page')?.getAttribute('data-speed')==='legal'
+   && document.querySelector('[data-action="speed-pack"][data-pack="legal"]')?.getAttribute('aria-pressed')==='true');
   assert.equal(await keyboardChoice.getAttribute('aria-pressed'),'true','keyboard Enter must activate a category');
   await page.locator('[data-action="speed-pack"][data-pack="numpad"]').click();
   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),'numpad');
