@@ -55,7 +55,7 @@ try {
   assert.deepEqual((await insight.locator('.speed-insight-bar-label').allTextContents()).map(x=>x.trim()),[
     '10 WPM','20 WPM','30 WPM','40 WPM','50 WPM'
   ]);
-  assert.match(await insight.locator('.speed-insight-trend').innerText(),/\\+10 WPM/);
+  assert.match(await insight.locator('.speed-insight-trend').innerText(),/\+10 WPM/);
   assert.match(await insight.locator('.speed-insight-trend').innerText(),/3 consecutive runs/);
   assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__speedInputNode),true,
    'changing the goal preserves the original practice textarea');
