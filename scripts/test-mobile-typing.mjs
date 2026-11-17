@@ -140,6 +140,7 @@ try{
     await page.locator('.speed-mobile-entry [data-action="speed-space"]').click();
     assert.equal(await page.locator('#speed-input').inputValue(),numericReference.slice(0,6),'Numpad separator inserted between groups');
     assert.equal(await page.locator('#speed-accuracy').innerText(),'100%','repaired Numpad group scores correctly');
+    await page.locator('#speed-input').evaluate(el=>el.setSelectionRange(el.value.length,el.value.length));
     await page.locator('.speed-mobile-entry [data-action="speed-back-word"]').click();
     assert.equal(await page.locator('#speed-input').inputValue(),numericReference.slice(0,4),
       'Back Word deletes the previous digit group without restarting Numpad');
