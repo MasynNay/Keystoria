@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta, mobileFocusBounds, patchMobileTraining, previousWordRange } from '../web/ui/mobile-typing.js';
+import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta, mobileFocusBounds, patchMobileTraining, previousWordRange, speedSpokenTarget } from '../web/ui/mobile-typing.js';
 
 test('every practice input is tracked for keyboard visibility',()=>{
  assert.deepEqual([...MOBILE_TYPING_FIELDS],['speed-input','lyric-input','lesson-input']);
@@ -90,4 +90,30 @@ test('Back Word deletes prior token while preserving suffix, grouping and select
  assert.deepEqual(previousWordRange('',0),{start:0,end:0});
  assert.deepEqual(previousWordRange('word',100),{start:0,end:4},
   'out-of-range caret positions cannot delete past the field');
+});
+
+test('Speed Lab spoken target follows whole words without announcing each character',()=>{
+ assert.equal(speedSpokenTarget('alpha beta',''),'Current word: alpha');
+ assert.equal(speedSpokenTarget('alpha beta','a'),'Current word: alpha');
+ assert.equal(speedSpokenTarget('alpha beta','alph'),'Current word: alpha');
+ assert.equal(speedSpokenTarget('alpha beta','alpha'),'Current word: alpha');
+ assert.equal(speedSpokenTarget('alpha beta','alpha '),'Current word: beta');
+ assert.equal(speedSpokenTarget('alpha beta','alpha b'),'Current word: beta');
+ assert.equal(speedSpokenTarget('alpha beta','alpha'),'Current word: alpha',
+  'backspacing across a word boundary returns to the preceding target');
+ assert.equal(speedSpokenTarget('alpha beta','alpha beta'),'Passage complete');
+ assert.equal(speedSpokenTarget('alpha   beta','alpha '),'Current word: beta',
+  'repeated spaces do not create blank announcements');
+ assert.equal(speedSpokenTarget('hello, world!','hello, '),'Current word: world!',
+  'spoken targets keep punctuation in the displayed drill');
+ assert.equal(speedSpokenTarget('', ''),'Passage complete');
+});
+
+test('Speed Lab Numpad spoken target uses independent digit-group language',()=>{
+ const reference='123 4567 890';
+ assert.equal(speedSpokenTarget(reference,'',true),'Current number group: 123');
+ assert.equal(speedSpokenTarget(reference,'12',true),'Current number group: 123');
+ assert.equal(speedSpokenTarget(reference,'123 ',true),'Current number group: 4567');
+ assert.equal(speedSpokenTarget(reference,'123 4567 ',true),'Current number group: 890');
+ assert.equal(speedSpokenTarget(reference,reference,true),'Passage complete');
 });
