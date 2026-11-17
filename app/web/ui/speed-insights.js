@@ -30,23 +30,37 @@ export function saveAccuracyGoal(value, storage = globalThis.localStorage) {
 export function summarizeSpeedPractice(history, session, goal = 95) {
   const mode = practiceMode(session), numpad = session.pack === 'numpad';
   const metric = numpad ? 'CPM' : 'WPM';
+  const limit = numpad ? 30000 : 5000;
   const speed = run => Number(numpad ? run.cpm : run.wpm);
+  // The history writer prepends new runs. Preserve that order even after
+  // unrelated categories, durations or input modes are excluded.
   const matching = (Array.isArray(history) ? history : [])
     .filter(run => run && run.pack === session.pack
       && Number(run.seconds) === Number(session.seconds)
       && practiceMode(run) === mode
-      && Number.isFinite(speed(run)) && speed(run) >= 0
+      && Number.isFinite(speed(run)) && speed(run) >= 0 && speed(run) <= limit
       && Number.isFinite(Number(run.accuracy))
       && Number(run.accuracy) >= 0 && Number(run.accuracy) <= 100)
     .slice(0, 5);
-  if (!matching.length) return {
+  const empty = {
     count:0, metric, best:null, average:null, averageAccuracy:null,
+    paceChange:null, goalStreak:0, recent:[],
     message:'Finish a run in this category, duration and input mode to start tracking progress.'
   };
+  if (!matching.length) return empty;
   const scores = matching.map(speed);
   const avg = Math.round(scores.reduce((a,b) => a+b,0) / scores.length);
   const avgAccuracy = Math.round(matching.reduce((a,r) => a + Number(r.accuracy),0) / matching.length);
   const safeGoal = ACCURACY_GOALS.includes(Number(goal)) ? Number(goal) : 95;
+  // A streak starts at the most recent run and stops at the first miss.
+  const goalStreak = matching.findIndex(run => Number(run.accuracy) < safeGoal);
+  // Preserve the exact metric used by this pack, with the oldest at left.
+  const recent = matching.slice().reverse().map(run => ({
+    speed:speed(run), accuracy:Number(run.accuracy),
+    metGoal:Number(run.accuracy) >= safeGoal
+  }));
+  const paceChange = scores.length >= 2
+    ? Math.round(scores[0] - scores[1]) : null;
   let message;
   if(avgAccuracy < safeGoal){
     message = 'Focus on accuracy before speed. Slow down slightly, then repeat this drill.';
@@ -60,7 +74,8 @@ export function summarizeSpeedPractice(history, session, goal = 95) {
   return {
     count:matching.length, metric,
     best:Math.max(...scores), average:avg, averageAccuracy:avgAccuracy,
-    message,
+    paceChange, goalStreak:goalStreak < 0 ? matching.length : goalStreak,
+    recent, message,
   };
 }
 
