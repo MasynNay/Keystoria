@@ -20,4 +20,5 @@ node scripts/test-navigation-accessibility.mjs
 node scripts/test-speed-mobile-performance.mjs
 node scripts/test-speed-keyboard-assist.mjs
 node scripts/test-speed-insights-browser.mjs
+node scripts/test-speed-history-restore.mjs
 echo "PASS: Keystoria local browser QA completed."

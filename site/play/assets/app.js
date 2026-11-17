@@ -1,8 +1,8 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.29.0";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.30.0";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.28.0";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults } from "./ui/speed-insights.js";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.30.0";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js";
 import { paintTypingFeedback } from "./ui/typing-feedback.js";
@@ -201,6 +201,24 @@ const speedController=createSpeedController({
   onRender:()=>{state.layout="";render();},
   playSound:sound,
 });
+
+async function restoreSpeedFile(field) {
+  const file=field.files?.[0];
+  field.value=''; // Allow choosing the same file again after cancel/error.
+  if(!state.speed || !file)return;
+  if(file.size>SPEED_IMPORT_MAX_BYTES) {
+    toast("Import file exceeds the 128 KB safety limit.","error"); return;
+  }
+  let records;
+  try { records=parseSpeedHistoryExport(await file.text()); }
+  catch(error) { toast(error instanceof Error ? error.message : "Could not read that export.","error"); return; }
+  const previous=readSpeedHistory().length;
+  if(!window.confirm("Replace "+previous+" saved Speed Lab result(s) with "+records.length+" from this export? Export your current results first if you want a backup.")) return;
+  if(!restoreSpeedHistory(records)) { toast("Could not save imported results on this device.","error"); return; }
+  refreshSpeedInsights();
+  document.querySelector('[data-action="speed-import"]')?.focus({preventScroll:true});
+  toast("Restored "+records.length+" Speed Lab result(s) on this device.");
+}
 
 function refreshSpeedInsights() {
   if(!state.speed)return;
@@ -427,6 +445,11 @@ app.addEventListener("click",event=>{
     document.querySelector('[data-action="speed-goal"][data-goal="'+goal+'"]')?.focus({preventScroll:true});
     break;
   }
+  case "speed-import": {
+    if(!state.speed)break;
+    document.getElementById("speed-import-file")?.click();
+    break;
+  }
   case "speed-export": {
     const records=readSpeedHistory();
     if(!records.length){toast("Complete a Speed Lab run before exporting results.","error");break;}
@@ -605,7 +628,10 @@ app.addEventListener("submit",event=>{
  }else send({type:"create",name,mission:state.selectedMission,solo:false});
 });
 
-app.addEventListener("change",event=>{if(state.lyric)lyricController.handleChange(event);});
+app.addEventListener("change",event=>{
+  if(event.target.id==="speed-import-file"){void restoreSpeedFile(event.target);return;}
+  if(state.lyric)lyricController.handleChange(event);
+});
 app.addEventListener("input",event=>{
  if(state.lyric && lyricController.handleInput(event))return;
  if(event.target.id === "lesson-input" && state.lesson) {

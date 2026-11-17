@@ -25,6 +25,12 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 
 Automated unit tests cover filters, storage failures, Numpad and history deletion; Playwright at phone and desktop widths covers actual controls, persistence, downloading, confirmed deletion and preservation of an active typing input. This is a **pilot**, not the completed long-term progression system; actual usability feedback and phone testing are still needed. See [issue #5](https://github.com/MasynNay/Keystoria/issues/5).
 
+## Speed Lab portable history restoration (November 16, 2026)
+
+A new development milestone adds **RESTORE EXPORT** to Practice Compass, so an exported JSON file can be loaded on another device without accounts or cloud synchronization. It accepts only the versioned Keystoria Speed Lab export format, validates up to 25 records and their scoring types, strips unsupported fields, rejects malformed or oversized files, and asks before replacing any local history. Accuracy-goal preferences and active typing are preserved. The mobile/desktop browser release tests cover invalid data, canceled and confirmed replacement, export round trips and metric isolation.
+
+This is still part of open [progression issue #5](https://github.com/MasynNay/Keystoria/issues/5); do not claim a synced cross-device account, a finished progression system or native phone verification. Update this section with the merged PR and deployment evidence only when the release gate passes.
+
 ## Next session — prioritized execution plan
 
 The current release is **stable enough to pause**. At the November 16, 2026 checkpoint, [PR #25](https://github.com/MasynNay/Keystoria/pull/25), [PR #26](https://github.com/MasynNay/Keystoria/pull/26) and [PR #27](https://github.com/MasynNay/Keystoria/pull/27) are merged; [Pages run 43981861050](https://github.com/MasynNay/Keystoria/actions/runs/43981861050) passed browser regression and deployment for the new feature. Detailed resume instructions live in [app/CONTINUE_HERE.md](../app/CONTINUE_HERE.md).

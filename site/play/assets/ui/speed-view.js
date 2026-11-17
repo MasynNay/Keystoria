@@ -39,8 +39,10 @@ export function speedInsightsPanel(session) {
     </div></div>
     <p class="speed-insight-tip" role="status">${pulse.message}</p>
     <div class="speed-insight-privacy"><button type="button" data-action="speed-export">EXPORT RESULTS</button>
+      <button type="button" data-action="speed-import">RESTORE EXPORT</button>
+      <input id="speed-import-file" class="speed-import-file" type="file" accept=".json,application/json" tabindex="-1" aria-label="Select a Speed Lab results JSON export" />
       <button type="button" data-action="speed-clear">CLEAR SAVED RESULTS</button></div>
-    <p class="speed-insight-footnote">Only stored in this browser. Keeps at most 25 runs. Export downloads a JSON file; clear requires confirmation. Assisted, exact and number drills are not mixed.</p>
+    <p class="speed-insight-footnote">Only stored in this browser. Keeps at most 25 runs. Export downloads a JSON file. Restore replaces this device's results only after confirmation; invalid files are rejected. Clear requires confirmation. Assisted, exact and number drills are not mixed.</p>
   </section>`;
 }
 

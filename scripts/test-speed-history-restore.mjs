@@ -1,0 +1,90 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {chromium} from 'playwright';
+
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const errors=[];
+try {
+ for(const width of [390,1440]){
+  const mobile=width<800;
+  const context=await browser.newContext({viewport:{width,height:844},isMobile:mobile,hasTouch:mobile,acceptDownloads:true});
+  const page=await context.newPage();
+  page.on('pageerror',e=>errors.push(String(e)));
+  page.setDefaultTimeout(12000);
+  await page.goto('http://127.0.0.1:8765/play/',{waitUntil:'domcontentloaded'});
+  await page.locator('#app .brand-name').waitFor();
+  const welcome=page.locator('.welcome-continue');
+  if(await welcome.count()&&await welcome.isVisible())await welcome.click();
+  await page.locator('[data-action="speed-open"]').first().click();
+  const prompt=page.locator('#speed-letters'),input=page.locator('#speed-input');
+  const fileInput=page.locator('#speed-import-file');
+  const panel=page.locator('#speed-practice-insights');
+  assert.equal(await page.locator('[data-action="speed-import"]').count(),1,'restore control must exist');
+  await input.fill('ke');
+  await page.evaluate(()=>{window.__typingNode=document.getElementById('speed-input');});
+  const mode=mobile?'mobile-assisted':'standard-exact';
+  const records=[
+   {pack:'everyday',seconds:30,wpm:42,rawWpm:48,accuracy:96,
+    correct:420,incorrect:17,characters:437,keystrokes:440,
+    practiceMode:mode,keyboardAssisted:mobile,at:'2026-11-16T18:20:00.000Z',
+    injectedHTML:'<script>alert("bad")</script>'},
+   {pack:'everyday',seconds:30,wpm:500,accuracy:100,
+    practiceMode:mobile?'mobile-exact':'mobile-assisted'},
+   {pack:'numpad',seconds:30,wpm:15,cpm:145,accuracy:99,practiceMode:'standard-exact'},
+  ];
+  const fixture=JSON.stringify({format:'keystoria.speed.history',version:1,exportedAt:'2026-11-16T18:25:00.000Z',records,maxStoredResults:25});
+  const select=async(text,name='keystoria-speed-results.json')=>fileInput.setInputFiles({
+    name,mimeType:'application/json',buffer:Buffer.from(text)
+  });
+
+  // Files with invalid JSON and wrong schema never prompt for overwrite.
+  await select('{not-json');
+  await page.locator('#toast-layer').getByText(/not valid JSON/).waitFor();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
+  await select(JSON.stringify({format:'other',version:1,records}));
+  await page.locator('#toast-layer').getByText(/Use a Keystoria Speed Lab/).waitFor();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
+  await select(' '.repeat(131073));
+  await page.locator('#toast-layer').getByText(/128 KB safety limit/).waitFor();
+
+  const cancelled=page.waitForEvent('dialog');
+  const cancelUpload=select(fixture);
+  const cancelDialog=await cancelled;
+  assert.match(cancelDialog.message(),/Replace 0 saved/);
+  await cancelDialog.dismiss();
+  await cancelUpload;
+  assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
+
+  const accepted=page.waitForEvent('dialog');
+  const acceptUpload=select(fixture);
+  const dialog=await accepted;
+  assert.match(dialog.message(),/with 3 from this export/);
+  await dialog.accept();
+  await acceptUpload;
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]').length===3);
+  assert.equal(await panel.getAttribute('data-matches'),'1','mode-specific comparisons remain isolated');
+  assert.equal(await input.inputValue(),'ke','restoring must not erase active typing');
+  assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__typingNode),true,'restoring must not replace the input');
+  const restored=await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')));
+  assert.equal(restored.length,3);
+  assert.equal(restored[0].injectedHTML,undefined,'unexpected imported fields must be removed');
+  assert.equal(restored[2].cpm,145);
+
+  const [download]=await Promise.all([
+   page.waitForEvent('download'),
+   page.locator('[data-action="speed-export"]').click(),
+  ]);
+  const exported=JSON.parse(await readFile(await download.path(),'utf8'));
+  assert.equal(exported.records.length,3);
+  assert.equal(exported.records[0].injectedHTML,undefined);
+  assert.equal(exported.format,'keystoria.speed.history');
+
+  // Invalid replacements must leave existing data unchanged.
+  await select(JSON.stringify({...exported,version:99}));
+  await page.locator('#toast-layer').getByText(/Use a Keystoria Speed Lab/).waitFor();
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')).length),3);
+  await context.close();
+ }
+ assert.deepEqual(errors,[],'file import must not cause unhandled browser errors');
+ console.log('PASS: versioned Speed Lab history roundtrip, malicious field sanitization, invalid-file rejection, cancel/confirm, and typing continuity');
+} finally { await browser.close(); }

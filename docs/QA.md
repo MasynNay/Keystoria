@@ -30,6 +30,7 @@ node scripts/test-dialog-keyboard.mjs
 node scripts/test-speed-mobile-performance.mjs
 node scripts/test-speed-keyboard-assist.mjs
 node scripts/test-speed-insights-browser.mjs
+node scripts/test-speed-history-restore.mjs
 node scripts/test-navigation-accessibility.mjs
 ```
 
