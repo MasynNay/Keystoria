@@ -27,14 +27,24 @@ function updateNativeKeyboard(field,enabled){
 export function createSpeedController({ state, onRender, playSound }) {
   let interval=null;
   let flow=null;
+  let focusFrame=null;
+
+  function cancelPendingFocus() {
+    // An earlier Speed Lab launch must not steal focus from the next button
+    // while Enter/Space is still activating a freshly rendered choice.
+    if(focusFrame!==null && typeof cancelAnimationFrame==='function')
+      cancelAnimationFrame(focusFrame);
+    focusFrame=null;
+  }
 
   function clearTimer() {
     if (interval !== null) clearInterval(interval);
     interval=null;
   }
 
-  function open({ pack='everyday', seconds=30 } = {}) {
+  function open({ pack='everyday', seconds=30, focusChoice=null } = {}) {
     const enteringFromAnotherMode=!state.speed;
+    cancelPendingFocus();
     clearTimer();
     flow=null;
     const selectedPack=PACKS[pack] ? pack : 'everyday';
@@ -51,17 +61,38 @@ export function createSpeedController({ state, onRender, playSound }) {
       typed:'',startedAt:null,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
     };
+    const launchedSession=state.speed;
     onRender();
-    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(()=>{
+    const focusFreshSession=()=>{
+      if(state.speed!==launchedSession)return;
       const field=node('speed-input');
-      if (!field || !field.isConnected) return;
-      updateNativeKeyboard(field,state.speed?.keyboardAssist===true);
-      if(enteringFromAnotherMode) window.scrollTo({top:0,behavior:"instant"});
-      field.focus({preventScroll:true});
-    });
+      if(!field || !field.isConnected)return;
+      updateNativeKeyboard(field,launchedSession.keyboardAssist===true);
+      // Keep the newly selected category/duration focused for hardware
+      // keyboard users. Pointer taps continue directly into the typing field.
+      const choice=focusChoice==='speed-pack'
+        ? document.querySelector('[data-action="speed-pack"][data-pack="'+launchedSession.pack+'"]')
+        : focusChoice==='speed-duration'
+          ? document.querySelector('[data-action="speed-duration"][data-seconds="'+launchedSession.seconds+'"]')
+          : null;
+      (choice||field).focus({preventScroll:true});
+    };
+    if(enteringFromAnotherMode && typeof requestAnimationFrame==='function'){
+      focusFrame=requestAnimationFrame(()=>{
+        focusFrame=null;
+        if(state.speed!==launchedSession)return;
+        window.scrollTo({top:0,behavior:'instant'});
+        focusFreshSession();
+      });
+    }else{
+      // The DOM is already rebuilt synchronously by onRender. Never schedule
+      // a second focus jump that can interrupt a quick Enter/Space press.
+      focusFreshSession();
+    }
   }
 
   function close() {
+    cancelPendingFocus();
     clearTimer();
     flow=null;
     state.speed=null;
