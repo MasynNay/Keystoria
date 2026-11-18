@@ -82,5 +82,29 @@ try{
   assert.deepEqual(errors,[],'Word Focus cannot introduce browser exceptions');
   await ctx.close();
  }
+ // A tablet can open in the normal wide view, then rotate to a compact
+ // touch landscape without restarting. The newly visible switch must work.
+ {
+  const ctx=await browser.newContext({viewport:{width:844,height:640},isMobile:true,hasTouch:true});
+  const page=await ctx.newPage();
+  await page.goto('http://127.0.0.1:8765/play/',{waitUntil:'domcontentloaded'});
+  await page.locator('#app .brand-name').waitFor();
+  const welcome=page.locator('.welcome-continue');
+  if(await welcome.count()&&await welcome.isVisible())await welcome.click();
+  await page.locator('[data-action="speed-open"]').first().click();
+  assert.equal(await page.locator('#speed-focus-toggle').isVisible(),false,'wide touch layout keeps the full passage');
+  const input=page.locator('#speed-input');
+  await input.fill('ab');
+  await page.setViewportSize({width:844,height:390});
+  await page.locator('#speed-focus-toggle').waitFor({state:'visible'});
+  await page.locator('#speed-focus-toggle').click();
+  assert.equal(await page.locator('#speed-focus-toggle').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.locator('.speed-prompt-wrap').isVisible(),false);
+  assert.equal(await input.inputValue(),'ab','rotation and focus view retain the same input');
+  await page.setViewportSize({width:844,height:640});
+  await page.waitForFunction(()=>document.querySelector('.speed-prompt-wrap')?.getBoundingClientRect().height>0);
+  assert.equal(await input.inputValue(),'ab','returning to wide layout keeps typing');
+  await ctx.close();
+ }
  console.log('PASS: touch Word Focus, native input, separator, score, corrections, Numpad, persistence and desktop isolation');
 }finally{await browser.close();}

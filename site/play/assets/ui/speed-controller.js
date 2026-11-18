@@ -273,7 +273,12 @@ export function createSpeedController({ state, onRender, playSound }) {
   /** Touch-only presentation switch; not a new score/timing mode. */
   function toggleWordFocus(){
     const session=state.speed;
-    if(!session || !session.phoneLayout || session.status==='complete')return;
+    if(!session || session.status==='complete')return;
+    // Responsive touch layouts can become compact after rotation. Guard the
+    // currently visible control, not only the layout at session launch.
+    const touch=window.matchMedia?.('(pointer: coarse)').matches ?? false;
+    const compact=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
+    if(!touch || !compact)return;
     session.focusPractice=!session.focusPractice;
     storeFocus(session.focusPractice);
     focusWordSignature=null;
