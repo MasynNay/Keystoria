@@ -2,6 +2,14 @@
 
 Keystoria is a typing-based portfolio application. This document distinguishes **automated evidence** from human testing that remains necessary.
 
+## Speed Lab rendered contrast on all 15 themes
+
+The Speed Lab's active typing field and placeholder, score/clock labels, pending character text, prompt headings, drill choices, saved history empty state, and Practice Compass labels now inherit the selected appearance palette rather than fixed old gray/green colors. Both desktop and mobile browser editions use identical gameplay CSS.
+
+`scripts/test-themes.mjs` checks **actual computed foreground and flat opaque background colors** in live Speed Lab DOM for 15 themes on a 390px touch viewport and a 1440px desktop viewport. The sampled text uses a 4.5:1 minimum ratio, including selected and unselected duration buttons. This complements the separate Settings and token-level palette tests.
+
+Scope remains limited to explicitly sampled opaque surfaces. It does **not** certify overlapping translucent layers, gradients, text zoom, motion, screen readers, real phone screens, or full WCAG conformance. Human accessibility evaluation is still tracked in [issue #3](https://github.com/MasynNay/Keystoria/issues/3).
+
 ## Speed Lab spoken target at word boundaries
 
 The Speed Lab input now references the existing instructions, session status and a persistent **Current word** / **Current number group** status using `aria-describedby`. The visually hidden element is present at both desktop and phone sizes, including the static GitHub Pages edition. The displayed reference passage and fast visual letter feedback remain unchanged.
