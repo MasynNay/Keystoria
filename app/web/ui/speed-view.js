@@ -1,7 +1,7 @@
 /** Stateless presentation for the solo Speed Lab. */
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
-import { speedSpokenTarget } from './mobile-typing.js?v=0.39.0';
+import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
 import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.32.0';
 
 export function speedLibrary() {
@@ -68,7 +68,7 @@ function speedPackChoices(professional, selected) {
 export function speedTemplate(session, header) {
   const done = session.status === 'complete';
   const result = session.result;
-  return `${header({inGame:true})}<main class="speed-page shell" data-speed="${safe(session.pack)}">
+  return `${header({inGame:true})}<main class="speed-page shell" data-speed="${safe(session.pack)}" data-word-focus="${session.focusPractice===true}">
     <div class="speed-topline"><button class="text-button" data-action="speed-home">${ico('arrow',16)} BACK TO MISSIONS</button><span>// PERSONAL TRAINING / ZERO PRESSURE FROM TEAMMATES</span></div>
     <div class="speed-title">${tag('THE SPEED LAB / SOLO MODE')}<h1>FIND YOUR <em>RHYTHM.</em></h1><p>${session.pack==="numpad"?"NUMPAD CHALLENGE: Practice digit groups with Space or Numpad Enter between groups. Track characters per minute (CPM) and accuracy.":"Inspired by the fast feedback of TypeNinja. The timer starts on your first keystroke. Mistakes glow red, correct characters turn green, and Backspace lets you correct errors."}</p></div>
     <section class="speed-console" aria-label="Timed typing test">
@@ -80,7 +80,13 @@ export function speedTemplate(session, header) {
         <div class="speed-page-indicator">CONTINUOUS PASSAGE · <span id="speed-progress">${session.pack==="numpad"?"0 digits typed":"0 characters typed"}</span> · ${session.pack==="numpad"?"SPACE OR NUMPAD ENTER BETWEEN GROUPS":"WORDS ADVANCE UPWARD ONLY"}</div>
         <div class="typing-legend"><span><i class="legend-correct"></i> CORRECT</span><span><i class="legend-incorrect"></i> INCORRECT</span><span><i class="legend-caret"></i> NEXT KEY</span></div></div>
         <div class="speed-mobile-entry mobile-typing-entry" id="speed-mobile-entry">
-          <div class="mobile-speed-cue" aria-hidden="true"><small>NEXT CHARACTERS · TYPE WHAT YOU SEE</small><div><span id="speed-mobile-first"></span><span id="speed-mobile-rest"></span></div></div>
+          <div class="mobile-speed-cue" aria-hidden="true">
+            <small class="speed-focus-heading">ACTIVE ${session.pack==="numpad"?"NUMBER GROUP":"WORD"} · SPACE TO ADVANCE</small>
+            <div id="speed-focus-word" class="speed-focus-word"></div>
+            <small class="speed-stream-heading">NEXT CHARACTERS · TYPE WHAT YOU SEE</small>
+            <div class="speed-stream-cue"><span id="speed-mobile-first"></span><span id="speed-mobile-rest"></span></div>
+          </div>
+          <div class="speed-focus-settings" role="group" aria-label="Touch practice presentation"><button id="speed-focus-toggle" type="button" data-action="speed-focus" aria-pressed="${session.focusPractice===true}">WORD FOCUS: ${session.focusPractice===true?"ON":"OFF"}</button><p id="speed-focus-detail" role="note">${session.focusPractice===true?"One word or number group at a time. The full passage and scoring stay unchanged.":"Full passage visible. Your accuracy and timer stay unchanged."}</p></div>
         ${session.pack!=="numpad"?`<div class="speed-assist-settings" role="group" aria-label="Phone keyboard assistance"><button id="speed-assist-toggle" type="button" data-action="speed-assist" aria-pressed="${session.keyboardAssist===true}">KEYBOARD HELP: ${session.keyboardAssist===true?"ON":"OFF"}</button><p id="speed-assist-detail" role="note">${session.keyboardAssist===true?"Phone predictions and autocorrect allowed. Score marked Assisted; suggestions depend on your keyboard settings.":"Exact typing. Native keyboard assistance is off."}</p></div>`:""}<label id="speed-input-instructions" for="speed-input" class="speed-input-label">${session.pack==="numpad"?"TYPE THE DIGITS ABOVE — SPACE OR NUMPAD ENTER BETWEEN GROUPS":"TYPE THE WORDS ABOVE — USE BACKSPACE TO FIX MISTAKES"}</label>
         <span id="speed-screenreader-target" class="practice-sr-only" role="status" aria-live="polite" aria-atomic="true">${safe(speedSpokenTarget(session.reference,session.typed,session.pack==="numpad"))}</span>
         <textarea id="speed-input" class="speed-input" rows="2" spellcheck="${session.keyboardAssist===true?"true":"false"}" autocorrect="${session.keyboardAssist===true?"on":"off"}" autocapitalize="off" autocomplete="${session.keyboardAssist===true?"on":"off"}" inputmode="${session.pack==="numpad"?"numeric":"text"}" enterkeyhint="next" aria-label="${session.pack==="numpad"?"Type the displayed number groups":"Type the displayed words"}" aria-describedby="speed-input-instructions speed-mode speed-screenreader-target" placeholder="Click here or start typing to begin..."></textarea>

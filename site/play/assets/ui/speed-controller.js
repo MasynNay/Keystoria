@@ -5,11 +5,14 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.0';
-import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget } from './mobile-typing.js?v=0.39.0';
+import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord } from './mobile-typing.js?v=0.42.0';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
 const ASSIST_PREF_KEY='keystoria.speed.nativeKeyboardAssist.v1';
+const FOCUS_PREF_KEY='keystoria.speed.wordFocus.v1';
+const preferredFocus=()=>{try{return localStorage.getItem(FOCUS_PREF_KEY)==='on';}catch{return false;}};
+const storeFocus=enabled=>{try{localStorage.setItem(FOCUS_PREF_KEY,enabled?'on':'off');}catch{/* optional */}};
 const preferredAssist=()=>{
   try {return localStorage.getItem(ASSIST_PREF_KEY)!=='off';}
   catch {return true;}
@@ -28,6 +31,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   let interval=null;
   let flow=null;
   let focusFrame=null;
+  let focusWordSignature=null;
 
   function cancelPendingFocus() {
     // An earlier Speed Lab launch must not steal focus from the next button
@@ -47,6 +51,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     cancelPendingFocus();
     clearTimer();
     flow=null;
+    focusWordSignature=null;
     const selectedPack=PACKS[pack] ? pack : 'everyday';
     const compact=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
     // Browser zoom can shrink a mouse desktop to 320 CSS pixels. Keep the
@@ -60,6 +65,7 @@ export function createSpeedController({ state, onRender, playSound }) {
       reference:createWordStream(selectedPack),
       typed:'',startedAt:null,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
+      focusPractice:phoneLayout && preferredFocus(),
     };
     const launchedSession=state.speed;
     onRender();
@@ -95,6 +101,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     cancelPendingFocus();
     clearTimer();
     flow=null;
+    focusWordSignature=null;
     state.speed=null;
     onRender();
   }
@@ -117,6 +124,31 @@ export function createSpeedController({ state, onRender, playSound }) {
     const cue=nextSpeedCue(session.reference,session.typed,38,caret);
     text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
     text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
+    // Repaint a single bounded word only if its characters/caret changed.
+    // Neither the textarea, timer, score nor full passage is reconstructed.
+    if(session.focusPractice){
+      const target=node('speed-focus-word');
+      if(target){
+        const focus=speedFocusWord(session.reference,session.typed,caret);
+        const signature=JSON.stringify(focus.characters);
+        if(signature!==focusWordSignature){
+          const fragment=document.createDocumentFragment();
+          if(!focus.characters.length){
+            const complete=document.createElement('span');
+            complete.textContent='COMPLETE';
+            fragment.append(complete);
+          }
+          for(const ch of focus.characters){
+            const span=document.createElement('span');
+            span.className='speed-focus-char '+ch.state+(ch.current?' current':'');
+            span.textContent=ch.letter;
+            fragment.append(span);
+          }
+          target.replaceChildren(fragment);
+          focusWordSignature=signature;
+        }
+      }
+    }
     // Only change this live region if the whole word/group changed.
     text('speed-screenreader-target',
       speedSpokenTarget(session.reference,session.typed,session.pack==='numpad',caret));
@@ -238,9 +270,36 @@ export function createSpeedController({ state, onRender, playSound }) {
     if(field&&!field.disabled)field.focus({preventScroll:true});
   }
 
+  /** Touch-only presentation switch; not a new score/timing mode. */
+  function toggleWordFocus(){
+    const session=state.speed;
+    if(!session || session.status==='complete')return;
+    // Responsive touch layouts can become compact after rotation. Guard the
+    // currently visible control, not only the layout at session launch.
+    const touch=window.matchMedia?.('(pointer: coarse)').matches ?? false;
+    const compact=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
+    if(!touch || !compact)return;
+    session.focusPractice=!session.focusPractice;
+    storeFocus(session.focusPractice);
+    focusWordSignature=null;
+    const panel=document.querySelector('.speed-page');
+    if(panel)panel.dataset.wordFocus=String(session.focusPractice);
+    const button=node('speed-focus-toggle');
+    if(button){
+      button.textContent=session.focusPractice?'WORD FOCUS: ON':'WORD FOCUS: OFF';
+      button.setAttribute('aria-pressed',String(session.focusPractice));
+    }
+    text('speed-focus-detail',session.focusPractice
+      ? 'One word or number group at a time. The full passage and scoring stay unchanged.'
+      : 'Full passage visible. Your accuracy and timer stay unchanged.');
+    updateCaretGuidance();
+    const field=node('speed-input');
+    if(field && !field.disabled)field.focus({preventScroll:true});
+  }
+
   function keystroke() {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,finish,tick};
+  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,finish,tick};
 }
