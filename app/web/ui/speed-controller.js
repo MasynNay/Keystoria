@@ -104,15 +104,19 @@ export function createSpeedController({ state, onRender, playSound }) {
     return session?.startedAt == null ? 0 : Math.min(session.seconds,(performance.now()-session.startedAt)/1000);
   }
 
-  /** Keep one mounted polite target, updated from native caret changes.
-   * This is lightweight even during touch selection drags: no scoring,
-   * re-rendering, history mutation, or measured layout is involved.
+  /** Follow the native editing caret in both the visual next-key cue and
+   * spoken word/group status. Selection changes never rescore, rerender
+   * the passage, or detach the user's focused mobile textarea.
    */
-  function announceTargetAtCaret() {
+  function updateCaretGuidance() {
     const session=state.speed;
     const field=node('speed-input');
     if(!session || session.status==='complete' || !field || !field.isConnected)return;
     const caret=Number.isInteger(field.selectionStart)?field.selectionStart:session.typed.length;
+    const cue=nextSpeedCue(session.reference,session.typed,38,caret);
+    text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
+    text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
+    // Only change this live region if the whole word/group changed.
     text('speed-screenreader-target',
       speedSpokenTarget(session.reference,session.typed,session.pack==='numpad',caret));
   }
@@ -127,12 +131,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (!flow || flow.windowed !== mobile)
       flow=createSpeedFlow(node('speed-letters'),session.reference,{windowed:mobile});
     flow?.update(session.typed);
-    const cue=nextSpeedCue(session.reference,session.typed);
-    text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
-    text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
-    // Update the existing polite region only when the active word/group changes.
-    // Repeating it for every letter would drown out the screen reader's input.
-    announceTargetAtCaret();
+    updateCaretGuidance();
     text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));
     text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
@@ -242,5 +241,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,announceTargetAtCaret,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,finish,tick};
+  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,finish,tick};
 }
