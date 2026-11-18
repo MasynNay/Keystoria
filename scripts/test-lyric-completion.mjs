@@ -47,7 +47,7 @@ try{
   const panel=page.locator('#lyric-finish-panel');
   const heading=page.locator('#lyric-finish-heading');
   const replay=panel.locator('[data-action="lyric-retry"]');
-  const chooseSong=panel.locator('[data-action="lyric-back"]');
+  const chooseSong=panel.locator('[data-action="lyric-finish-back"]');
   assert.equal(await panel.isVisible(),false,'no completion panel before the song is finished');
   assert.equal(await heading.getAttribute('tabindex'),'-1');
 
