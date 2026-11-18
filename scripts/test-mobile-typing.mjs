@@ -106,6 +106,9 @@ try{
   await input.fill(firstWord+' ');
   assert.equal(await spoken.textContent(),'Current word: '+secondWord,
    'a completed word announces the next target');
+  // MutationObserver delivers asynchronously in a microtask. The visible
+  // word can already be updated before its observer callback has fired.
+  await page.waitForFunction(()=>window.__speedSpokenMutations>0);
   assert.ok(await page.evaluate(()=>window.__speedSpokenMutations)>0,
    'word boundary updates the mounted polite live region');
   assert.equal(await spoken.evaluate(el=>el===window.__spokenNode),true,
