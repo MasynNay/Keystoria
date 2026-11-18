@@ -2,6 +2,12 @@
 
 Keystoria is a typing-based portfolio application. This document distinguishes **automated evidence** from human testing that remains necessary.
 
+## Lyric Lab completion focus and replay (browser regression)
+
+When the last lyric is submitted, skipped, or a demo finishes, Lyric Lab now moves keyboard focus away from its disabled typing field to a dedicated **Track Complete** result heading. A visible, theme-aware summary names WPM, accuracy, points and skipped words, with **Play Again** and **Choose Another Song** immediately next in the keyboard order. Completed-run Skip, Next Word and Play/Pause controls are disabled rather than remaining silent no-ops. Replay and repositioning the lyric timeline re-enable the appropriate controls without changing the original demo or the score storage format.
+
+`scripts/test-lyric-completion.mjs` exercises the original built-in offline lyric demo at touch portrait, touch landscape, 320px desktop reflow and wide desktop sizes. It tests finishing by skipping the last line, natural word-by-word completion, managed heading focus, the next Tab target, replay, choosing another song and controls restored after replay. It does not download a song, inspect screen-reader speech or certify actual virtual keyboards. Real NVDA, VoiceOver, TalkBack and physical-device observations still remain on issue #3.
+
 ## Speed Lab keyboard selector focus continuity
 
 Changing a category or duration rebuilds the Speed Lab controls. A keyboard-activated **Enter** or **Space** selection now restores focus to the equivalent newly rendered button, keeping keyboard navigation predictable, while a pointer tap puts focus directly into the typing field. A previous pending animation-frame focus request is cancelled before every new session/selection and on close, preventing an older session from stealing focus after a quick selection.
