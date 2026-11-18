@@ -1,7 +1,7 @@
 /** Stateless presentation for the solo Speed Lab. */
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
-import { speedSpokenTarget } from './mobile-typing.js?v=0.36.0';
+import { speedSpokenTarget } from './mobile-typing.js?v=0.39.0';
 import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.32.0';
 
 export function speedLibrary() {

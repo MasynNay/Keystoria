@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js?v=0.27.1';
-import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget } from './mobile-typing.js?v=0.36.0';
+import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget } from './mobile-typing.js?v=0.39.0';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
@@ -104,6 +104,23 @@ export function createSpeedController({ state, onRender, playSound }) {
     return session?.startedAt == null ? 0 : Math.min(session.seconds,(performance.now()-session.startedAt)/1000);
   }
 
+  /** Follow the native editing caret in both the visual next-key cue and
+   * spoken word/group status. Selection changes never rescore, rerender
+   * the passage, or detach the user's focused mobile textarea.
+   */
+  function updateCaretGuidance() {
+    const session=state.speed;
+    const field=node('speed-input');
+    if(!session || session.status==='complete' || !field || !field.isConnected)return;
+    const caret=Number.isInteger(field.selectionStart)?field.selectionStart:session.typed.length;
+    const cue=nextSpeedCue(session.reference,session.typed,38,caret);
+    text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
+    text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
+    // Only change this live region if the whole word/group changed.
+    text('speed-screenreader-target',
+      speedSpokenTarget(session.reference,session.typed,session.pack==='numpad',caret));
+  }
+
   function paint() {
     const session=state.speed;
     if (!session || session.status==='complete') return;
@@ -114,12 +131,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (!flow || flow.windowed !== mobile)
       flow=createSpeedFlow(node('speed-letters'),session.reference,{windowed:mobile});
     flow?.update(session.typed);
-    const cue=nextSpeedCue(session.reference,session.typed);
-    text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
-    text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
-    // Update the existing polite region only when the active word/group changes.
-    // Repeating it for every letter would drown out the screen reader's input.
-    text('speed-screenreader-target',speedSpokenTarget(session.reference,session.typed,session.pack==='numpad'));
+    updateCaretGuidance();
     text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));
     text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
@@ -229,5 +241,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,finish,tick};
+  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,finish,tick};
 }

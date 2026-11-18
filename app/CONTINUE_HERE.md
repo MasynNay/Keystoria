@@ -1,12 +1,20 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 16, 2026 (America/Denver) — merged and verified production milestone.  
+**Checkpoint:** November 17, 2026 (America/Denver) — latest verified release is PR #49; caret-aware cues under development.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## Latest shipped milestone — Practice Compass portable results (November 16, 2026)
+## Latest verified release — keyboard navigation and phone typing (November 17, 2026)
+
+[PR #49](https://github.com/MasynNay/Keystoria/pull/49) repaired keyboard focus after selecting Speed Lab categories/durations with Enter or Space, retained pointer-to-input focus, and cancelled stale asynchronous focus requests. [Production Pages run 44230747978](https://github.com/MasynNay/Keystoria/actions/runs/44230747978) succeeded. Post-merge Mobile Typing run 44230747889, Themes run 44230747922 and screenshot run 44230747910 all succeeded. There are no unintended open PRs at this checkpoint.
+
+Earlier [PR #48](https://github.com/MasynNay/Keystoria/pull/48) aligned Speed Lab gameplay text with all 15 themes and added rendered color-pair checks at phone and desktop sizes. [PR #47](https://github.com/MasynNay/Keystoria/pull/47) added screen-reader word/group cues. [PR #46](https://github.com/MasynNay/Keystoria/pull/46) preserved the Practice Compass live region and focus during accuracy-goal/history updates. [PR #45](https://github.com/MasynNay/Keystoria/pull/45) added native, caret-aware Back Word correction.
+
+**Next engineering task:** Keep both the visible next-character cue and screen-reader target aligned with native caret movement during earlier-word/number-group corrections (unit tests plus Chromium mobile/desktop), then release only after green CI and Pages deployment. This remains an accessibility/mobile improvement, not proof of actual hardware-keyboard or screen-reader compatibility. Issues #3 and #11 stay open for physical iOS/Android and assistive-technology verification.
+
+## Earlier shipped milestone — Practice Compass portable results (November 16, 2026)
 
 The versioned **RESTORE EXPORT** flow shipped via [PR #28](https://github.com/MasynNay/Keystoria/pull/28) and [successful gated Pages deployment 43984376330](https://github.com/MasynNay/Keystoria/actions/runs/43984376330). It validates and sanitizes a maximum of 25 Speed Lab records from a JSON export (128 KB cap), confirms before overwriting history, preserves accuracy goals and typing focus, and has mobile/desktop browser regression tests. It is manual data portability, **not account sync**. Keep [issue #5](https://github.com/MasynNay/Keystoria/issues/5) open for user feedback and broader progression; physical phone picker behavior is not yet verified.
 

@@ -1,6 +1,6 @@
 # Keystoria development roadmap
 
-**Last reviewed:** November 16, 2026  
+**Last reviewed:** November 17, 2026  
 **Status:** Actively maintained portfolio project; upcoming items are planned work, **not completed features**.  
 **Play the browser edition:** https://keystoria.masynnay.com/play/  
 **Tracked work:** https://github.com/MasynNay/Keystoria/issues
@@ -30,6 +30,14 @@ Automated unit tests cover filters, storage failures, Numpad and history deletio
 **Shipped in [PR #28](https://github.com/MasynNay/Keystoria/pull/28)** with six passing PR checks and [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/43984376330): **RESTORE EXPORT** lets an exported JSON file be loaded on another device without accounts or cloud synchronization. It accepts only the versioned Keystoria Speed Lab export format, validates up to 25 records and their scoring types, strips unsupported fields, rejects malformed or oversized files, and asks before replacing any local history. Accuracy-goal preferences and active typing are preserved. The mobile/desktop browser release tests cover invalid data, canceled and confirmed replacement, export round trips and metric isolation.
 
 This remains part of open [progression issue #5](https://github.com/MasynNay/Keystoria/issues/5). Manual export/restore is shipped; automatic multi-device syncing, the complete progression system, and physical phone-file-picker verification are **not**.
+
+## Latest verified release checkpoint — November 17, 2026
+
+- [PR #49](https://github.com/MasynNay/Keystoria/pull/49) fixed focus continuity for keyboard-triggered Speed Lab category/duration changes; [production Pages run 44230747978](https://github.com/MasynNay/Keystoria/actions/runs/44230747978) passed after all five pull-request checks. Post-merge mobile, theme and screenshot workflows also passed.
+- [PR #48](https://github.com/MasynNay/Keystoria/pull/48) aligned Speed Lab with the 15 themes and added 4.5:1 computed flat-surface contrast checks at desktop and touch widths. Its first post-merge Pages browser gate exposed an intermittent category-focus test timeout; that identical build deployed after a successful retry. PR #49 targeted the plausible focus race and strengthened regression coverage.
+- [PR #47](https://github.com/MasynNay/Keystoria/pull/47) added persistent screen-reader word/Numpad group targets; [PR #46](https://github.com/MasynNay/Keystoria/pull/46) kept Practice Compass controls and live announcements mounted; [PR #45](https://github.com/MasynNay/Keystoria/pull/45) added Back Word editing. These releases improved correction and keyboard access without changing the game's local-only data policy.
+
+**Current next implementation:** Synchronize the visual next-character prompt and spoken target to the native input caret when correcting earlier words or digit groups. Verify unchanged scoring, native input identity, and browser DOM bounds before publishing. Physical devices and screen-reader announcements remain manual QA prerequisites for closing [#3](https://github.com/MasynNay/Keystoria/issues/3) and [#11](https://github.com/MasynNay/Keystoria/issues/11).
 
 ## Next session — prioritized execution plan
 

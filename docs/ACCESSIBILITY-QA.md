@@ -18,6 +18,14 @@ The Speed Lab's active typing field and placeholder, score/clock labels, pending
 
 Scope remains limited to explicitly sampled opaque surfaces. It does **not** certify overlapping translucent layers, gradients, text zoom, motion, screen readers, real phone screens, or full WCAG conformance. Human accessibility evaluation is still tracked in [issue #3](https://github.com/MasynNay/Keystoria/issues/3).
 
+## Speed Lab caret-aware correction guidance
+
+Speed Lab's visible **NEXT CHARACTERS** prompt and hidden polite **Current word / Current number group** status now follow the **native textarea caret**. Players can move backward using the keyboard, mouse, or touch selection handles and receive the actual word/digit-group cue at that editing position, rather than a misleading hint for the end of the typed passage. Completing or correcting a character still uses the existing exact session-length scoring model; moving only the caret never edits the text, rescales scores, or reconstructs the optimized passage renderer.
+
+The controller updates only the small cue and persistent live status on native `select` or `selectionchange` events. Letter-by-letter cursor moves inside the same word do not change the screen-reader text. The status follows the edited group in Numpad mode as well, and both the app and static Pages edition are synchronized. Pure helper tests cover cursor clamps, third-word corrections, Numpad groups and legacy end-of-text defaults; Playwright at phone/desktop sizes checks caret movement, status updates, unchanged input/accuracy, and preserved render nodes.
+
+These browser tests are **not** physical iOS/Android keyboard or VoiceOver/TalkBack/NVDA validation. Screen-reader announcement behavior on real devices remains an open item in [issue #3](https://github.com/MasynNay/Keystoria/issues/3).
+
 ## Speed Lab spoken target at word boundaries
 
 The Speed Lab input now references the existing instructions, session status and a persistent **Current word** / **Current number group** status using `aria-describedby`. The visually hidden element is present at both desktop and phone sizes, including the static GitHub Pages edition. The displayed reference passage and fast visual letter feedback remain unchanged.

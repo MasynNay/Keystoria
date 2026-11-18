@@ -1,7 +1,7 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js?v=0.28.0";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.36.0";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.38.0";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.39.0";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.39.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.32.0";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.35.0";
@@ -752,6 +752,17 @@ app.addEventListener("input",event=>{
  if(!r?.target || state.pending)return;
  if(norm(value)===norm(r.target.text))submitTyping(value);
 });
+
+/** Textarea selection changes on phone taps, drag handles, Home/Arrow keys,
+ * and programmatic caret corrections. Keep cues aligned with the caret
+ * without starting timers or touching the scoring pipeline.
+ */
+function refreshSpeedCaretFor(field){
+ if(field?.id==='speed-input' && field!==composingPractice && state.speed)
+   speedController.updateCaretGuidance();
+}
+app.addEventListener('select',event=>refreshSpeedCaretFor(event.target));
+document.addEventListener('selectionchange',()=>refreshSpeedCaretFor(document.activeElement));
 
 function submitTyping(value){
  const r=state.room;
