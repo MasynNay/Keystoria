@@ -12,7 +12,7 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
   const limit = windowed ? SPEED_MOBILE_RENDER_LIMIT : reference.length;
   const doc = container.ownerDocument;
   let start = 0, end = 0, letters = [];
-  let previous = null, scrollLine = -1;
+  let previous = null, previousCaret = null, scrollLine = -1;
   let endCaret = null;
 
   // The full exercise remains on the client, independent of the visual
@@ -42,44 +42,53 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
   }
   mount(0);
 
-  function update(typed) {
+  /** Follow the textarea selection, even when correcting previously typed words.
+   * Caret-only changes never recompute accuracy or rewrite character classes.
+   */
+  function update(typed, selectionStart = undefined) {
     const value = String(typed);
-    // The 250ms clock refresh must not trigger DOM writes or layout reads
-    // when the input has not changed.
-    if (value === previous) return;
+    const cursor = Number.isFinite(selectionStart)
+      ? Math.max(0, Math.min(value.length, Math.trunc(selectionStart)))
+      : value.length;
+    const contentChanged = value !== previous;
+    if (!contentChanged && cursor === previousCaret) return;
     const old = previous ?? '';
 
-    // Keep the current character near the front of a small view. This also
-    // moves backwards correctly when a user deletes a larger selection.
+    // Reposition the compact window around the edit point, never the end of
+    // the passage when the player is correcting an earlier word.
     let rebuilt = false;
-    if (windowed && (value.length < start || value.length > start + 120)) {
-      mount(Math.max(0, value.length - 40));
+    if (windowed && (cursor < start || cursor > start + 120)) {
+      mount(Math.max(0, cursor - 40));
       rebuilt = true;
     }
 
-    let first = rebuilt || previous === null ? start : 0;
-    if (!rebuilt && previous !== null) {
-      while (first < old.length && first < value.length && old[first] === value[first]) first++;
-      first = Math.max(start, first);
+    if (contentChanged || rebuilt) {
+      let first = rebuilt || previous === null ? start : 0;
+      if (!rebuilt && previous !== null) {
+        while (first < old.length && first < value.length && old[first] === value[first]) first++;
+        first = Math.max(start, first);
+      }
+      const last = Math.min(end, Math.max(old.length, value.length));
+      for (let k = first; k < last; k++) {
+        const letter = letters[k - start];
+        letter.className = k >= value.length ? 'type-char pending'
+          : value[k] === reference[k] ? 'type-char correct' : 'type-char incorrect';
+      }
+      if (contentChanged) {
+        let correct = 0;
+        for (let k = 0; k < value.length; k++) if (value[k] === reference[k]) correct++;
+        container.dataset.accuracy = value.length ? String(Math.round(correct / value.length * 100)) : '100';
+      }
     }
-    const last = Math.min(end, Math.max(old.length, value.length));
-    for (let i = first; i < last; i++) {
-      const letter = letters[i - start];
-      letter.className = i >= value.length ? 'type-char pending'
-        : value[i] === reference[i] ? 'type-char correct' : 'type-char incorrect';
-    }
-    if (!rebuilt && old.length >= start && old.length < end)
-      letters[old.length - start]?.classList.remove('current');
-    if (value.length >= start && value.length < end)
-      letters[value.length - start]?.classList.add('current');
+
+    if (!rebuilt && previousCaret !== null && previousCaret >= start && previousCaret < end)
+      letters[previousCaret - start]?.classList.remove('current');
+    if (cursor >= start && cursor < end) letters[cursor - start]?.classList.add('current');
     endCaret.hidden = value.length < reference.length;
     previous = value;
+    previousCaret = cursor;
 
-    let correct = 0;
-    for (let i = 0; i < value.length; i++) if (value[i] === reference[i]) correct++;
-    container.dataset.accuracy = value.length ? String(Math.round(correct / value.length * 100)) : '100';
-
-    const caret = letters[Math.min(Math.max(0, value.length - start), letters.length - 1)];
+    const caret = letters[Math.min(Math.max(0, cursor - start), letters.length - 1)];
     if (!caret) return;
     const lineHeight = Number.parseFloat(getComputedStyle(container).lineHeight) || 33;
     const viewport = container.getBoundingClientRect();
