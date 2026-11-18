@@ -31,7 +31,12 @@ Automated unit tests cover filters, storage failures, Numpad and history deletio
 
 This remains part of open [progression issue #5](https://github.com/MasynNay/Keystoria/issues/5). Manual export/restore is shipped; automatic multi-device syncing, the complete progression system, and physical phone-file-picker verification are **not**.
 
-## Latest verified release checkpoint — November 17, 2026
+## Latest verified release checkpoint — November 18, 2026
+
+- [PR #50](https://github.com/MasynNay/Keystoria/pull/50) synchronized the visual next-key and spoken word/Numpad group cues with the native typing caret during corrections. [Production Pages run 44234682503](https://github.com/MasynNay/Keystoria/actions/runs/44234682503) passed on the first attempt after five green PR checks; post-merge mobile, theme and screenshot workflows also passed.
+- **Current engineering focus:** Lyric Lab completion should transition from disabled input to an explicitly focused result heading, a readable score recap and replay/song-selection controls. Add original offline demo browser tests at phone, touch landscape, narrow desktop and wide desktop sizes. Keep real mobile keyboard and screen-reader verification open.
+  
+## Previous verified release checkpoint — November 17, 2026
 
 - [PR #49](https://github.com/MasynNay/Keystoria/pull/49) fixed focus continuity for keyboard-triggered Speed Lab category/duration changes; [production Pages run 44230747978](https://github.com/MasynNay/Keystoria/actions/runs/44230747978) passed after all five pull-request checks. Post-merge mobile, theme and screenshot workflows also passed.
 - [PR #48](https://github.com/MasynNay/Keystoria/pull/48) aligned Speed Lab with the 15 themes and added 4.5:1 computed flat-surface contrast checks at desktop and touch widths. Its first post-merge Pages browser gate exposed an intermittent category-focus test timeout; that identical build deployed after a successful retry. PR #49 targeted the plausible focus race and strengthened regression coverage.
