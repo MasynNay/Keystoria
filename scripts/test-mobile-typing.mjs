@@ -114,6 +114,36 @@ try{
   assert.equal(await spoken.textContent(),'Current word: '+firstWord,
    'backspace across the separator restores the previous target');
   await page.evaluate(()=>window.__speedWordObserver.disconnect());
+
+  // Correct a prior word using the browser's native caret instead of
+  // assuming the next edit occurs at the end of the passage.
+  const thirdWord=wordReference.trim().split(/\s+/)[2];
+  assert.ok(thirdWord,'a third word exists for mid-passage correction');
+  const typedThree=firstWord+' '+secondWord+' '+thirdWord.slice(0,1);
+  await input.fill(typedThree);
+  assert.equal(await spoken.textContent(),'Current word: '+thirdWord);
+  const beforeCaretAccuracy=await page.locator('#speed-accuracy').textContent();
+  await page.evaluate(()=>{window.__speedLettersNode=document.querySelector('#speed-letters')});
+  await input.evaluate(el=>el.setSelectionRange(0,0));
+  await page.waitForFunction(expected=>document.querySelector('#speed-screenreader-target')?.textContent===expected,
+    'Current word: '+firstWord);
+  assert.equal(await page.locator('#speed-mobile-first').textContent(),firstWord[0],
+   'next-character cue follows the earlier caret, not the trailing typed text');
+  assert.equal(await input.inputValue(),typedThree,'moving the caret does not edit the typed text');
+  assert.equal(await page.locator('#speed-accuracy').textContent(),beforeCaretAccuracy,
+   'a caret move cannot rescore a timed drill');
+  assert.equal(await page.evaluate(()=>document.querySelector('#speed-letters')===window.__speedLettersNode),true,
+   'moving the caret keeps the existing fast passage renderer');
+  await input.evaluate((el,index)=>el.setSelectionRange(index,index),firstWord.length+1);
+  await page.waitForFunction(expected=>document.querySelector('#speed-screenreader-target')?.textContent===expected,
+    'Current word: '+secondWord);
+  assert.equal(await page.locator('#speed-mobile-first').textContent(),secondWord[0],
+   'moving to the middle word updates the visual correction target');
+  await input.press('End');
+  await page.waitForFunction(expected=>document.querySelector('#speed-screenreader-target')?.textContent===expected,
+    'Current word: '+thirdWord);
+  assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+   'keyboard caret navigation preserves the focused native typing field');
   await input.fill('abc');
   if(isPhone){
    assert.ok((await page.locator('#speed-mobile-first').textContent())!==null);
@@ -187,6 +217,17 @@ try{
   assert.equal(await page.locator('#speed-screenreader-target').textContent(),
    'Current number group: '+secondGroup,
    'Numpad announcement advances when a group separator is entered');
+  const numpadTypedBefore=await page.locator('#speed-input').inputValue();
+  await page.locator('#speed-input').evaluate(el=>el.setSelectionRange(0,0));
+  await page.waitForFunction(expected=>document.querySelector('#speed-screenreader-target')?.textContent===expected,
+   'Current number group: '+numericReference.slice(0,3));
+  assert.equal(await page.locator('#speed-mobile-first').textContent(),numericReference[0],
+   'Numpad next-key guidance follows the prior group at the caret');
+  await page.locator('#speed-input').press('End');
+  await page.waitForFunction(expected=>document.querySelector('#speed-screenreader-target')?.textContent===expected,
+   'Current number group: '+secondGroup);
+  assert.equal(await page.locator('#speed-input').inputValue(),numpadTypedBefore,
+   'Numpad caret navigation cannot alter entered digits');
   assert.equal(await page.locator('#speed-wpm').locator('xpath=following-sibling::small').innerText(),'CPM');
   await page.locator('[data-action="speed-pack"][data-pack="everyday"]').click();
   await page.locator('[data-action="speed-home"]').first().click();
