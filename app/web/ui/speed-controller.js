@@ -4,7 +4,7 @@
  * Story missions can continue to evolve independently of personal training.
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
-import { createSpeedFlow } from './speed-flow.js?v=0.27.1';
+import { createSpeedFlow } from './speed-flow.js?v=0.41.0';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget } from './mobile-typing.js?v=0.39.0';
 
 const node = id => document.getElementById(id);
@@ -113,6 +113,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     const field=node('speed-input');
     if(!session || session.status==='complete' || !field || !field.isConnected)return;
     const caret=Number.isInteger(field.selectionStart)?field.selectionStart:session.typed.length;
+    flow?.update(session.typed,caret);
     const cue=nextSpeedCue(session.reference,session.typed,38,caret);
     text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
     text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
@@ -130,7 +131,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     const mobile=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
     if (!flow || flow.windowed !== mobile)
       flow=createSpeedFlow(node('speed-letters'),session.reference,{windowed:mobile});
-    flow?.update(session.typed);
+    flow?.update(session.typed,node('speed-input')?.selectionStart);
     updateCaretGuidance();
     text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));

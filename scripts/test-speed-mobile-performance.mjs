@@ -45,6 +45,19 @@ try{
    assert.equal(await page.locator('#speed-mobile-first').textContent(),reference[330]===' '?'␣':reference[330]);
   }
 
+  // Moving the caret across a long typed passage should shift the displayed
+  // highlight without changing typing, accuracy or the bounded phone DOM.
+  await input.evaluate(el=>el.setSelectionRange(0,0));
+  await page.waitForFunction(()=>Boolean(document.querySelector('#speed-letters .type-char:first-child.current')));
+  assert.equal(await view.getAttribute('data-accuracy'),'100','selection-only move does not rescore');
+  assert.equal(await input.inputValue(),reference.slice(0,330),'selection-only move preserves text');
+  if(compact)assert.ok(await view.locator('.type-char').count()<=220,'backwards caret keeps DOM bounded');
+  await input.evaluate(el=>el.setSelectionRange(330,330));
+  await page.waitForFunction(expected=>
+    document.querySelector('#speed-letters .type-char.current')?.textContent===expected,reference[330]);
+  assert.equal(await view.locator('.type-char.current').count(),1,'passage keeps one highlighted caret');
+  if(compact)assert.ok(await view.locator('.type-char').count()<=220,'forward caret keeps DOM bounded');
+
   // Correctly recover after deleting far back across a shifted visual window.
   await input.fill(reference.slice(0,25));
   assert.equal(await view.getAttribute('data-accuracy'),'100');

@@ -32,6 +32,12 @@ The controller updates only the small cue and persistent live status on native `
 
 These browser tests are **not** physical iOS/Android keyboard or VoiceOver/TalkBack/NVDA validation. Screen-reader announcement behavior on real devices remains an open item in [issue #3](https://github.com/MasynNay/Keystoria/issues/3).
 
+## Speed Lab passage-caret correction parity
+
+The main Speed Lab passage now highlights the **same native editing caret** as the compact next-key hint and polite spoken word/Numpad cue. Moving the selection alone does not modify the user's text, score, correctness classes, timer or the native textarea. On phones, the 220-character display window follows long backward/forward correction jumps without growing the DOM. The existing full reference and scoring path remain unchanged.
+
+Browser regressions check the first and middle word, number-group corrections, long backward/forward caret jumps, stable accuracy and native input identity at phone, landscape, narrow desktop and wide desktop sizes. These are automated Chromium simulations, not physical iOS/Android keyboard or screen-reader verification. Issues #3 and #11 remain open.
+
 ## Speed Lab spoken target at word boundaries
 
 The Speed Lab input now references the existing instructions, session status and a persistent **Current word** / **Current number group** status using `aria-describedby`. The visually hidden element is present at both desktop and phone sizes, including the static GitHub Pages edition. The displayed reference passage and fast visual letter feedback remain unchanged.

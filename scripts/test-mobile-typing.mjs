@@ -106,6 +106,9 @@ try{
   await input.fill(firstWord+' ');
   assert.equal(await spoken.textContent(),'Current word: '+secondWord,
    'a completed word announces the next target');
+  // MutationObserver delivers asynchronously in a microtask. The visible
+  // word can already be updated before its observer callback has fired.
+  await page.waitForFunction(()=>window.__speedSpokenMutations>0);
   assert.ok(await page.evaluate(()=>window.__speedSpokenMutations)>0,
    'word boundary updates the mounted polite live region');
   assert.equal(await spoken.evaluate(el=>el===window.__spokenNode),true,
@@ -132,6 +135,9 @@ try{
   assert.equal(await input.inputValue(),typedThree,'moving the caret does not edit the typed text');
   assert.equal(await page.locator('#speed-accuracy').textContent(),beforeCaretAccuracy,
    'a caret move cannot rescore a timed drill');
+  assert.equal(await page.locator('#speed-letters .type-char').evaluateAll(
+    nodes=>nodes.findIndex(node=>node.classList.contains('current'))),0,
+    'the main passage highlights the first character at the correction caret');
   assert.equal(await page.evaluate(()=>document.querySelector('#speed-letters')===window.__speedLettersNode),true,
    'moving the caret keeps the existing fast passage renderer');
   await input.evaluate((el,index)=>el.setSelectionRange(index,index),firstWord.length+1);
@@ -139,6 +145,9 @@ try{
     'Current word: '+secondWord);
   assert.equal(await page.locator('#speed-mobile-first').textContent(),secondWord[0],
    'moving to the middle word updates the visual correction target');
+  assert.equal(await page.locator('#speed-letters .type-char').evaluateAll(
+    nodes=>nodes.findIndex(node=>node.classList.contains('current'))),firstWord.length+1,
+    'the main passage and next-key cue follow the same editing caret');
   await input.press('Control+End');
   await page.waitForFunction(expected=>document.querySelector('#speed-screenreader-target')?.textContent===expected,
     'Current word: '+thirdWord);
@@ -223,6 +232,9 @@ try{
    'Current number group: '+numericReference.slice(0,3));
   assert.equal(await page.locator('#speed-mobile-first').textContent(),numericReference[0],
    'Numpad next-key guidance follows the prior group at the caret');
+  assert.equal(await page.locator('#speed-letters .type-char').evaluateAll(
+    nodes=>nodes.findIndex(node=>node.classList.contains('current'))),0,
+    'Numpad passage highlight follows the corrected number group');
   await page.locator('#speed-input').press('End');
   await page.waitForFunction(expected=>document.querySelector('#speed-screenreader-target')?.textContent===expected,
    'Current number group: '+secondGroup);
