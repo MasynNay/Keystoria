@@ -90,3 +90,24 @@
   .speed-assist-settings button:focus-visible{outline:3px solid var(--text);outline-offset:3px}
   .speed-assist-settings p{min-width:185px;flex:1;font:12px/1.45 var(--body);color:var(--text);margin:0}
 }
+
+/* Opt-in Word Focus keeps the original reference DOM for scoring but
+ * shows only the native caret's active word/group near the soft keyboard.
+ */
+.speed-focus-settings,.mobile-speed-cue>.speed-focus-heading,.speed-focus-word{display:none}
+@media (max-width:760px) and (pointer:coarse), (max-height:520px) and (pointer:coarse){
+  .speed-focus-settings{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:7px 0 11px}
+  .speed-focus-settings button{min-height:44px;padding:9px 13px;border:1px solid var(--theme-accent,var(--accent));border-radius:7px;background:var(--theme-panel-2,var(--panel-2));color:var(--theme-text,var(--text));font:700 11px/1.4 var(--mono)}
+  .speed-focus-settings button[aria-pressed="true"]{background:var(--theme-accent,var(--accent));color:var(--theme-bg,var(--background))}
+  .speed-focus-settings button:focus-visible{outline:3px solid var(--theme-text,var(--text));outline-offset:3px}
+  .speed-focus-settings p{flex:1;min-width:160px;margin:0;color:var(--theme-text,var(--text));font:12px/1.45 var(--body)}
+  .speed-page[data-word-focus="true"] .speed-prompt-wrap{display:none}
+  .speed-page[data-word-focus="true"] .speed-stream-heading,
+  .speed-page[data-word-focus="true"] .speed-stream-cue{display:none}
+  .speed-page[data-word-focus="true"] .mobile-speed-cue>.speed-focus-heading{display:block}
+  .speed-page[data-word-focus="true"] .speed-focus-word{display:block;font:800 clamp(23px,6vw,32px)/1.6 var(--mono);min-height:43px;overflow-wrap:anywhere}
+  .speed-focus-char.pending{color:var(--theme-text,var(--text))}
+  .speed-focus-char.correct{color:var(--theme-accent,var(--accent))}
+  .speed-focus-char.incorrect{color:var(--theme-text,var(--text));text-decoration:underline wavy #fa7185;text-decoration-thickness:2px}
+  .speed-focus-char.current{border-left:2px solid var(--theme-accent,var(--accent));background:rgba(var(--accent-rgb),.2)}
+}
