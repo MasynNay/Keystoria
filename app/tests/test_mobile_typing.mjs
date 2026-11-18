@@ -117,3 +117,40 @@ test('Speed Lab Numpad spoken target uses independent digit-group language',()=>
  assert.equal(speedSpokenTarget(reference,'123 4567 ',true),'Current number group: 890');
  assert.equal(speedSpokenTarget(reference,reference,true),'Passage complete');
 });
+
+test('Speed Lab visual and spoken guidance follow an earlier native caret',()=>{
+ const reference='alpha beta gamma';
+ const typed='alpha beta ga';
+ assert.equal(nextSpeedCue(reference,typed).next,'m',
+  'legacy end-of-typed-text cue remains the default');
+ assert.equal(nextSpeedCue(reference,typed,38,0).next,'a');
+ assert.equal(nextSpeedCue(reference,typed,38,2).next,'p');
+ assert.equal(nextSpeedCue(reference,typed,38,6).next,'b');
+ assert.equal(nextSpeedCue(reference,typed,38,11).next,'g');
+ assert.equal(nextSpeedCue(reference,typed,38,-10).next,'a',
+  'negative native selection is clamped to the beginning');
+ assert.equal(nextSpeedCue(reference,typed,38,999).next,'m',
+  'a stale selection cannot advance beyond the typed text');
+ assert.equal(speedSpokenTarget(reference,typed,false,0),'Current word: alpha');
+ assert.equal(speedSpokenTarget(reference,typed,false,4),'Current word: alpha');
+ assert.equal(speedSpokenTarget(reference,typed,false,6),'Current word: beta');
+ assert.equal(speedSpokenTarget(reference,typed,false,11),'Current word: gamma');
+ assert.equal(speedSpokenTarget(reference,typed,false,999),'Current word: gamma');
+ assert.equal(speedSpokenTarget(reference,typed,false,-4),'Current word: alpha');
+ assert.equal(speedSpokenTarget(reference,typed,false,NaN),'Current word: gamma',
+  'invalid cursor values retain the previous end-of-text behavior');
+ assert.equal(speedSpokenTarget(reference,reference,false,1),'Current word: alpha',
+  'reviewing an earlier caret position is not misreported as passage complete');
+ assert.equal(speedSpokenTarget(reference,reference),'Passage complete');
+});
+
+test('Numpad spoken group and visual cue follow corrected digit positions',()=>{
+ const reference='123 4567 890';
+ const typed='123 4567 8';
+ assert.equal(speedSpokenTarget(reference,typed,true,1),'Current number group: 123');
+ assert.equal(speedSpokenTarget(reference,typed,true,5),'Current number group: 4567');
+ assert.equal(speedSpokenTarget(reference,typed,true,9),'Current number group: 890');
+ assert.equal(nextSpeedCue(reference,typed,38,1).next,'2');
+ assert.equal(nextSpeedCue(reference,typed,38,5).next,'5');
+ assert.equal(nextSpeedCue(reference,typed,38,9).next,'8');
+});
