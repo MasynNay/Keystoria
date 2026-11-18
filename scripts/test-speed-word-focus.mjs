@@ -32,7 +32,9 @@ try{
    assert.equal(await page.locator('.speed-page').getAttribute('data-word-focus'),'true');
    assert.equal(await page.locator('.speed-prompt-wrap').isVisible(),false);
    assert.equal(await page.locator('#speed-focus-word').isVisible(),true);
-   assert.equal(await page.locator('#speed-focus-word .speed-focus-char').count(),first.length);
+   const expectedChars=first.length+(first.length<=2?1:0);
+   assert.equal(await page.locator('#speed-focus-word .speed-focus-char').count(),expectedChars,
+     'a fully typed short word also exposes the pending Space');
    assert.equal(await page.locator('#speed-accuracy').textContent(),accuracy);
    assert.equal(await input.inputValue(),first.slice(0,2));
    assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__originalWordFocusField),true);
