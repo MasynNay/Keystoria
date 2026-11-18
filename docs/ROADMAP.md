@@ -7,11 +7,13 @@
 
 Keystoria is an evolving typing game collection with 24 authored story adventures, Lyric Lab, Speed Lab, and Field Academy. Mobile-first gameplay is a near-term priority based on direct feedback, separate from desktop accessibility and planned content features. This roadmap records why the next changes matter, how we will verify them, and which features have already been delivered. Priorities may change after testing or feedback; the roadmap is not a promise of dates.
 
-## Current engineering pass — optional mobile Word Focus (in PR, not shipped)
+## Latest verified release — mobile Word Focus (November 18, 2026)
 
-Building on [merged PR #52](https://github.com/MasynNay/Keystoria/pull/52) and its verified production Pages run [44336892594](https://github.com/MasynNay/Keystoria/actions/runs/44336892594), the next optional mobile presentation exposes one active Speed Lab word or Numpad group near the native typing input. The full passage remains the default. Word Focus is explicitly opt-in, local-preference only, and does not change the timer, native keyboard help, WPM/CPM accuracy, score history or full reference. It keeps pending separators visible and follows corrections at earlier caret positions. Existing desktop mode remains unchanged.
+[PR #53](https://github.com/MasynNay/Keystoria/pull/53) introduced optional Word Focus for compact touch Speed Lab while keeping the full passage default. It preserves native input focus, earlier-caret corrections, pending Space and Numpad group tracking, full WPM/CPM scoring and existing phone keyboard-assistance labels. Six PR checks and [production GitHub Pages run 44351316321](https://github.com/MasynNay/Keystoria/actions/runs/44351316321) passed, along with post-merge Mobile/Theme/Screenshot checks. Actual iOS/Android and screen-reader verification remain open in #3/#11.
 
-**Release boundary:** Word Focus is under development until its new unit and phone/landscape/desktop browser checks pass, PR merges and the gated GitHub Pages deployment succeeds. Native iOS Safari/Android Chrome keyboard behavior and assistive-technology reading must still be checked on actual devices before issues #3/#11 can close.
+## Current engineering pass — Practice Compass qualified best (#5, not yet released)
+
+Practice Compass's recent-five trend should not be presented as a lifetime personal best. The next change labels this scope explicitly and adds the best matching speed recorded at or above the selected accuracy goal, computed over at most 25 locally saved results. Category, duration, exact/assisted input mode and Numpad CPM remain isolated; adjusting the 90/95/98% goal updates the best without rewriting any scores, changing the export format or adding cloud storage. Unit and mobile/desktop browser checks cover older saved records, changes to goal thresholds, clearing/export, input focus and history scope. This feature is not shipped until release CI, merge and GitHub Pages succeed. Actual user feedback is still required before closing progression issue #5.
 
 ## Priority fix: Speed Lab mobile lag (reported November 11, 2026 Mountain Time)
 
