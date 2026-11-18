@@ -48,7 +48,10 @@ try {
   await input.fill(reference);
   await page.locator('#speed-results-heading').waitFor();
   assert.equal(await insight.getAttribute('data-matches'),'1','saved run appears as a comparable insight');
-  assert.match(await insight.innerText(),/AVERAGE ACCURACY/);
+  assert.match(await insight.innerText(),/RECENT AVERAGE ACCURACY/);
+  assert.match(await insight.locator('.speed-insight-qualified').innerText(),/BEST AT 90%/);
+  assert.match(await insight.locator('.speed-insight-qualified strong').innerText(),/\d+ WPM/,
+    'a fully accurate run creates an accuracy-qualified best');
 
   const oneRun=insight.locator('.speed-insight-trail li');
   assert.equal(await oneRun.count(),1,'first comparable run appears in the progress trail');
@@ -65,6 +68,7 @@ try {
       {pack:'everyday',seconds:30,practiceMode:mode,wpm:30,accuracy:95},
       {pack:'everyday',seconds:30,practiceMode:mode,wpm:20,accuracy:90},
       {pack:'everyday',seconds:30,practiceMode:mode,wpm:10,accuracy:99},
+      {pack:'everyday',seconds:30,practiceMode:mode,wpm:88,accuracy:96},
       {pack:'numpad',seconds:30,practiceMode:'standard-exact',wpm:900,cpm:900,accuracy:100},
     ]));
     window.__speedInputNode=document.getElementById('speed-input');
@@ -75,12 +79,18 @@ try {
     '10 WPM','20 WPM','30 WPM','40 WPM','50 WPM'
   ]);
   assert.match(await insight.locator('.speed-insight-trend').innerText(),/\+10 WPM/);
+  assert.match(await insight.locator('.speed-insight-stats').innerText(),/BEST IN LAST 5/);
+  assert.match(await insight.locator('.speed-insight-qualified strong').innerText(),/88 WPM/,
+    'qualified best includes older saved results, not just the trend');
+  assert.match(await insight.locator('.speed-insight-qualified').innerText(),/6 comparable saved runs/);
   assert.match(await insight.locator('.speed-insight-trend').innerText(),/3 consecutive runs/);
   assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__speedInputNode),true,
    'changing the goal preserves the original practice textarea');
   await page.locator('[data-action="speed-goal"][data-goal="98"]').click();
   assert.match(await insight.locator('.speed-insight-trend').innerText(),/0 consecutive runs/,
    'streak recalculates when accuracy goal increases');
+  assert.match(await insight.locator('.speed-insight-qualified strong').innerText(),/10 WPM/,
+    'raising the goal recalculates the qualified best without modifying history');
   assert.match(await insight.locator('.speed-insight-tip').innerText(),/Accuracy goal 98%:/,
    'a goal change updates the existing polite screen-reader announcement');
   assert.equal(await insight.locator('.speed-insight-trail li').count(),5,'a long history uses at most five bars');
@@ -96,7 +106,7 @@ try {
   assert.equal(download.suggestedFilename(),'keystoria-speed-results.json');
   const exportData=JSON.parse(await readFile(await download.path(),'utf8'));
   assert.equal(exportData.format,'keystoria.speed.history');
-  assert.equal(exportData.records.length,6);
+  assert.equal(exportData.records.length,7);
   assert.equal(exportData.records[0].pack,'everyday');
 
   // Clearing needs explicit confirmation; cancelling must retain the score.
@@ -112,6 +122,7 @@ try {
   page.once('dialog',dialog=>dialog.accept());
   await page.locator('[data-action="speed-clear"]').click();
   assert.equal(await insight.getAttribute('data-matches'),'0');
+  assert.match(await insight.locator('.speed-insight-qualified').innerText(),/No matching saved run reached this goal/);
   assert.equal(await insight.locator('.speed-insight-trail').count(),0,'clearing removes the stale trend');
   assert.deepEqual(await page.evaluate(()=>({
     panel:document.getElementById('speed-practice-insights')===window.__compassBeforeClear,
