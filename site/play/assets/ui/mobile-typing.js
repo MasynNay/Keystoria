@@ -57,13 +57,9 @@ export function speedFocusWord(reference, typed, cursor=undefined) {
  const offset=speedCaretOffset(source,value,cursor);
  let start=offset;
  while(start>0 && !/\s/.test(source[start-1]))start--;
- while(start<source.length && /\s/.test(source[start]))start++;
  let end=start;
  while(end<source.length && !/\s/.test(source[end]))end++;
  const word=source.slice(start,end), characters=[];
- if(offset<start && /\s/.test(source[offset]||'')){
-   characters.push({letter:'␣',state:value[offset]===source[offset]?'correct':'pending',current:true});
- }
  for(let i=0;i<word.length;i++){
    const at=start+i,letter=word[i];
    characters.push({
@@ -71,6 +67,13 @@ export function speedFocusWord(reference, typed, cursor=undefined) {
      state:at>=value.length?'pending':(value[at]===letter?'correct':'incorrect'),
      current:at===offset,
    });
+ }
+ // A pending Space belongs to the word just typed. Do not display the next
+ // word until that separator is entered; match the existing spoken target.
+ if(offset<source.length && /\s/.test(source[offset])){
+   characters.push({letter:'␣',
+     state:offset>=value.length?'pending':(value[offset]===source[offset]?'correct':'incorrect'),
+     current:true});
  }
  return {word,characters,start};
 }
