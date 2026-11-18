@@ -139,7 +139,7 @@ try{
     'Current word: '+secondWord);
   assert.equal(await page.locator('#speed-mobile-first').textContent(),secondWord[0],
    'moving to the middle word updates the visual correction target');
-  await input.press('End');
+  await input.press('Control+End');
   await page.waitForFunction(expected=>document.querySelector('#speed-screenreader-target')?.textContent===expected,
     'Current word: '+thirdWord);
   assert.equal(await input.evaluate(el=>document.activeElement===el),true,
