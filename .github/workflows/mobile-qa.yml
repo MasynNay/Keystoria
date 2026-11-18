@@ -9,6 +9,7 @@ on:
       - 'app/tests/test_mobile_typing.mjs'
       - 'scripts/test-mobile-typing.mjs'
       - 'scripts/test-academy-focus.mjs'
+      - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
@@ -26,6 +27,7 @@ on:
       - 'app/tests/test_mobile_typing.mjs'
       - 'scripts/test-mobile-typing.mjs'
       - 'scripts/test-academy-focus.mjs'
+      - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
@@ -76,6 +78,7 @@ jobs:
         run: |
           node scripts/test-mobile-typing.mjs
           node scripts/test-academy-focus.mjs
+          node scripts/test-lyric-completion.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-keyboard-assist.mjs

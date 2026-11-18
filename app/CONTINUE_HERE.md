@@ -1,10 +1,16 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 17, 2026 (America/Denver) — latest verified release is PR #49; caret-aware cues under development.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #50; Lyric Lab finish-state accessibility next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
+
+## Latest shipped work — Speed Lab caret corrections (November 18, 2026)
+
+[PR #50](https://github.com/MasynNay/Keystoria/pull/50) merged at `640a9be`; [production Pages run 44234682503](https://github.com/MasynNay/Keystoria/actions/runs/44234682503) succeeded. All five PR checks and all four post-merge checks (Pages, Mobile Typing, Themes, README screenshots) passed. Both the mobile next-character cue and spoken word/Numpad group cue now follow the real textarea caret, not merely the end of input, while preserving native typing and score accuracy.
+
+**Next implementation:** Lyric Lab needs a fully navigable end-of-song state: a focused result heading, concise score recap and nearby replay/choose-song actions. Add a deterministic offline demo browser test covering typing and final-line skip, phone/desktop focus, replay and re-enabled controls. This is work toward [accessibility issue #3](https://github.com/MasynNay/Keystoria/issues/3), not physical iOS/Android or screen-reader certification.
 
 ## Latest verified release — keyboard navigation and phone typing (November 17, 2026)
 

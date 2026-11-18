@@ -11,6 +11,7 @@ on:
       - 'app/tests/test_lyric_provider.mjs'
       - 'scripts/test-lyric-recovery.mjs'
       - 'scripts/test-lyric-races.mjs'
+      - 'scripts/test-lyric-completion.mjs'
       - 'app/tests/test_video_match.mjs'
   pull_request:
     branches: [main]
@@ -23,6 +24,7 @@ on:
       - 'app/tests/test_lyric_provider.mjs'
       - 'scripts/test-lyric-recovery.mjs'
       - 'scripts/test-lyric-races.mjs'
+      - 'scripts/test-lyric-completion.mjs'
       - 'app/tests/test_video_match.mjs'
   workflow_dispatch:
 permissions:
@@ -55,3 +57,4 @@ jobs:
         run: |
           node scripts/test-lyric-recovery.mjs
           node scripts/test-lyric-races.mjs
+          node scripts/test-lyric-completion.mjs
