@@ -41,3 +41,14 @@
 .lyric-calibrate:hover{background:#31635c;color:#fff}
 @media(max-width:680px){.lyric-track-cover{width:72px}.lyric-song-identity{gap:12px}.lyric-score-grid{gap:4px}.lyric-score-grid>div{padding:8px 2px}.lyric-score-grid span{font-size:8px}.lyric-score-grid strong{font-size:20px}.lyric-album.lyric-has-art strong{font-size:18px}.lyric-result-art{width:54px}.lyric-song-result{gap:10px;padding:11px}.lyric-result-info strong{font-size:16px}.lyric-now-singing{padding:13px 15px}}
 @media(prefers-reduced-motion:reduce){.lyric-album-art,.lyric-live-progress span{transition:none}}
+
+/* An explicit keyboard destination when a lyric track finishes. The input is
+ * disabled at completion, so the next Tab must offer a real replay action.
+ */
+.lyric-finish-panel[hidden]{display:none!important}
+.lyric-finish-panel{display:grid;gap:11px;margin:14px 0 18px;padding:18px 20px;border:1px solid var(--accent);border-radius:11px;background:var(--panel);color:var(--text);min-width:0}
+.lyric-finish-panel h2{font:850 clamp(20px,3vw,28px)/1.2 var(--display);letter-spacing:.04em;color:var(--text);margin:0}
+.lyric-finish-panel h2:focus{outline:3px solid var(--accent);outline-offset:4px;border-radius:2px}
+.lyric-finish-panel p{font:13px/1.6 var(--body);color:var(--muted);margin:0}
+.lyric-finish-actions{display:flex;flex-wrap:wrap;gap:10px}
+.lyric-finish-actions .btn{min-height:44px}
