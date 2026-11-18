@@ -18,9 +18,15 @@ export function nextSpeedCue(reference,typed,visible=38) {
  * spoken target changes only at a word/number-group boundary; otherwise a
  * screen reader would be interrupted after every keystroke.
  */
-export function speedSpokenTarget(reference, typed, numpad=false){
+export function speedSpokenTarget(reference, typed, numpad=false, cursor=undefined){
  const source=String(reference??'');
- const offset=Math.min(source.length,String(typed??'').length);
+ const typedLength=Math.min(source.length,String(typed??'').length);
+ // With a touch correction or an Arrow/Home key, the editable position may
+ // be earlier than the end of the typed text. Never announce the trailing
+ // word when the user is correcting a different word at the caret.
+ const offset=Number.isFinite(cursor)
+   ? Math.max(0,Math.min(typedLength,Math.trunc(cursor)))
+   : typedLength;
  const prefix=numpad?'Current number group: ':'Current word: ';
  if(offset>=source.length)return 'Passage complete';
  let start=offset,end=offset;
