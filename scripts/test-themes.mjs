@@ -43,6 +43,50 @@ async function assertRenderedSettingsContrast(page,themeId){
   assert.ok(ratio>=4.5,themeId+' '+label+' contrast '+ratio.toFixed(2)+':1 (text '+fg+' on '+bg+')');
 }
 
+/** Sample actual flat, opaque Speed Lab text surfaces (not theme tokens).
+ * Overlays, gradients, animation and translucent overlays still require human QA.
+ */
+async function assertRenderedSpeedContrast(page,themeId){
+ const samples=await page.evaluate(()=>{
+  const specs=[
+   ['time label','.speed-metrics > div:first-child span','.speed-console'],
+   ['speed score','#speed-wpm','.speed-console'],
+   ['prompt label','.speed-prompt-label','.speed-prompt-wrap'],
+   ['pending character','.speed-letters .type-char.pending','.speed-prompt-wrap'],
+   ['typing field','#speed-input','#speed-input'],
+   ['typing placeholder','#speed-input','#speed-input','::placeholder'],
+   ['duration selected','.speed-choices button[aria-pressed="true"]','.speed-choices button[aria-pressed="true"]'],
+   ['duration unselected','.speed-choices button[aria-pressed="false"]','.speed-choices button[aria-pressed="false"]'],
+   ['empty history','.speed-empty','.speed-bottom > section'],
+   ['insight stat','.speed-insight-stats small','.speed-insight-stats > div'],
+   ['goal label','.speed-insight-goals > span','.speed-bottom > section'],
+   ['privacy controls label','.speed-insight-privacy button:first-child','.speed-bottom > section'],
+  ];
+  function luminance(css){
+    const rgb=(css.match(/[0-9.]+/g)||[]).slice(0,3).map(Number);
+    if(rgb.length!==3)throw new Error('Expected opaque RGB but got '+css);
+    const channels=rgb.map(value=>{
+      const c=value/255;
+      return c<=.04045?c/12.92:((c+.055)/1.055)**2.4;
+    });
+    return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722;
+  }
+  return specs.map(([label,fore,back,pseudo])=>{
+    const foreground=document.querySelector(fore);
+    const surface=document.querySelector(back);
+    if(!foreground||!surface)throw new Error('Speed Lab contrast fixture missing: '+label);
+    const fg=getComputedStyle(foreground,pseudo).color;
+    const bg=getComputedStyle(surface).backgroundColor;
+    if(bg==='rgba(0, 0, 0, 0)'||bg==='transparent')
+      throw new Error('Opaque background missing for '+label+' on '+back);
+    const a=luminance(fg),b=luminance(bg);
+    return {label,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),fg,bg};
+  });
+ });
+ for(const {label,ratio,fg,bg} of samples)
+   assert.ok(ratio>=4.5,themeId+' Speed Lab '+label+' contrast '+ratio.toFixed(2)+':1 ('+fg+' on '+bg+')');
+}
+
 const check=async (page)=>{
   assert.equal(await page.locator(".theme-choice").count(),15,"15 choices must be in the settings dialog");
   for(const theme of themes){
@@ -109,6 +153,7 @@ try{
     assert.equal(result.actualText,result.text,'mobile cue uses selected theme foreground for '+theme.id);
     assert.equal(result.actionBackground,result.expectedAction,'secondary touch action uses selected theme panel for '+theme.id);
     assert.equal(result.actionText,result.text,'secondary touch action uses selected theme foreground for '+theme.id);
+    await assertRenderedSpeedContrast(mobileThemes,theme.id);
   }
   await close(mobileThemes);
   await mobileThemes.close();
@@ -123,6 +168,10 @@ try{
   await page.locator('[data-action="speed-open"]').first().click();
   await page.locator("#speed-input").waitFor();
   await open(page);
+  for(const theme of themes){
+    await page.locator('.theme-choice[data-theme-id="'+theme.id+'"]').click();
+    await assertRenderedSpeedContrast(page,theme.id);
+  }
   await page.locator('.theme-choice[data-theme-id="aurora"]').click();
   assert.equal(await page.locator("body").getAttribute("data-ui-theme"),"aurora");
   await close(page);
