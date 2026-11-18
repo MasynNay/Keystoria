@@ -48,6 +48,33 @@ export function speedSpokenTarget(reference, typed, numpad=false, cursor=undefin
  return target?prefix+target:'Passage complete';
 }
 
+
+/** One caret-positioned word/group for optional touch Word Focus.
+ * Display a pending space as ␣ without changing the reference or input.
+ */
+export function speedFocusWord(reference, typed, cursor=undefined) {
+ const source=String(reference??''), value=String(typed??'');
+ const offset=speedCaretOffset(source,value,cursor);
+ let start=offset;
+ while(start>0 && !/\s/.test(source[start-1]))start--;
+ while(start<source.length && /\s/.test(source[start]))start++;
+ let end=start;
+ while(end<source.length && !/\s/.test(source[end]))end++;
+ const word=source.slice(start,end), characters=[];
+ if(offset<start && /\s/.test(source[offset]||'')){
+   characters.push({letter:'␣',state:value[offset]===source[offset]?'correct':'pending',current:true});
+ }
+ for(let i=0;i<word.length;i++){
+   const at=start+i,letter=word[i];
+   characters.push({
+     letter,
+     state:at>=value.length?'pending':(value[at]===letter?'correct':'incorrect'),
+     current:at===offset,
+   });
+ }
+ return {word,characters,start};
+}
+
 /** Range to delete when a phone player taps Back Word. Mirrors text-editing
  * keyboard shortcuts, but never deletes text after the caret or changes a
  * pre-existing selection. Removing a middle word also avoids double spaces.
