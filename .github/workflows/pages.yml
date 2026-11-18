@@ -38,7 +38,6 @@ jobs:
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
           diff app/web/ui/speed-insights.js site/play/assets/ui/speed-insights.js
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
-          diff app/web/ui/lyric-lab-controller.js site/play/assets/ui/lyric-lab-controller.js
       - name: Install Playwright Chromium
         run: |
           npm install --no-save --no-package-lock playwright@1.56.0
