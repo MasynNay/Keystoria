@@ -61,7 +61,10 @@ try{
   assert.equal(await page.locator('#lyric-screenreader-word').textContent(),'Current word: There');
   // Finishing by skipping the final line must not leave keyboard focus on a
   // removed button, and cannot leave no-op controls in the Tab order.
-  const skip=page.locator(phone?'.lyric-mobile-entry [data-action="lyric-skip"]':'#lyric-skip');
+  // A narrow mouse desktop also uses the compact practice controls; this
+  // choice follows the responsive layout, not just a simulated phone flag.
+  const compact=width<=760||(phone&&height<=520);
+  const skip=page.locator(compact?'.lyric-mobile-entry [data-action="lyric-skip"]':'#lyric-skip');
   await skip.click();
   assert.equal(await panel.isVisible(),true,'final-line skip reveals the completion panel');
   assert.equal(await heading.textContent(),'TRACK COMPLETE.');
