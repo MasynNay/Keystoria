@@ -2,6 +2,14 @@
 
 Keystoria is a typing-based portfolio application. This document distinguishes **automated evidence** from human testing that remains necessary.
 
+## Speed Lab keyboard selector focus continuity
+
+Changing a category or duration rebuilds the Speed Lab controls. A keyboard-activated **Enter** or **Space** selection now restores focus to the equivalent newly rendered button, keeping keyboard navigation predictable, while a pointer tap puts focus directly into the typing field. A previous pending animation-frame focus request is cancelled before every new session/selection and on close, preventing an older session from stealing focus after a quick selection.
+
+`scripts/test-vocabulary-browser.mjs` exercises six pointer-selected workplace categories, successive keyboard selections with both Enter and Space, rapid category changes, duration changes and continuing to type at **390px touch** and **1440px desktop**. It verifies both button selection state and actual keyboard-focus identity after the DOM replacement and after a short frame delay.
+
+The November 17 post-merge Pages gate for PR #48 initially timed out after pressing Enter on a previously rendered category. The identical commit passed that check when retried. This change targets the focus timing race, but a single green CI pass cannot prove the original intermittent failure will never recur. Keep tracking recurrent browser, NVDA/VoiceOver and real-keyboard behavior in issue #3.
+
 ## Speed Lab rendered contrast on all 15 themes
 
 The Speed Lab's active typing field and placeholder, score/clock labels, pending character text, prompt headings, drill choices, saved history empty state, and Practice Compass labels now inherit the selected appearance palette rather than fixed old gray/green colors. Both desktop and mobile browser editions use identical gameplay CSS.
