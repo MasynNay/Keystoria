@@ -1,7 +1,7 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js?v=0.28.0";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.36.0";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.36.0";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.38.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.32.0";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.35.0";
@@ -511,8 +511,8 @@ app.addEventListener("click",event=>{
     toast("Saved Speed Lab results cleared.");
     break;
   }
-  case "speed-duration":if(state.speed)speedController.open({pack:state.speed.pack,seconds:Number(item.dataset.seconds)});break;
-  case "speed-pack":if(state.speed)speedController.open({pack:item.dataset.pack,seconds:state.speed.seconds});break;
+  case "speed-duration":if(state.speed)speedController.open({pack:state.speed.pack,seconds:Number(item.dataset.seconds),focusChoice:event.detail===0?"speed-duration":null});break;
+  case "speed-pack":if(state.speed)speedController.open({pack:item.dataset.pack,seconds:state.speed.seconds,focusChoice:event.detail===0?"speed-pack":null});break;
   case "speed-restart":if(state.speed)speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});break;
   case "speed-home":speedController.close();showModal("welcome");break;
   case "create":showModal("create");break;
