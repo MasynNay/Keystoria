@@ -2,11 +2,11 @@
 
 Keystoria is a typing-based portfolio application. This document distinguishes **automated evidence** from human testing that remains necessary.
 
-## Optional mobile Word Focus — validation in progress
+## Optional mobile Word Focus — shipped browser QA
 
 The new opt-in Speed Lab Word Focus presentation is intended to show only the current word or number group beside the real native input on touch layouts while keeping the original full passage available by toggle. It follows the textarea caret when repairing earlier words, shows pending Space explicitly, and distinguishes wrong characters with a wavy underline, not color alone. The source/reference, session timer, scoring, storage, soft-keyboard settings and existing polite spoken target remain unchanged.
 
-Unit tests cover source character status, Space boundary and prior-caret corrections; dedicated Playwright browser checks cover phone portrait, touch landscape, narrow mouse desktop and wide desktop, persistent opt-in, input focus and score preservation. Passing automation does not constitute physical iOS/Android, VoiceOver/TalkBack or NVDA evaluation. This feature must pass release CI and Pages deployment before it is called shipped.
+Unit tests cover source character status, Space boundary and prior-caret corrections; dedicated Playwright browser checks cover phone portrait, touch landscape, narrow mouse desktop and wide desktop, persistent opt-in, input focus and score preservation. Passing automation does not constitute physical iOS/Android, VoiceOver/TalkBack or NVDA evaluation. [PR #53](https://github.com/MasynNay/Keystoria/pull/53) passed six PR suites and [production Pages run 44351316321](https://github.com/MasynNay/Keystoria/actions/runs/44351316321) succeeded. This is browser-tested behavior, not a physical device or assistive-technology certification.
 
 ## Lyric Lab completion focus and replay (browser regression)
 

@@ -122,3 +122,44 @@ test('trail handles empty, single, identical, malformed and numpad runs',()=>{
  assert.equal(numpad.paceChange,15);
  assert.deepEqual(numpad.recent.map(r=>r.speed),[105,120]);
 });
+
+test('accuracy-qualified personal best searches all 25 saved runs, not only recent five',()=>{
+ const session={pack:'everyday',seconds:30,practiceMode:'standard-exact'};
+ const rows=Array.from({length:27},(_,i)=>({
+  pack:'everyday',seconds:30,practiceMode:'standard-exact',wpm:40+i,accuracy:90
+ }));
+ rows[19].wpm=125;rows[19].accuracy=96;
+ rows[26].wpm=400;rows[26].accuracy=100;
+ const pulse=summarizeSpeedPractice(rows,session,95);
+ assert.equal(pulse.count,5);
+ assert.equal(pulse.matchingCount,25);
+ assert.equal(pulse.best,44,'last-five best remains distinct');
+ assert.equal(pulse.goalQualifiedBest,125,'a valid older record qualifies');
+ assert.equal(pulse.goalQualifiedCount,1,'past the 25-result cap is excluded');
+ assert.equal(summarizeSpeedPractice(rows,session,98).goalQualifiedBest,null);
+ const easier=summarizeSpeedPractice(rows,session,90);
+ assert.equal(easier.goalQualifiedCount,25);
+ assert.equal(easier.goalQualifiedBest,125);
+ const empty=summarizeSpeedPractice([],session);
+ assert.equal(empty.goalQualifiedBest,null);
+ assert.equal(empty.goalQualifiedCount,0);
+ assert.equal(empty.matchingCount,0);
+});
+
+test('qualified best isolates Numpad CPM, accuracy, duration and input mode',()=>{
+ const rows=[
+  {pack:'numpad',seconds:30,practiceMode:'standard-exact',wpm:900,cpm:152,accuracy:97},
+  {pack:'numpad',seconds:30,practiceMode:'standard-exact',wpm:800,cpm:220,accuracy:91},
+  {pack:'numpad',seconds:60,practiceMode:'standard-exact',wpm:800,cpm:500,accuracy:100},
+  {pack:'everyday',seconds:30,practiceMode:'standard-exact',wpm:500,cpm:500,accuracy:100},
+  {pack:'numpad',seconds:30,practiceMode:'mobile-assisted',wpm:999,cpm:999,accuracy:100},
+  {pack:'numpad',seconds:30,practiceMode:'standard-exact',wpm:999,cpm:999999,accuracy:100}
+ ];
+ const s={pack:'numpad',seconds:30};
+ const pulse=summarizeSpeedPractice(rows,s,95);
+ assert.equal(pulse.metric,'CPM');
+ assert.equal(pulse.count,2);
+ assert.equal(pulse.goalQualifiedBest,152);
+ assert.equal(pulse.goalQualifiedCount,1);
+ assert.equal(summarizeSpeedPractice(rows,s,98).goalQualifiedBest,null);
+});

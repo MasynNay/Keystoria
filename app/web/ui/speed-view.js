@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.32.0';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.45.0';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -31,13 +31,19 @@ export function speedInsightsPanel(session) {
     <h3>BUILD YOUR NEXT BEST.</h3>
     <p class="speed-insight-scope">${safe(PACKS[session.pack]?.title || 'EVERYDAY')} · ${Number(session.seconds)}s · ${friendlyMode}. Compare matching sessions only.</p>
     <div class="speed-insight-stats">
-      <div><small>COMPARABLE RUNS</small><strong>${pulse.count}</strong></div>
-      <div><small>BEST ${pulse.metric}</small><strong>${pulse.best ?? '—'}</strong></div>
-      <div><small>AVERAGE ACCURACY</small><strong>${pulse.averageAccuracy == null?'—':pulse.averageAccuracy+'%'}</strong></div>
+      <div><small>RECENT MATCHES · MAX 5</small><strong>${pulse.count}</strong></div>
+      <div><small>BEST IN LAST 5 · ${pulse.metric}</small><strong>${pulse.best ?? '—'}</strong></div>
+      <div><small>RECENT AVERAGE ACCURACY</small><strong>${pulse.averageAccuracy == null?'—':pulse.averageAccuracy+'%'}</strong></div>
     </div>
     <div class="speed-insight-goals"><span>ACCURACY GOAL</span><div class="speed-insight-buttons" role="group" aria-label="Accuracy goal">
       ${ACCURACY_GOALS.map(value=>`<button type="button" data-action="speed-goal" data-goal="${value}" aria-pressed="${value===goal}">${value}%</button>`).join('')}
     </div></div>
+    <div class="speed-insight-qualified" aria-label="Accuracy-qualified personal best from saved results">
+      <div><span>BEST AT ${goal}%+ ACCURACY</span><strong>${pulse.goalQualifiedBest ?? '—'} <small>${pulse.metric}</small></strong></div>
+      <p>${pulse.goalQualifiedCount === 0
+        ? 'No matching saved run reached this goal yet.'
+        : `${pulse.goalQualifiedCount} of ${pulse.matchingCount} comparable saved ${pulse.matchingCount===1?'run':'runs'} met the goal.`} Based on at most 25 locally stored results.</p>
+    </div>
     ${pulse.recent.length ? `<div class="speed-insight-trail">
       <div class="speed-insight-trail-heading"><strong>RECENT MATCHING RUNS</strong><small>Oldest to newest · up to five</small></div>
       <ol aria-label="Recent comparable typing scores, oldest to newest">

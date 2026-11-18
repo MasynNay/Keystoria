@@ -1,22 +1,22 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #50; Lyric Lab finish-state accessibility next.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #53; Practice Compass next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## Latest merge and next feature — November 18, 2026
+## Latest verified release — Word Focus, November 18, 2026
 
-[PR #52](https://github.com/MasynNay/Keystoria/pull/52) was merged as `156258a`, with four passing PR checks and [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44336892594). It aligns Speed Lab's main passage caret with the native input selection without altering the scoring or fast compact renderer. The screenshot refresh subsequently advanced `main` to `506a37d`.
+[PR #53](https://github.com/MasynNay/Keystoria/pull/53) merged as `225895e`; [production Pages run 44351316321](https://github.com/MasynNay/Keystoria/actions/runs/44351316321) passed browser regression and publishing. Post-merge mobile, theme and README screenshot checks also succeeded. Word Focus is an optional local-preference compact touch presentation; the full score reference, keyboard assistance and native input are unaffected. Screenshot refresh advanced main to `8dabce4`.
 
-**In development, not published:** Optional touch-only Speed Lab **Word Focus** on branch `feat/mobile-speed-word-focus`. Verify word/Space/Numpad correction, native focus preservation, full-length scoring, mobile CSS and all gated CI before merging. Real phone keyboard and screen-reader work remains open in #3 and #11.
+**In development, not yet released:** Practice Compass accuracy-qualified personal best on branch `feat/practice-compass-qualified-best`. Clarify the five-run trend scope and show the best matching locally saved run meeting the selected goal across the full capped 25 results. Preserve goal buttons, focus, live status, existing history exports and exact/assisted/Numpad metric isolation. Merge only after all PR checks and verify production Pages. Real phone and screen-reader QA remain open in #3/#11; #5 still needs user feedback.
 
 ## Latest shipped work — Speed Lab caret corrections (November 18, 2026)
 
 [PR #50](https://github.com/MasynNay/Keystoria/pull/50) merged at `640a9be`; [production Pages run 44234682503](https://github.com/MasynNay/Keystoria/actions/runs/44234682503) succeeded. All five PR checks and all four post-merge checks (Pages, Mobile Typing, Themes, README screenshots) passed. Both the mobile next-character cue and spoken word/Numpad group cue now follow the real textarea caret, not merely the end of input, while preserving native typing and score accuracy.
 
-**Next implementation:** Lyric Lab needs a fully navigable end-of-song state: a focused result heading, concise score recap and nearby replay/choose-song actions. Add a deterministic offline demo browser test covering typing and final-line skip, phone/desktop focus, replay and re-enabled controls. This is work toward [accessibility issue #3](https://github.com/MasynNay/Keystoria/issues/3), not physical iOS/Android or screen-reader certification.
+**Subsequently shipped:** Lyric Lab completion focus and replay in [PR #51](https://github.com/MasynNay/Keystoria/pull/51), and full-passage native caret guidance in [PR #52](https://github.com/MasynNay/Keystoria/pull/52). Manual phone and assistive-technology QA remains open.
 
 ## Latest verified release — keyboard navigation and phone typing (November 17, 2026)
 
