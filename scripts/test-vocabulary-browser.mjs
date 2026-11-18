@@ -21,6 +21,8 @@ try {
    const choice=page.locator('[data-action="speed-pack"][data-pack="'+id+'"]');
    await choice.click();
    assert.equal(await choice.getAttribute('aria-pressed'),'true');
+   assert.equal(await page.locator('#speed-input').evaluate(el=>document.activeElement===el),true,
+    'pointer selection returns focus to typing without a delayed jump');
    assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),id);
    assert.ok((await page.locator('.speed-bottom aside p').first().textContent()).length>15);
    assert.ok((await page.locator('#speed-letters').innerText()).trim().length>20);
@@ -29,15 +31,36 @@ try {
    assert.equal(await input.inputValue(),'per');
    assert.match(await page.locator('#speed-wpm').locator('xpath=following-sibling::small').innerText(),/^WPM$/);
   }
-  // The workplace selector must also work with a hardware keyboard, not only pointer clicks.
-  const keyboardChoice=page.locator('[data-action="speed-pack"][data-pack="legal"]');
-  // Speed Lab repaints its metrics during an active timed run. Keypress on
-  // the locator refocuses its live button; wait for the async paint before
-  // examining the replacement selector rather than racing the old DOM node.
-  await keyboardChoice.press('Enter');
-  await page.waitForFunction(()=>document.querySelector('.speed-page')?.getAttribute('data-speed')==='legal'
-   && document.querySelector('[data-action="speed-pack"][data-pack="legal"]')?.getAttribute('aria-pressed')==='true');
-  assert.equal(await keyboardChoice.getAttribute('aria-pressed'),'true','keyboard Enter must activate a category');
+  // A keyboard activation rebuilds the practice controls. Keep the freshly
+  // rendered choice focused so rapid Enter/Space cannot race an earlier
+  // requestAnimationFrame that steals focus for the native typing field.
+  for(const [id,key] of [['legal','Enter'],['education','Space'],['government','Enter']]){
+   const keyboardChoice=page.locator('[data-action="speed-pack"][data-pack="'+id+'"]');
+   await keyboardChoice.focus();
+   await keyboardChoice.press(key);
+   await page.waitForFunction(({pack})=>
+     document.querySelector('.speed-page')?.getAttribute('data-speed')===pack
+     && document.querySelector('[data-action="speed-pack"][data-pack="'+pack+'"]')?.getAttribute('aria-pressed')==='true',
+     {pack:id});
+   assert.equal(await keyboardChoice.evaluate(el=>document.activeElement===el),true,
+     key+' must preserve focus on the NEW category button '+id);
+   await page.waitForTimeout(60);
+   assert.equal(await keyboardChoice.evaluate(el=>document.activeElement===el),true,
+     'late focus callbacks cannot steal focus from '+id);
+  }
+  // Duration controls share this keyboard workflow; retain focus even when
+  // switching from an active timed typing session.
+  for(const [seconds,key] of [[60,'Enter'],[15,'Space']]){
+   const duration=page.locator('[data-action="speed-duration"][data-seconds="'+seconds+'"]');
+   await duration.focus();
+   await duration.press(key);
+   assert.equal(await duration.getAttribute('aria-pressed'),'true',key+' selects '+seconds+'s');
+   assert.equal(await duration.evaluate(el=>document.activeElement===el),true,
+     'keyboard duration changes must keep the new control focused');
+  }
+  await page.locator('#speed-input').fill('typing');
+  assert.equal(await page.locator('#speed-input').inputValue(),'typing',
+    'keyboard selector navigation must not damage subsequent text input');
   await page.locator('[data-action="speed-pack"][data-pack="numpad"]').click();
   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),'numpad');
   assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),'numeric');
