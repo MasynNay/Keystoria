@@ -7,9 +7,18 @@ export const MOBILE_TYPING_FIELDS=Object.freeze(['speed-input','lyric-input','le
  * windows merely because they are short. Match the CSS media query exactly.
  */
 export const MOBILE_TYPING_MEDIA='(max-width: 760px), (max-height: 520px) and (pointer: coarse)';
-export function nextSpeedCue(reference,typed,visible=38) {
+/** One bounded reference offset shared by the visual and spoken cues.
+ * Cursor is optional for legacy full-passage progress callers.
+ */
+function speedCaretOffset(source,typed,cursor){
+ const typedLength=Math.min(source.length,String(typed??'').length);
+ return Number.isFinite(cursor)
+   ? Math.max(0,Math.min(typedLength,Math.trunc(cursor)))
+   : typedLength;
+}
+export function nextSpeedCue(reference,typed,visible=38,cursor=undefined) {
  const source=String(reference??'');
- const offset=Math.max(0,Math.min(source.length,String(typed??'').length));
+ const offset=speedCaretOffset(source,typed,cursor);
  const count=Math.max(2,Math.floor(Number(visible)||38));
  return {next:source[offset]||'',rest:source.slice(offset+1,offset+count),remaining:source.length-offset};
 }
@@ -20,13 +29,9 @@ export function nextSpeedCue(reference,typed,visible=38) {
  */
 export function speedSpokenTarget(reference, typed, numpad=false, cursor=undefined){
  const source=String(reference??'');
- const typedLength=Math.min(source.length,String(typed??'').length);
  // With a touch correction or an Arrow/Home key, the editable position may
- // be earlier than the end of the typed text. Never announce the trailing
- // word when the user is correcting a different word at the caret.
- const offset=Number.isFinite(cursor)
-   ? Math.max(0,Math.min(typedLength,Math.trunc(cursor)))
-   : typedLength;
+ // be earlier than the end of the typed text. Match the visual guidance.
+ const offset=speedCaretOffset(source,typed,cursor);
  const prefix=numpad?'Current number group: ':'Current word: ';
  if(offset>=source.length)return 'Passage complete';
  let start=offset,end=offset;
