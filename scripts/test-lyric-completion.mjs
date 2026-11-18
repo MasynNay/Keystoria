@@ -1,5 +1,24 @@
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {chromium} from 'playwright';
+
+// The two controllers intentionally differ in online video matching. Keep
+// the shared completion/focus/replay section identical without requiring the
+// provider-specific code to match byte-for-byte.
+const appCode=readFileSync(new URL('../app/web/ui/lyric-lab-controller.js',import.meta.url),'utf8');
+const browserCode=readFileSync(new URL('../site/play/assets/ui/lyric-lab-controller.js',import.meta.url),'utf8');
+const completionSection=source=>{
+ const start=source.indexOf(' function updateFinishedState(');
+ const end=source.indexOf(' function seek(',start);
+ assert.ok(start>=0 && end>start,'Lyric Lab completion section is present');
+ return source.slice(start,end);
+};
+assert.equal(completionSection(appCode),completionSection(browserCode),
+ 'local and Pages editions must implement identical completion/focus/replay behavior');
+for(const source of [appCode,browserCode]){
+ assert.ok(source.includes('id="lyric-finish-panel"'),'both editions render the same finish panel');
+ assert.ok(source.includes('id="lyric-finish-heading"'),'both editions label the same focus destination');
+}
 
 // Exercise the original, locally bundled lyric demo only. Do not rely on
 // third-party lyrics, YouTube, network timing or the user's keyboard settings.
