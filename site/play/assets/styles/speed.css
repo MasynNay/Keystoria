@@ -127,6 +127,12 @@
 .speed-insight-stats>div{background:var(--panel-2);border:1px solid var(--line);padding:12px 10px;min-width:0}
 .speed-insight-stats small{display:block;font:10px/1.5 var(--mono);color:var(--text)}
 .speed-insight-stats strong{display:block;color:var(--accent);font:900 clamp(23px,3vw,32px)/1.2 var(--display);margin-top:5px}
+.speed-insight-qualified{display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 0;margin:14px 0}
+.speed-insight-qualified>div{flex:0 0 auto;min-width:130px}
+.speed-insight-qualified span{display:block;color:var(--text);font:700 11px/1.5 var(--mono)}
+.speed-insight-qualified strong{display:block;color:var(--accent);font:900 clamp(24px,3.5vw,37px)/1.2 var(--display);margin-top:5px}
+.speed-insight-qualified strong small{font:700 12px/1.5 var(--mono)}
+.speed-insight-qualified p{flex:1 1 180px;color:var(--text);font:12px/1.55 var(--body);margin:0}
 .speed-insight-goals>span{display:block;color:var(--text);font:700 11px var(--mono);margin-bottom:8px}
 .speed-insight-buttons,.speed-insight-privacy{display:flex;flex-wrap:wrap;gap:8px}
 .speed-insight-buttons button,.speed-insight-privacy button{min-height:44px;padding:9px 13px;border:1px solid var(--accent);border-radius:6px;background:transparent;color:var(--text);font:700 11px/1.5 var(--mono);cursor:pointer}

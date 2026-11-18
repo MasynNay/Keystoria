@@ -34,16 +34,17 @@ export function summarizeSpeedPractice(history, session, goal = 95) {
   const speed = run => Number(numpad ? run.cpm : run.wpm);
   // The history writer prepends new runs. Preserve that order even after
   // unrelated categories, durations or input modes are excluded.
-  const matching = (Array.isArray(history) ? history : [])
+  const matchingAll = (Array.isArray(history) ? history.slice(0,25) : [])
     .filter(run => run && run.pack === session.pack
       && Number(run.seconds) === Number(session.seconds)
       && practiceMode(run) === mode
       && Number.isFinite(speed(run)) && speed(run) >= 0 && speed(run) <= limit
       && Number.isFinite(Number(run.accuracy))
-      && Number(run.accuracy) >= 0 && Number(run.accuracy) <= 100)
-    .slice(0, 5);
+      && Number(run.accuracy) >= 0 && Number(run.accuracy) <= 100);
+  const matching = matchingAll.slice(0, 5);
   const empty = {
-    count:0, metric, best:null, average:null, averageAccuracy:null,
+    count:0, matchingCount:0, metric, best:null, average:null, averageAccuracy:null,
+    goalQualifiedBest:null, goalQualifiedCount:0,
     paceChange:null, goalStreak:0, recent:[],
     message:'Finish a run in this category, duration and input mode to start tracking progress.'
   };
@@ -52,6 +53,10 @@ export function summarizeSpeedPractice(history, session, goal = 95) {
   const avg = Math.round(scores.reduce((a,b) => a+b,0) / scores.length);
   const avgAccuracy = Math.round(matching.reduce((a,r) => a + Number(r.accuracy),0) / matching.length);
   const safeGoal = ACCURACY_GOALS.includes(Number(goal)) ? Number(goal) : 95;
+  // The recent trend uses five runs; the best earned at an accuracy goal
+  // must include the complete saved 25-run window and exclude non-matches.
+  const goalQualified = matchingAll.filter(run => Number(run.accuracy) >= safeGoal);
+  const goalQualifiedBest = goalQualified.length ? Math.max(...goalQualified.map(speed)) : null;
   // A streak starts at the most recent run and stops at the first miss.
   const goalStreak = matching.findIndex(run => Number(run.accuracy) < safeGoal);
   // Preserve the exact metric used by this pack, with the oldest at left.
@@ -72,8 +77,9 @@ export function summarizeSpeedPractice(history, session, goal = 95) {
     message = 'Accuracy is on target. Repeat this drill steadily before increasing pace.';
   }
   return {
-    count:matching.length, metric,
+    count:matching.length, matchingCount:matchingAll.length, metric,
     best:Math.max(...scores), average:avg, averageAccuracy:avgAccuracy,
+    goalQualifiedBest, goalQualifiedCount:goalQualified.length,
     paceChange, goalStreak:goalStreak < 0 ? matching.length : goalStreak,
     recent, message,
   };
