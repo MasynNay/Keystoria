@@ -2,6 +2,12 @@
 
 Keystoria is a typing-based portfolio application. This document distinguishes **automated evidence** from human testing that remains necessary.
 
+## Optional mobile Word Focus — validation in progress
+
+The new opt-in Speed Lab Word Focus presentation is intended to show only the current word or number group beside the real native input on touch layouts while keeping the original full passage available by toggle. It follows the textarea caret when repairing earlier words, shows pending Space explicitly, and distinguishes wrong characters with a wavy underline, not color alone. The source/reference, session timer, scoring, storage, soft-keyboard settings and existing polite spoken target remain unchanged.
+
+Unit tests cover source character status, Space boundary and prior-caret corrections; dedicated Playwright browser checks cover phone portrait, touch landscape, narrow mouse desktop and wide desktop, persistent opt-in, input focus and score preservation. Passing automation does not constitute physical iOS/Android, VoiceOver/TalkBack or NVDA evaluation. This feature must pass release CI and Pages deployment before it is called shipped.
+
 ## Lyric Lab completion focus and replay (browser regression)
 
 When the last lyric is submitted, skipped, or a demo finishes, Lyric Lab now moves keyboard focus away from its disabled typing field to a dedicated **Track Complete** result heading. A visible, theme-aware summary names WPM, accuracy, points and skipped words, with **Play Again** and **Choose Another Song** immediately next in the keyboard order. Completed-run Skip, Next Word and Play/Pause controls are disabled rather than remaining silent no-ops. Replay and repositioning the lyric timeline re-enable the appropriate controls without changing the original demo or the score storage format.

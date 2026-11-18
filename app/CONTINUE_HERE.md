@@ -6,6 +6,12 @@
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
+## Latest merge and next feature — November 18, 2026
+
+[PR #52](https://github.com/MasynNay/Keystoria/pull/52) was merged as `156258a`, with four passing PR checks and [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44336892594). It aligns Speed Lab's main passage caret with the native input selection without altering the scoring or fast compact renderer. The screenshot refresh subsequently advanced `main` to `506a37d`.
+
+**In development, not published:** Optional touch-only Speed Lab **Word Focus** on branch `feat/mobile-speed-word-focus`. Verify word/Space/Numpad correction, native focus preservation, full-length scoring, mobile CSS and all gated CI before merging. Real phone keyboard and screen-reader work remains open in #3 and #11.
+
 ## Latest shipped work — Speed Lab caret corrections (November 18, 2026)
 
 [PR #50](https://github.com/MasynNay/Keystoria/pull/50) merged at `640a9be`; [production Pages run 44234682503](https://github.com/MasynNay/Keystoria/actions/runs/44234682503) succeeded. All five PR checks and all four post-merge checks (Pages, Mobile Typing, Themes, README screenshots) passed. Both the mobile next-character cue and spoken word/Numpad group cue now follow the real textarea caret, not merely the end of input, while preserving native typing and score accuracy.

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta, mobileFocusBounds, patchMobileTraining, previousWordRange, speedSpokenTarget } from '../web/ui/mobile-typing.js';
+import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta, mobileFocusBounds, patchMobileTraining, previousWordRange, speedSpokenTarget, speedFocusWord } from '../web/ui/mobile-typing.js';
 
 test('every practice input is tracked for keyboard visibility',()=>{
  assert.deepEqual([...MOBILE_TYPING_FIELDS],['speed-input','lyric-input','lesson-input']);
@@ -153,4 +153,29 @@ test('Numpad spoken group and visual cue follow corrected digit positions',()=>{
  assert.equal(nextSpeedCue(reference,typed,38,1).next,'2');
  assert.equal(nextSpeedCue(reference,typed,38,5).next,'5');
  assert.equal(nextSpeedCue(reference,typed,38,9).next,'8');
+});
+
+test('Word Focus keeps the separator visible until Space advances the word',()=>{
+ const early=speedFocusWord('alpha beta','al',2);
+ assert.equal(early.word,'alpha');
+ assert.deepEqual(early.characters.map(c=>c.state),['correct','correct','pending','pending','pending']);
+ assert.equal(early.characters.filter(c=>c.current).length,1);
+ const separator=speedFocusWord('alpha beta','alpha',5);
+ assert.equal(separator.word,'alpha');
+ assert.equal(separator.characters.at(-1).letter,'␣');
+ assert.equal(separator.characters.at(-1).state,'pending');
+ assert.equal(separator.characters.at(-1).current,true);
+ const next=speedFocusWord('alpha beta','alpha b',7);
+ assert.equal(next.word,'beta');
+ assert.equal(next.characters[0].state,'correct');
+ const wrong=speedFocusWord('alpha beta','alpha x',7);
+ assert.equal(wrong.characters[0].state,'incorrect');
+ assert.equal(speedFocusWord('alpha beta','alpha x',0).word,'alpha',
+   'correcting earlier words follows the native caret');
+ const numpad=speedFocusWord('123 4567','123 4',5);
+ assert.equal(numpad.word,'4567');
+ assert.deepEqual(numpad.characters.map(c=>c.state),['correct','pending','pending','pending']);
+ assert.deepEqual(speedFocusWord('', '').characters,[]);
+ assert.equal(speedFocusWord('alpha beta','alpha ',999).word,'beta',
+   'stale caret positions cannot exceed typed input');
 });

@@ -1,11 +1,17 @@
 # Keystoria development roadmap
 
-**Last reviewed:** November 17, 2026  
+**Last reviewed:** November 18, 2026  
 **Status:** Actively maintained portfolio project; upcoming items are planned work, **not completed features**.  
 **Play the browser edition:** https://keystoria.masynnay.com/play/  
 **Tracked work:** https://github.com/MasynNay/Keystoria/issues
 
 Keystoria is an evolving typing game collection with 24 authored story adventures, Lyric Lab, Speed Lab, and Field Academy. Mobile-first gameplay is a near-term priority based on direct feedback, separate from desktop accessibility and planned content features. This roadmap records why the next changes matter, how we will verify them, and which features have already been delivered. Priorities may change after testing or feedback; the roadmap is not a promise of dates.
+
+## Current engineering pass — optional mobile Word Focus (in PR, not shipped)
+
+Building on [merged PR #52](https://github.com/MasynNay/Keystoria/pull/52) and its verified production Pages run [44336892594](https://github.com/MasynNay/Keystoria/actions/runs/44336892594), the next optional mobile presentation exposes one active Speed Lab word or Numpad group near the native typing input. The full passage remains the default. Word Focus is explicitly opt-in, local-preference only, and does not change the timer, native keyboard help, WPM/CPM accuracy, score history or full reference. It keeps pending separators visible and follows corrections at earlier caret positions. Existing desktop mode remains unchanged.
+
+**Release boundary:** Word Focus is under development until its new unit and phone/landscape/desktop browser checks pass, PR merges and the gated GitHub Pages deployment succeeds. Native iOS Safari/Android Chrome keyboard behavior and assistive-technology reading must still be checked on actual devices before issues #3/#11 can close.
 
 ## Priority fix: Speed Lab mobile lag (reported November 11, 2026 Mountain Time)
 
