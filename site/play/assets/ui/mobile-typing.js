@@ -173,13 +173,15 @@ export function setupMobileTyping(root) {
  const viewport=window.visualViewport;
  function position() {
    queued=false;
-   if(!active||!active.isConnected||!isMobile())return;
+   if(!active||!active.isConnected||document.activeElement!==active||document.hidden||!isMobile())return;
    const bounds=mobileFocusBounds(active);
    const top=viewport?.offsetTop||0;
    const height=viewport?.height||window.innerHeight;
    const delta=mobileScrollDelta(bounds,top,height);
    // No animations while a virtual keyboard is resizing the viewport.
-   if(Math.abs(delta)>3)window.scrollBy(0,Math.round(delta));
+   // The page uses global smooth scrolling for anchor navigation. Native
+   // keyboard shifts must NOT inherit it, or the cue can chase the keyboard.
+   if(Math.abs(delta)>3)window.scrollBy({top:Math.round(delta),left:0,behavior:'instant'});
  }
  function queue() {
    if(!active||queued)return;
@@ -223,12 +225,22 @@ export function setupMobileTyping(root) {
    active=null;
    document.body.classList.remove('mobile-typing-active');
  }
+ // Some mobile browsers do not emit a fresh visualViewport resize after
+ // returning from the app switcher. Recheck the *current* focused input,
+ // without reopening or stealing the software keyboard.
+ function onReturn() {
+   if(!document.hidden)onResize();
+ }
+ document.addEventListener('visibilitychange',onReturn);
+ window.addEventListener('pageshow',onReturn);
  root.addEventListener('focusin',focus);
  root.addEventListener('focusout',blur);
  viewport?.addEventListener('resize',onResize);
  viewport?.addEventListener('scroll',onResize);
  window.addEventListener('resize',onResize);
  return ()=>{
+   document.removeEventListener('visibilitychange',onReturn);
+   window.removeEventListener('pageshow',onReturn);
    root.removeEventListener('focusin',focus);
    root.removeEventListener('focusout',blur);
    viewport?.removeEventListener('resize',onResize);
