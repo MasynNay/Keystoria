@@ -11,9 +11,13 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 
 [PR #55](https://github.com/MasynNay/Keystoria/pull/55) corrected the direct Python server's bind address to **127.0.0.1 by default**, with explicit `HOST` required for LAN access. The Docker host-port example is loopback-only and the new real aiohttp WebSocket security gate exercises origin, oversized-frame, and message rate controls. [Production Pages deployment 44429880937](https://github.com/MasynNay/Keystoria/actions/runs/44429880937) and [post-merge server-security run 44429880931](https://github.com/MasynNay/Keystoria/actions/runs/44429880931) both succeeded. No public co-op service was deployed.
 
-## Current security engineering — room creation and connection quotas (#4)
+## Released connection and room quotas (#4)
 
-The next local-only safeguard will cap simultaneous sockets to **32 globally / 8 per observed TCP peer**, covering pre-room WebSockets, and throttle room creation attempts to **4 per peer per rolling minute**. It must preserve the join/reconnect paths and release socket slots when clients disconnect. Client-supplied forwarded headers cannot change the limit identity; 256 tracked peer windows cap in-memory accounting. Run live aiohttp tests plus the full existing Pages regression before merging. This is not cross-worker coordination, public auth, WSS, or permission to host co-op publicly. Keep #4 open.
+[PR #56](https://github.com/MasynNay/Keystoria/pull/56) introduced **32 global / 8 per TCP peer** active WebSocket limits and a **4 creations per peer / 60-second** rolling window. This covers idle connections and preserves join/reconnect access, with 256 bounded in-memory peer windows. The actual TCP peer is used, not spoofable forwarded headers. [Post-merge security tests](https://github.com/MasynNay/Keystoria/actions/runs/44431538862) and [Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44431538834) passed. No remote hosting was enabled.
+
+## Current security engineering — reconnect identity handoff (#4)
+
+The server must issue a new private pass after every successful reconnect so an old pass cannot be replayed to reclaim a player. The new owner must be recorded before the previous socket closes, or an old cleanup handler may spuriously disconnect and pause the new owner. Guard old sockets from submitting further actions and test real two-client takeover, stale-token and wrong-room rejection, host controls, single-player/duo continuity and a true disconnect/reconnect cycle. This remains local safety engineering, not public login authentication or approval to host co-op online. Keep #4 open.
 
 ## Latest verified release — mobile Word Focus (November 18, 2026)
 

@@ -157,6 +157,35 @@ class EngineTests(unittest.TestCase):
         self.game.tick(self.room)
         self.assertEqual(start - 1, self.room.remaining)
 
+    def test_reconnect_uses_single_use_rotating_pass_without_changing_identity(self):
+        original = self.guest.token
+        identity = self.guest.id
+        self.game.disconnect(self.room, self.guest)
+        room, player = self.game.reconnect(self.room.code, original)
+        self.assertIs(room, self.room)
+        self.assertIs(player, self.guest)
+        self.assertEqual(player.id, identity)
+        self.assertNotEqual(player.token, original)
+        self.assertTrue(player.connected)
+        self.assertIsNone(player.disconnected_at)
+        with self.assertRaisesRegex(GameError, "reconnect pass"):
+            self.game.reconnect(self.room.code, original)
+        rotated = player.token
+        self.game.reconnect(self.room.code, rotated)
+        self.assertNotEqual(player.token, rotated, "every successful reconnect refreshes the pass")
+
+    def test_reconnect_does_not_accept_foreign_room_or_malformed_credentials(self):
+        other_room, other_player = self.game.create("OTHER", "station")
+        original = self.host.token
+        for bad in (None, True, 1, ["token"], "", "x" * 200, self.guest.token):
+            with self.subTest(token=repr(bad)[:25]):
+                with self.assertRaisesRegex(GameError, "reconnect pass"):
+                    self.game.reconnect(self.room.code, bad)
+        with self.assertRaisesRegex(GameError, "reconnect pass"):
+            self.game.reconnect(other_room.code, original)
+        self.assertEqual(self.host.token, original)
+        self.assertEqual(other_room.players[0].token, other_player.token)
+
     def test_disconnect_has_grace_period(self):
         self.launch()
         self.game.disconnect(self.room, self.guest)

@@ -203,9 +203,16 @@ class GameEngine:
         room = self.rooms.get(str(code).upper().strip())
         if not room:
             raise GameError("This room has expired. Start a new mission.")
-        player = next((p for p in room.players if p.token == token and not p.is_bot), None)
+        # A reconnect pass is single-use: a stale tab or captured old pass
+        # must not be able to reclaim a live operator later. Reject malformed
+        # credentials before using constant-time comparison.
+        if not isinstance(token, str) or not (1 <= len(token) <= 128):
+            raise GameError("Your reconnect pass is no longer valid.")
+        player = next((p for p in room.players
+                       if not p.is_bot and secrets.compare_digest(p.token, token)), None)
         if not player:
             raise GameError("Your reconnect pass is no longer valid.")
+        player.token = self._new_id()
         player.connected = True
         player.disconnected_at = None
         room.touched = self.clock()

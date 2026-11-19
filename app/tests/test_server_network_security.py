@@ -8,7 +8,7 @@ import asyncio
 import unittest
 
 from aiohttp import ClientSession, WSMsgType, WSServerHandshakeError, web
-from server.app import ENGINE, SOCKET_LIMITS_KEY, create_app, local_bind_host
+from server.app import ENGINE, SESSIONS_KEY, SOCKET_LIMITS_KEY, create_app, local_bind_host
 from server.socket_limits import (
     SocketLimits, MAX_OPEN_SOCKETS, MAX_SOCKETS_PER_PEER,
     MAX_CREATES_PER_PEER, CREATE_WINDOW_SECONDS, MAX_TRACKED_CREATE_PEERS,
@@ -166,6 +166,83 @@ class SocketBoundaryTests(unittest.IsolatedAsyncioTestCase):
                 await ws.send_json({"type": "reconnect", "code": codes[0], "token": first_token})
                 welcome = await ws.receive_json(timeout=3)
                 self.assertEqual(welcome["type"], "welcome")
+        finally:
+            for code in codes:
+                ENGINE.rooms.pop(code, None)
+
+    async def test_active_session_handoff_rotates_pass_without_pause_or_replay(self):
+        """A same-operator tab takeover must never disconnect the new owner."""
+        code = None
+        async with self.client.ws_connect(self.address) as first:
+            try:
+                await first.send_json({"type": "create", "name": "CAPTAIN"})
+                first_welcome = await first.receive_json(timeout=3)
+                self.assertEqual(first_welcome["type"], "welcome")
+                code, old_pass = first_welcome["code"], first_welcome["token"]
+                room = ENGINE.rooms[code]
+                owner = room.players[0]
+                owner_id = owner.id
+                self.assertEqual(self.runner.app[SESSIONS_KEY][owner_id].closed, False)
+
+                async with self.client.ws_connect(self.address) as second:
+                    await second.send_json({"type": "reconnect", "code": code, "token": old_pass})
+                    new_welcome = await second.receive_json(timeout=3)
+                    self.assertEqual(new_welcome["type"], "welcome")
+                    self.assertEqual(new_welcome["code"], code)
+                    self.assertNotEqual(new_welcome["token"], old_pass)
+                    self.assertEqual(owner.id, owner_id)
+                    self.assertIsNotNone(self.runner.app[SESSIONS_KEY][owner_id])
+                    self.assertTrue(owner.connected, "the displaced tab must not pause its replacement")
+                    self.assertIsNone(room.paused_since)
+
+                    # Old token is spent, even if the old tab is still around.
+                    async with self.client.ws_connect(self.address) as replay:
+                        await replay.send_json({"type": "reconnect", "code": code, "token": old_pass})
+                        denied = await replay.receive_json(timeout=3)
+                        self.assertEqual(denied["type"], "error")
+                        self.assertIn("reconnect pass", denied["message"])
+
+                    # The new owner can still perform a host-only action.
+                    await second.send_json({"type": "difficulty", "difficulty": "overdrive"})
+                    for _ in range(6):
+                        response = await second.receive_json(timeout=3)
+                        if (response.get("type") == "snapshot"
+                                and response["room"].get("difficulty") == "overdrive"):
+                            break
+                    else:
+                        self.fail("new session did not retain host authority")
+                    self.assertTrue(owner.connected)
+                    self.assertIsNone(room.paused_since)
+
+                # A new reconnect pass should work after a genuine disconnect.
+                async with self.client.ws_connect(self.address) as third:
+                    await third.send_json({"type": "reconnect", "code": code,
+                                           "token": new_welcome["token"]})
+                    third_welcome = await third.receive_json(timeout=3)
+                    self.assertEqual(third_welcome["type"], "welcome")
+                    self.assertNotEqual(third_welcome["token"], new_welcome["token"])
+            finally:
+                if code is not None:
+                    ENGINE.rooms.pop(code, None)
+
+    async def test_wrong_room_and_duplicate_reconnect_pass_are_rejected(self):
+        codes = []
+        try:
+            welcomes = []
+            for callsign in ("A1", "B2"):
+                async with self.client.ws_connect(self.address) as socket:
+                    await socket.send_json({"type": "create", "name": callsign})
+                    welcome = await socket.receive_json(timeout=3)
+                    self.assertEqual(welcome["type"], "welcome")
+                    codes.append(welcome["code"])
+                    welcomes.append(welcome)
+            async with self.client.ws_connect(self.address) as wrong:
+                await wrong.send_json({"type": "reconnect",
+                                       "code": codes[1], "token": welcomes[0]["token"]})
+                result = await wrong.receive_json(timeout=3)
+                self.assertEqual(result["type"], "error")
+                self.assertIn("reconnect pass", result["message"])
+            self.assertEqual(ENGINE.rooms[codes[0]].players[0].token, welcomes[0]["token"])
         finally:
             for code in codes:
                 ENGINE.rooms.pop(code, None)

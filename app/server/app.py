@@ -151,6 +151,7 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
                     if kind in ("create", "join", "reconnect"):
                         if current_player is not None:
                             raise GameError("Already in a room. Reload to change rooms.")
+                        old: web.WebSocketResponse | None = None
                         if kind == "create":
                             if not limits.allow_create(peer):
                                 raise GameError("Room creation limit reached. Try again in a minute.")
@@ -163,15 +164,25 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
                         else:
                             room, player = ENGINE.reconnect(payload.get("code", ""), payload.get("token", ""))
                             old = sessions.get(player.id)
-                            if old and old is not ws and not old.closed:
-                                await old.close(code=1000, message=b"Reconnected in another tab")
                         current_room, current_player = room, player
+                        # Transfer ownership BEFORE awaiting the old socket's
+                        # close: its finally block may run during that await.
+                        # The departing socket must never mark the new owner
+                        # disconnected or pause an active mission.
                         sessions[player.id] = ws
                         await ws.send_json({"type": "welcome", "code": room.code, "token": player.token})
+                        if old and old is not ws and not old.closed:
+                            await old.close(code=1000, message=b"Reconnected in another tab")
                         await broadcast(app, room)
                     else:
                         if not current_room or not current_player:
                             raise GameError("Join or create a room first.")
+                        # A superseded socket may still have a queued action
+                        # while its close handshake completes. Only the
+                        # currently registered owner can mutate a room.
+                        if sessions.get(current_player.id) is not ws:
+                            await ws.close(code=1008, message=b"Session superseded")
+                            break
                         if ENGINE.rooms.get(current_room.code) is not current_room:
                             raise GameError("Room expired. Start a new mission.")
                         if kind == "set_mission":
