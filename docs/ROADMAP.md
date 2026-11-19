@@ -19,9 +19,13 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 
 [PR #57](https://github.com/MasynNay/Keystoria/pull/57) rotated private reconnect passes, rejected replayed/malformed/wrong-room credentials, transferred ownership before closing the displaced socket, and blocked old socket actions. [Post-merge security CI](https://github.com/MasynNay/Keystoria/actions/runs/44438586739) and [Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44438586712) passed. No login system, hosted co-op service or public authentication was added.
 
-## Current security engineering — concurrent room isolation and lost reconnect messages (#4)
+## Released concurrent room isolation and lost-welcome verification (#4)
 
-Ensure the snapshot builder rejects an unrelated player object, including forged/matching IDs. Validate two simultaneous real rooms with independent snapshots and actions even for identical names and injected room IDs; do not broadcast retired room snapshots after cleanup. Record fail-closed token recovery if a rotated reconnect `welcome` is not received: the previous pass must remain unusable and the player must create a new local room. Automated tests and honest documentation, not public remote multiplayer approval. Issue #4 remains open.
+[PR #58](https://github.com/MasynNay/Keystoria/pull/58) restricted private room snapshots to enrolled player objects, suppressed broadcasts for retired rooms and tested two simultaneous rooms against cross-room actions and token access. Lost reconnect welcome messages fail closed: start a new local room, never reuse a spent token. [Post-merge security CI](https://github.com/MasynNay/Keystoria/actions/runs/44441236587) and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44441236620) passed.
+
+## Current security engineering — expiring live room sockets (#4)
+
+When the engine reaps a room after its lifetime or idle limit, connected sockets must receive a room-expired error and be closed automatically so they cannot consume active-socket quota indefinitely. A room must be removed from the engine before notifying its operators, with no stale broadcasts, and all unrelated rooms or idle pre-room sockets remain usable. Run live two-room and two-player expiration tests, validate capacity release and reject reconnect with retired credentials. No public hosted multiplayer or independent security certification is implied.
 
 ## Latest verified release — mobile Word Focus (November 18, 2026)
 

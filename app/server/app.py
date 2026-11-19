@@ -49,6 +49,44 @@ async def broadcast(app: web.Application, room: Room) -> None:
         await asyncio.gather(*outgoing, return_exceptions=True)
 
 
+async def close_expired_rooms(app: web.Application) -> int:
+    """Expire in-memory rooms and disconnect their open operator sockets.
+
+    Room removal invalidates reconnect credentials before any network await.
+    A retired room's sockets no longer hold global/per-peer connection slots
+    once their WebSocket handlers exit. Other rooms and idle sockets are not
+    disturbed.
+    """
+    previous_rooms = tuple(ENGINE.rooms.values())
+    count = ENGINE.cleanup()
+    if not count:
+        return 0
+    sessions = app[SESSIONS_KEY]
+    affected = set()
+    for room in previous_rooms:
+        if ENGINE.rooms.get(room.code) is room:
+            continue
+        for player in room.players:
+            if player.is_bot:
+                continue
+            ws = sessions.get(player.id)
+            if ws is not None and not ws.closed:
+                affected.add(ws)
+
+    async def notify_and_close(ws: web.WebSocketResponse) -> None:
+        try:
+            await ws.send_json({"type": "error", "message": "Room expired. Start a new mission."})
+        except (ConnectionError, RuntimeError):
+            # A client may already be gone; still release its socket.
+            pass
+        finally:
+            await ws.close(code=1000, message=b"Room expired")
+
+    if affected:
+        await asyncio.gather(*(notify_and_close(ws) for ws in affected), return_exceptions=True)
+    return count
+
+
 async def game_loop(app: web.Application) -> None:
     """One shared ticker avoids per-room interval leaks and runaway timers."""
     iteration = 0
@@ -66,9 +104,9 @@ async def game_loop(app: web.Application) -> None:
                 await broadcast(app, room)
         if iteration % 240 == 0:  # Every 60 seconds.
             app[SOCKET_LIMITS_KEY].prune()
-            count = ENGINE.cleanup()
+            count = await close_expired_rooms(app)
             if count:
-                LOG.info("Expired %d inactive rooms", count)
+                LOG.info("Expired %d inactive rooms and closed their sockets", count)
 
 
 async def start_loop(app: web.Application) -> None:

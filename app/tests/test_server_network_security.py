@@ -5,10 +5,15 @@ These tests do not authorize an internet-facing hosted co-op service.
 from __future__ import annotations
 
 import asyncio
+import json
 import unittest
 
 from aiohttp import ClientSession, WSMsgType, WSServerHandshakeError, web
-from server.app import ENGINE, SESSIONS_KEY, SOCKET_LIMITS_KEY, broadcast, create_app, local_bind_host
+from server.app import (
+    ENGINE, SESSIONS_KEY, SOCKET_LIMITS_KEY, broadcast, close_expired_rooms,
+    create_app, local_bind_host,
+)
+from server.game import MAX_ROOM_AGE
 from server.socket_limits import (
     SocketLimits, MAX_OPEN_SOCKETS, MAX_SOCKETS_PER_PEER,
     MAX_CREATES_PER_PEER, CREATE_WINDOW_SECONDS, MAX_TRACKED_CREATE_PEERS,
@@ -371,6 +376,112 @@ class SocketBoundaryTests(unittest.IsolatedAsyncioTestCase):
                 denied = await retry.receive_json(timeout=3)
                 self.assertEqual(denied["type"], "error")
                 self.assertIn("reconnect pass", denied["message"])
+        finally:
+            if code is not None:
+                ENGINE.rooms.pop(code, None)
+
+    async def test_room_expiry_closes_only_retired_sockets_and_releases_capacity(self):
+        """TTL removes a live room and closes it without disrupting a peer room."""
+        codes = []
+        try:
+            async with self.client.ws_connect(self.address) as old:
+                await old.send_json({"type": "create", "name": "OLD"})
+                old_welcome = await old.receive_json(timeout=3)
+                self.assertEqual(old_welcome["type"], "welcome")
+                codes.append(old_welcome["code"])
+                await old.receive_json(timeout=3)
+                async with self.client.ws_connect(self.address) as current:
+                    await current.send_json({"type": "create", "name": "CURRENT"})
+                    current_welcome = await current.receive_json(timeout=3)
+                    self.assertEqual(current_welcome["type"], "welcome")
+                    codes.append(current_welcome["code"])
+                    await current.receive_json(timeout=3)
+
+                    retired = ENGINE.rooms[old_welcome["code"]]
+                    retained = ENGINE.rooms[current_welcome["code"]]
+                    retired.created -= MAX_ROOM_AGE + 5
+                    self.assertEqual(await close_expired_rooms(self.runner.app), 1)
+                    self.assertNotIn(old_welcome["code"], ENGINE.rooms)
+                    self.assertIs(ENGINE.rooms[current_welcome["code"]], retained)
+
+                    # The retired owner receives a comprehensible error before
+                    # the socket close; snapshots already in flight are ignored.
+                    for _ in range(12):
+                        message = await old.receive(timeout=3)
+                        if message.type != WSMsgType.TEXT:
+                            self.fail("expired socket closed without an expiry notice")
+                        payload = json.loads(message.data)
+                        if payload.get("type") == "error":
+                            self.assertIn("expired", payload["message"].lower())
+                            break
+                    else:
+                        self.fail("no expiry notice delivered")
+                    self.assertIn(
+                        (await old.receive(timeout=3)).type,
+                        (WSMsgType.CLOSE, WSMsgType.CLOSED),
+                    )
+                    for _ in range(100):
+                        if len(self.runner.app[SOCKET_LIMITS_KEY].active) == 1:
+                            break
+                        await asyncio.sleep(.01)
+                    self.assertEqual(len(self.runner.app[SOCKET_LIMITS_KEY].active), 1)
+                    self.assertEqual(len(self.runner.app[SESSIONS_KEY]), 1)
+
+                    # The other room continues to accept authenticated commands.
+                    await current.send_json({"type": "difficulty", "difficulty": "story"})
+                    for _ in range(12):
+                        snapshot = await current.receive_json(timeout=3)
+                        if snapshot.get("type") == "snapshot" and snapshot["room"]["difficulty"] == "story":
+                            self.assertEqual(snapshot["room"]["code"], current_welcome["code"])
+                            break
+                    else:
+                        self.fail("unexpired room stopped accepting controls")
+
+                    async with self.client.ws_connect(self.address) as reconnect:
+                        await reconnect.send_json({"type": "reconnect", "code": old_welcome["code"],
+                                                   "token": old_welcome["token"]})
+                        denied = await reconnect.receive_json(timeout=3)
+                        self.assertEqual(denied["type"], "error")
+                        self.assertIn("expired", denied["message"].lower())
+        finally:
+            for code in codes:
+                ENGINE.rooms.pop(code, None)
+
+    async def test_room_expiry_closes_both_operators_not_idle_websockets(self):
+        """Disconnect all room occupants; a pre-room socket stays available."""
+        code = None
+        try:
+            async with self.client.ws_connect(self.address) as idle:
+                async with self.client.ws_connect(self.address) as host:
+                    await host.send_json({"type": "create", "name": "HOST"})
+                    welcome = await host.receive_json(timeout=3)
+                    code = welcome["code"]
+                    await host.receive_json(timeout=3)
+                    async with self.client.ws_connect(self.address) as guest:
+                        await guest.send_json({"type": "join", "code": code, "name": "GUEST"})
+                        joined = await guest.receive_json(timeout=3)
+                        self.assertEqual(joined["type"], "welcome")
+                        ENGINE.rooms[code].created -= MAX_ROOM_AGE + 1
+                        self.assertEqual(await close_expired_rooms(self.runner.app), 1)
+                        for ws in (host, guest):
+                            for _ in range(12):
+                                msg = await ws.receive(timeout=3)
+                                if msg.type == WSMsgType.TEXT:
+                                    if json.loads(msg.data).get("type") == "error":
+                                        break
+                                else:
+                                    self.fail("missing room expiry notice")
+                            else:
+                                self.fail("missing expired notice")
+                            self.assertIn((await ws.receive(timeout=3)).type,
+                                          (WSMsgType.CLOSE, WSMsgType.CLOSED))
+                        for _ in range(100):
+                            if len(self.runner.app[SOCKET_LIMITS_KEY].active) == 1:
+                                break
+                            await asyncio.sleep(.01)
+                        self.assertEqual(len(self.runner.app[SOCKET_LIMITS_KEY].active), 1)
+                        self.assertFalse(idle.closed)
+                        self.assertEqual(await close_expired_rooms(self.runner.app), 0)
         finally:
             if code is not None:
                 ENGINE.rooms.pop(code, None)
