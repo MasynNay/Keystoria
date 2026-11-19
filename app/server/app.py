@@ -202,8 +202,12 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
                                 payload.get("solo") is True,
                             )
                         elif kind == "join":
+                            if not limits.allow_room_access(peer):
+                                raise GameError("Too many room access attempts. Try again in a minute.")
                             room, player = ENGINE.join(payload.get("code", ""), payload.get("name", ""))
                         else:
+                            if not limits.allow_room_access(peer):
+                                raise GameError("Too many room access attempts. Try again in a minute.")
                             room, player = ENGINE.reconnect(payload.get("code", ""), payload.get("token", ""))
                             old = sessions.get(player.id)
                         current_room, current_player = room, player

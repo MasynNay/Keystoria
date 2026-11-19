@@ -1,16 +1,16 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #58; expiry cleanup next.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #59; join/reconnect probing limit next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## Current local co-op cleanup pass — November 18, 2026
+## Current local co-op access throttling pass — November 18, 2026
 
-[PR #58](https://github.com/MasynNay/Keystoria/pull/58) merged as `c75f844`; [Python security CI](https://github.com/MasynNay/Keystoria/actions/runs/44441236587) and [production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44441236620) both succeeded. Cross-room snapshots are now restricted to exact enrolled players, retired-room broadcasts are suppressed, and interrupted reconnects fail closed.
+[PR #59](https://github.com/MasynNay/Keystoria/pull/59) merged as `7dc13ff`; [post-merge local co-op security CI](https://github.com/MasynNay/Keystoria/actions/runs/44448828662) and [production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44448828821) both succeeded. Expired rooms now notify and disconnect their operators, freeing socket quota without affecting others.
 
-**In development:** `security/expire-room-sockets`. After the engine removes expired rooms in periodic cleanup, send their connected operators an explicit expiry error and close those sockets, releasing per-peer/global slots. Do not touch unrelated rooms or pre-room connections. Add live aiohttp tests for room lifetime expiry, two occupants, continued neighboring room actions and no-reconnect after retirement. Keep local-only hosting and issue #4 open; no internet multiplayer.
+**In development:** `security/limit-room-access-attempts`. Add a 12-per-60-second rolling limit for join/reconnect attempts by the observed TCP peer, across new tabs and socket restarts, using at most 256 in-memory peer windows. Do not store entered tokens/codes; deny excess attempts without modifying room state. Test invalid room codes, private passes, forged forwarded headers, recovery after simulated window expiry, and continued host gameplay. Run Python security and browser PR gates, then post-merge security and Pages verification; no public co-op hosting. Issue #4 stays open.
 
 ## Latest verified release — Word Focus, November 18, 2026
 
