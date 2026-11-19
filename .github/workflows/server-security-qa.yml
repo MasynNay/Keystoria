@@ -6,6 +6,7 @@ on:
       - 'app/server/**'
       - 'app/tests/test_api.py'
       - 'app/tests/test_server_network_security.py'
+      - 'app/tests/test_engine.py'
       - 'app/tests/test_field_websocket.py'
       - 'app/tests/test_launch_socket_v014.py'
       - 'app/requirements.txt'
@@ -19,6 +20,7 @@ on:
       - 'app/server/**'
       - 'app/tests/test_api.py'
       - 'app/tests/test_server_network_security.py'
+      - 'app/tests/test_engine.py'
       - 'app/tests/test_field_websocket.py'
       - 'app/tests/test_launch_socket_v014.py'
       - 'app/requirements.txt'
@@ -47,6 +49,7 @@ jobs:
       - name: Run local network and WebSocket security regressions
         working-directory: app
         run: |
+          python -m unittest discover -s tests -p 'test_engine.py' -v
           python -m unittest discover -s tests -p 'test_server_network_security.py' -v
           python -m unittest discover -s tests -p 'test_api.py' -v
           python -m unittest discover -s tests -p 'test_launch_socket_v014.py' -v
