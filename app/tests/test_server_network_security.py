@@ -86,7 +86,7 @@ class SocketQuotaUnitTests(unittest.TestCase):
         self.assertFalse(limits.allow_room_access("192.0.2.1"))
         now[0] += 0.001
         self.assertTrue(limits.allow_room_access("192.0.2.1"))
-        for i in range(MAX_TRACKED_ACCESS_PEERS - 2):
+        for i in range(MAX_TRACKED_ACCESS_PEERS - 1):
             self.assertTrue(limits.allow_room_access(f"198.51.100.{i}"))
         self.assertFalse(limits.allow_room_access("203.0.113.23"))
         self.assertLessEqual(len(limits.room_access), MAX_TRACKED_ACCESS_PEERS)
