@@ -51,6 +51,24 @@ class EngineTests(unittest.TestCase):
         with self.assertRaises(GameError):
             self.game.join(self.room.code, "THIRD")
 
+    def test_room_snapshots_require_the_exact_registered_player(self):
+        separate_room, separate_host = self.game.create("SAME CALLSIGN", "station")
+        own = self.game.view(self.room, self.host)
+        self.assertEqual(own["code"], self.room.code)
+        self.assertEqual(own["viewerId"], self.host.id)
+        self.assertNotIn("token", own)
+        self.assertFalse(any("token" in player for player in own["players"]))
+        for unauthorized in (separate_host, object()):
+            with self.subTest(viewer=type(unauthorized).__name__):
+                with self.assertRaisesRegex(GameError, "not a member"):
+                    self.game.view(self.room, unauthorized)
+        # Even an object with a spoofed ID is not an enrolled player.
+        from server.game import Player
+        impostor = Player(self.host.id, "fake-pass", self.host.name)
+        with self.assertRaisesRegex(GameError, "not a member"):
+            self.game.view(self.room, impostor)
+        self.assertEqual(self.game.view(separate_room, separate_host)["code"], separate_room.code)
+
     def test_host_controls_mission(self):
         with self.assertRaises(GameError):
             self.game.change_mission(self.room, self.guest, "hollow")
