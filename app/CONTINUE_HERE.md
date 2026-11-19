@@ -1,16 +1,16 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #57; room isolation next.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #58; expiry cleanup next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## Current local co-op isolation pass — November 18, 2026
+## Current local co-op cleanup pass — November 18, 2026
 
-[PR #57](https://github.com/MasynNay/Keystoria/pull/57) merged as `c3c0156`; [post-merge Python security tests](https://github.com/MasynNay/Keystoria/actions/runs/44438586739) and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44438586712) both succeeded. Rotated reconnect passes are single-use and old sockets cannot pause/reclaim the new operator. PR #56's per-peer connection/creation quotas remain active on local installs.
+[PR #58](https://github.com/MasynNay/Keystoria/pull/58) merged as `c75f844`; [Python security CI](https://github.com/MasynNay/Keystoria/actions/runs/44441236587) and [production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44441236620) both succeeded. Cross-room snapshots are now restricted to exact enrolled players, retired-room broadcasts are suppressed, and interrupted reconnects fail closed.
 
-**In development:** `security/local-coop-room-isolation`. Make `GameEngine.view` fail closed for non-member identity, prevent retired room broadcasts, and test two live rooms with equal names, forged cross-room message IDs, wrong-room reconnect passes and clean state after expiration. A reconnect whose new private token was rotated but never delivered cannot reuse the old pass; document **start a new local room** rather than weaken single-use credentials. No public hosting, account recovery or security certification. Keep issue #4 open.
+**In development:** `security/expire-room-sockets`. After the engine removes expired rooms in periodic cleanup, send their connected operators an explicit expiry error and close those sockets, releasing per-peer/global slots. Do not touch unrelated rooms or pre-room connections. Add live aiohttp tests for room lifetime expiry, two occupants, continued neighboring room actions and no-reconnect after retirement. Keep local-only hosting and issue #4 open; no internet multiplayer.
 
 ## Latest verified release — Word Focus, November 18, 2026
 

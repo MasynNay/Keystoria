@@ -36,11 +36,17 @@ The identity comes from the socket's peer address, **not** `X-Forwarded-For` or 
 
 Python CI covers real two-tab handoff, old-token replay, wrong-room rejection, host-only actions after takeover, resuming after a real disconnect and the non-paused replacement state. These are local-session protections only: not login authentication, WSS, public-origin hardening, or independent security review.
 
-## Current security verification — simultaneous room isolation and lost welcome
+## Shipped room isolation and lost-welcome verification
 
-The next test pass verifies that two live rooms, even with identical player names on the same TCP peer, cannot receive each other's room snapshots or operate on a client-supplied different room code. The snapshot builder must verify the exact enrolled player object rather than accepting an unrelated or forged player identity. After room expiry, stale socket cleanup must not broadcast snapshots from a room that is no longer owned by the engine.
+[PR #58](https://github.com/MasynNay/Keystoria/pull/58) merged as `c75f844` with [post-merge server tests](https://github.com/MasynNay/Keystoria/actions/runs/44441236587) and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44441236620) passing. The test pass verifies that two live rooms, even with identical player names on the same TCP peer, cannot receive each other's room snapshots or operate on a client-supplied different room code. The snapshot builder must verify the exact enrolled player object rather than accepting an unrelated or forged player identity. After room expiry, stale socket cleanup must not broadcast snapshots from a room that is no longer owned by the engine.
 
-**Fail-closed reconnect recovery:** A valid reconnect rotates its secret before the `welcome` is received by the browser. If this message is lost, the previous pass is deliberately invalid and the browser cannot reclaim that operator. To protect against replay, do **not** automatically reinstate the older token, accept the room code as proof of identity, or build a recovery backdoor. The user must start a new local room. An account-based recovery design would require explicit independent review before public deployment. Verify this interruption behavior with live WebSocket tests; no human recovery guarantee is claimed.
+**Fail-closed reconnect recovery:** A valid reconnect rotates its secret before the `welcome` is received by the browser. If this message is lost, the previous pass is deliberately invalid and the browser cannot reclaim that operator. To protect against replay, do **not** automatically reinstate the older token, accept the room code as proof of identity, or build a recovery backdoor. The user must start a new local room. An account-based recovery design would require explicit independent review before public deployment. Live WebSocket tests verify this interruption behavior; no human recovery guarantee is claimed.
+
+## Current cleanup hardening — disconnect expired room sockets
+
+The in-memory engine enforces a 45-minute absolute room lifetime and reaps inactive rooms at periodic cleanup. Previously it removed stale room records but could leave already-connected participants' WebSockets open. Those sockets retained per-peer/global slots until the client closed them or sent another action, despite their rooms no longer existing.
+
+The next local-only change retains the engine's existing cleanup rules but delivers a final `Room expired` error and closes sockets belonging to retired rooms after removing room state, so reconnect passes are invalid before notification. Keep live, unrelated room connections and not-yet-joined sockets untouched. Test single- and two-operator expiry with real aiohttp sockets, capacity release, blocked reconnect and continued play in another room. Cleanup is periodic (currently once each minute), not an exact-time room termination guarantee. The service remains single-process and loopback-only by default.
 
 ## Minimum threat model before any public trial
 
