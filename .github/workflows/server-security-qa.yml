@@ -12,6 +12,12 @@ on:
       - 'app/requirements.txt'
       - 'app/Dockerfile'
       - 'app/README.md'
+      - 'app/web/app.js'
+      - 'app/web/index.html'
+      - 'app/web/ui/views.js'
+      - 'app/web/ui/session-recovery.js'
+      - 'app/web/styles/session-recovery.css'
+      - 'app/tests/test_session_recovery.mjs'
       - 'docs/COOP-HOSTING-DECISION.md'
       - '.github/workflows/server-security-qa.yml'
   push:
@@ -26,6 +32,12 @@ on:
       - 'app/requirements.txt'
       - 'app/Dockerfile'
       - 'app/README.md'
+      - 'app/web/app.js'
+      - 'app/web/index.html'
+      - 'app/web/ui/views.js'
+      - 'app/web/ui/session-recovery.js'
+      - 'app/web/styles/session-recovery.css'
+      - 'app/tests/test_session_recovery.mjs'
       - 'docs/COOP-HOSTING-DECISION.md'
       - '.github/workflows/server-security-qa.yml'
   workflow_dispatch:
@@ -42,6 +54,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate reconnect recovery frontend
+        run: |
+          node --check app/web/app.js
+          node --check app/web/ui/session-recovery.js
+          node --test app/tests/test_session_recovery.mjs
       - name: Install local server dependencies
         run: python -m pip install -r app/requirements.txt
       - name: Check Python modules
