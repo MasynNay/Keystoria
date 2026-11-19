@@ -1,16 +1,16 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #55; local co-op quotas next.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #56; reconnect handoff next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## Next local co-op security pass — November 18, 2026
+## Current local co-op security pass — November 18, 2026
 
-[PR #55](https://github.com/MasynNay/Keystoria/pull/55) shipped loopback-only default startup and dedicated Python WebSocket security CI as merge `8576597`. Both [post-merge security CI](https://github.com/MasynNay/Keystoria/actions/runs/44429880931) and [Pages release](https://github.com/MasynNay/Keystoria/actions/runs/44429880937) succeeded. PR #54 had already shipped accuracy-qualified Practice Compass scoring with [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44361406725).
+[PR #56](https://github.com/MasynNay/Keystoria/pull/56) merged as `b3247de`, with [post-merge server-security success](https://github.com/MasynNay/Keystoria/actions/runs/44431538862) and [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44431538834). It caps active sockets to 8 per TCP peer / 32 global and new room creation to 4 per rolling minute. PR #55's local bind security and PR #54's Practice Compass improvements also remain deployed.
 
-**Current development:** `security/local-coop-connection-quotas` caps open WebSockets at 8 per TCP peer / 32 global and room creation attempts at 4 per rolling minute. Include idle/pre-room sockets, cleanup after disconnect, join/reconnect continuity and spoofed forwarded-header tests. Do not merge before both Python security and Pages browser gates pass. This is not public server launch or security certification; #4 remains open.
+**In development:** `security/local-coop-rotating-reconnect`. Fix the indefinitely reusable reconnect pass and ownership transfer order: rotate on reconnect, prevent stale pass replay/wrong-room takeover, transfer session before closing a displaced socket, and reject superseded socket gameplay. Test on two live aiohttp WebSocket clients plus GameEngine unit regression. The existing browser saves the latest token from every welcome. Local-only; no public co-op deployment, accounts, or independent security certification. Issue #4 stays open.
 
 ## Latest verified release — Word Focus, November 18, 2026
 
