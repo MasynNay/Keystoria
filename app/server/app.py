@@ -32,7 +32,11 @@ VIDEO_SESSION_KEY = web.AppKey("video_session", ClientSession)
 
 
 async def broadcast(app: web.Application, room: Room) -> None:
-    """Personalize every snapshot, so each operator receives only their task."""
+    """Personalize snapshots, never publishing a retired room's state."""
+    # An expired room can still be referenced by sockets closing after
+    # cleanup. Do not send data from an object no longer owned by ENGINE.
+    if ENGINE.rooms.get(room.code) is not room:
+        return
     sessions: dict[str, web.WebSocketResponse] = app[SESSIONS_KEY]
     outgoing = []
     for player in room.players:

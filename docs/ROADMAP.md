@@ -15,9 +15,13 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 
 [PR #56](https://github.com/MasynNay/Keystoria/pull/56) introduced **32 global / 8 per TCP peer** active WebSocket limits and a **4 creations per peer / 60-second** rolling window. This covers idle connections and preserves join/reconnect access, with 256 bounded in-memory peer windows. The actual TCP peer is used, not spoofable forwarded headers. [Post-merge security tests](https://github.com/MasynNay/Keystoria/actions/runs/44431538862) and [Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44431538834) passed. No remote hosting was enabled.
 
-## Current security engineering — reconnect identity handoff (#4)
+## Released reconnect identity handoff (#4)
 
-The server must issue a new private pass after every successful reconnect so an old pass cannot be replayed to reclaim a player. The new owner must be recorded before the previous socket closes, or an old cleanup handler may spuriously disconnect and pause the new owner. Guard old sockets from submitting further actions and test real two-client takeover, stale-token and wrong-room rejection, host controls, single-player/duo continuity and a true disconnect/reconnect cycle. This remains local safety engineering, not public login authentication or approval to host co-op online. Keep #4 open.
+[PR #57](https://github.com/MasynNay/Keystoria/pull/57) rotated private reconnect passes, rejected replayed/malformed/wrong-room credentials, transferred ownership before closing the displaced socket, and blocked old socket actions. [Post-merge security CI](https://github.com/MasynNay/Keystoria/actions/runs/44438586739) and [Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44438586712) passed. No login system, hosted co-op service or public authentication was added.
+
+## Current security engineering — concurrent room isolation and lost reconnect messages (#4)
+
+Ensure the snapshot builder rejects an unrelated player object, including forged/matching IDs. Validate two simultaneous real rooms with independent snapshots and actions even for identical names and injected room IDs; do not broadcast retired room snapshots after cleanup. Record fail-closed token recovery if a rotated reconnect `welcome` is not received: the previous pass must remain unusable and the player must create a new local room. Automated tests and honest documentation, not public remote multiplayer approval. Issue #4 remains open.
 
 ## Latest verified release — mobile Word Focus (November 18, 2026)
 

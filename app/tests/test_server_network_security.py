@@ -8,7 +8,7 @@ import asyncio
 import unittest
 
 from aiohttp import ClientSession, WSMsgType, WSServerHandshakeError, web
-from server.app import ENGINE, SESSIONS_KEY, SOCKET_LIMITS_KEY, create_app, local_bind_host
+from server.app import ENGINE, SESSIONS_KEY, SOCKET_LIMITS_KEY, broadcast, create_app, local_bind_host
 from server.socket_limits import (
     SocketLimits, MAX_OPEN_SOCKETS, MAX_SOCKETS_PER_PEER,
     MAX_CREATES_PER_PEER, CREATE_WINDOW_SECONDS, MAX_TRACKED_CREATE_PEERS,
@@ -245,6 +245,134 @@ class SocketBoundaryTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(ENGINE.rooms[codes[0]].players[0].token, welcomes[0]["token"])
         finally:
             for code in codes:
+                ENGINE.rooms.pop(code, None)
+
+    async def test_two_live_rooms_ignore_forged_room_ids_and_keep_snapshots_private(self):
+        """Identical names on the same TCP peer must not mix state or actions."""
+        codes = []
+        try:
+            async with self.client.ws_connect(self.address) as alpha:
+                await alpha.send_json({"type": "create", "name": "SAME", "mission": "station"})
+                a = await alpha.receive_json(timeout=3)
+                self.assertEqual(a["type"], "welcome")
+                codes.append(a["code"])
+                a_snapshot = await alpha.receive_json(timeout=3)
+                self.assertEqual(a_snapshot["type"], "snapshot")
+                async with self.client.ws_connect(self.address) as beta:
+                    await beta.send_json({"type": "create", "name": "SAME", "mission": "hollow"})
+                    b = await beta.receive_json(timeout=3)
+                    self.assertEqual(b["type"], "welcome")
+                    codes.append(b["code"])
+                    self.assertNotEqual(a["code"], b["code"])
+                    self.assertNotEqual(a["token"], b["token"])
+                    b_snapshot = await beta.receive_json(timeout=3)
+                    self.assertEqual(b_snapshot["room"]["code"], b["code"])
+                    self.assertNotIn(a["token"], str(b_snapshot))
+                    self.assertNotIn(b["token"], str(a_snapshot))
+                    self.assertNotEqual(
+                        a_snapshot["room"]["viewerId"], b_snapshot["room"]["viewerId"])
+
+                    # An authenticated client can only control its own room.
+                    # Supplying another code in the message does not retarget
+                    # its server-held current_room.
+                    await beta.send_json({"type": "difficulty",
+                                          "room": a["code"], "difficulty": "overdrive"})
+                    for _ in range(12):
+                        response = await beta.receive_json(timeout=3)
+                        if response.get("type") != "snapshot":
+                            continue
+                        self.assertEqual(response["room"]["code"], b["code"])
+                        if response["room"]["difficulty"] == "overdrive":
+                            break
+                    else:
+                        self.fail("room B difficulty was not updated")
+                    self.assertEqual(ENGINE.rooms[a["code"]].difficulty, "standard")
+                    self.assertEqual(ENGINE.rooms[b["code"]].difficulty, "overdrive")
+
+                    # A room-B reconnect pass cannot claim an operator in A.
+                    async with self.client.ws_connect(self.address) as intruder:
+                        await intruder.send_json({"type": "reconnect",
+                                                  "code": a["code"], "token": b["token"]})
+                        denied = await intruder.receive_json(timeout=3)
+                        self.assertEqual(denied["type"], "error")
+                        self.assertIn("reconnect pass", denied["message"])
+                    self.assertEqual(ENGINE.rooms[a["code"]].players[0].token, a["token"])
+                    self.assertEqual(ENGINE.rooms[b["code"]].players[0].token, b["token"])
+
+                    # A's own host remains authorized and sees only A.
+                    await alpha.send_json({"type": "difficulty", "difficulty": "story"})
+                    for _ in range(12):
+                        response = await alpha.receive_json(timeout=3)
+                        if response.get("type") != "snapshot":
+                            continue
+                        self.assertEqual(response["room"]["code"], a["code"])
+                        if response["room"]["difficulty"] == "story":
+                            break
+                    else:
+                        self.fail("room A difficulty was not updated")
+                    self.assertEqual(ENGINE.rooms[b["code"]].difficulty, "overdrive")
+        finally:
+            for code in codes:
+                ENGINE.rooms.pop(code, None)
+
+    async def test_retired_room_never_broadcasts_stale_snapshots(self):
+        """A room removed by cleanup cannot leak a final stale snapshot."""
+        from unittest.mock import AsyncMock
+        code = None
+        try:
+            async with self.client.ws_connect(self.address) as host:
+                await host.send_json({"type": "create", "name": "RETIRED"})
+                welcome = await host.receive_json(timeout=3)
+                code = welcome["code"]
+                await host.receive_json(timeout=3)
+                room = ENGINE.rooms[code]
+                viewer = room.players[0]
+                fake_socket = type("Sink", (), {})()
+                fake_socket.closed = False
+                fake_socket.send_json = AsyncMock()
+                sessions = self.runner.app[SESSIONS_KEY]
+                original_socket = sessions[viewer.id]
+                sessions[viewer.id] = fake_socket
+                try:
+                    await broadcast(self.runner.app, room)
+                    fake_socket.send_json.assert_awaited_once()
+                    fake_socket.send_json.reset_mock()
+                    ENGINE.rooms.pop(code)
+                    await broadcast(self.runner.app, room)
+                    fake_socket.send_json.assert_not_awaited()
+                finally:
+                    sessions[viewer.id] = original_socket
+        finally:
+            if code is not None:
+                ENGINE.rooms.pop(code, None)
+
+    async def test_lost_reconnect_welcome_fails_closed_without_token_replay(self):
+        """If a rotated pass is never received, do not revive the old pass."""
+        code = None
+        try:
+            async with self.client.ws_connect(self.address) as original:
+                await original.send_json({"type": "create", "name": "RECOVERY"})
+                initial = await original.receive_json(timeout=3)
+                code, old_pass = initial["code"], initial["token"]
+            async with self.client.ws_connect(self.address) as interrupted:
+                await interrupted.send_json({"type": "reconnect",
+                                             "code": code, "token": old_pass})
+                # Simulate the client losing the connection before reading welcome.
+                # Server-side processing is not guaranteed before closing, so wait
+                # until the rotation is visible to make this deterministic.
+                for _ in range(100):
+                    if ENGINE.rooms[code].players[0].token != old_pass:
+                        break
+                    await asyncio.sleep(.01)
+                self.assertNotEqual(ENGINE.rooms[code].players[0].token, old_pass)
+            async with self.client.ws_connect(self.address) as retry:
+                await retry.send_json({"type": "reconnect",
+                                       "code": code, "token": old_pass})
+                denied = await retry.receive_json(timeout=3)
+                self.assertEqual(denied["type"], "error")
+                self.assertIn("reconnect pass", denied["message"])
+        finally:
+            if code is not None:
                 ENGINE.rooms.pop(code, None)
 
     async def test_excessive_messages_close_connection(self):

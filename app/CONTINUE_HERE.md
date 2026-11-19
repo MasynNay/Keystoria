@@ -1,16 +1,16 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #56; reconnect handoff next.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #57; room isolation next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## Current local co-op security pass — November 18, 2026
+## Current local co-op isolation pass — November 18, 2026
 
-[PR #56](https://github.com/MasynNay/Keystoria/pull/56) merged as `b3247de`, with [post-merge server-security success](https://github.com/MasynNay/Keystoria/actions/runs/44431538862) and [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44431538834). It caps active sockets to 8 per TCP peer / 32 global and new room creation to 4 per rolling minute. PR #55's local bind security and PR #54's Practice Compass improvements also remain deployed.
+[PR #57](https://github.com/MasynNay/Keystoria/pull/57) merged as `c3c0156`; [post-merge Python security tests](https://github.com/MasynNay/Keystoria/actions/runs/44438586739) and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44438586712) both succeeded. Rotated reconnect passes are single-use and old sockets cannot pause/reclaim the new operator. PR #56's per-peer connection/creation quotas remain active on local installs.
 
-**In development:** `security/local-coop-rotating-reconnect`. Fix the indefinitely reusable reconnect pass and ownership transfer order: rotate on reconnect, prevent stale pass replay/wrong-room takeover, transfer session before closing a displaced socket, and reject superseded socket gameplay. Test on two live aiohttp WebSocket clients plus GameEngine unit regression. The existing browser saves the latest token from every welcome. Local-only; no public co-op deployment, accounts, or independent security certification. Issue #4 stays open.
+**In development:** `security/local-coop-room-isolation`. Make `GameEngine.view` fail closed for non-member identity, prevent retired room broadcasts, and test two live rooms with equal names, forged cross-room message IDs, wrong-room reconnect passes and clean state after expiration. A reconnect whose new private token was rotated but never delivered cannot reuse the old pass; document **start a new local room** rather than weaken single-use credentials. No public hosting, account recovery or security certification. Keep issue #4 open.
 
 ## Latest verified release — Word Focus, November 18, 2026
 

@@ -851,6 +851,11 @@ class GameEngine:
             room.next_bot_at = now + room.rng.uniform(8.0, 10.0)
 
     def view(self, room: Room, viewer: Player) -> dict:
+        # A snapshot contains the viewer's private objective and role.
+        # Never derive that view for an arbitrary Player object or one
+        # belonging to a different room, even if its id is duplicated.
+        if not any(member is viewer for member in room.players):
+            raise GameError("Operator is not a member of this room.")
         now = self.clock()
         role = room.role_for(viewer.id)
         target = room.hack_target if role == "hacker" else room.threat_target

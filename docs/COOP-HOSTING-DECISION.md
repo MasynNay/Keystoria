@@ -30,11 +30,17 @@ Python CI exercises the default/opt-in bind selection, same-origin and rejected-
 
 The identity comes from the socket's peer address, **not** `X-Forwarded-For` or any client-supplied proxy header. That means clients behind a reverse proxy share its limits, and it is *not* appropriate to treat these limits as sufficient for internet exposure. No new authentication, cross-worker coordination or hosted backend is introduced. Direct aiohttp tests pass for 429 upgrades, cleanup after close, rejected room bursts, continued join/reconnect and failed header spoofing. This does not certify public hosting.
 
-## Current work: single-use reconnect passes and session ownership
+## Shipped single-use reconnect passes and session ownership
 
-The in-memory server previously accepted the same secret reconnect pass indefinitely, and the old live socket was closed **before** ownership was transferred, risking an unintended pause from its disconnect handler. The new local safeguard rotates the token on every successful reconnect, invalidates previous passes immediately, and transfers socket ownership before closing a previous tab. Superseded sockets cannot submit gameplay actions. Keep the room code for invite and the reconnect pass private. Existing browser clients already save each `welcome` token in session storage.
+[PR #57](https://github.com/MasynNay/Keystoria/pull/57) merged as `c3c0156` with [green post-merge server tests](https://github.com/MasynNay/Keystoria/actions/runs/44438586739) and [Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44438586712). The in-memory server previously accepted the same secret reconnect pass indefinitely, and the old live socket was closed **before** ownership was transferred, risking an unintended pause from its disconnect handler. The local safeguard rotates the token on every successful reconnect, invalidates previous passes immediately, and transfers socket ownership before closing a previous tab. Superseded sockets cannot submit gameplay actions. Keep the room code for invite and the reconnect pass private. Existing browser clients already save each `welcome` token in session storage.
 
-Tests must cover a real two-tab handoff, old-token replay rejection, wrong-room rejection, host-only actions after takeover, resuming after a real disconnect and the non-paused replacement state. These are local-session protections only: not login authentication, WSS, public-origin hardening, or independent security review.
+Python CI covers real two-tab handoff, old-token replay, wrong-room rejection, host-only actions after takeover, resuming after a real disconnect and the non-paused replacement state. These are local-session protections only: not login authentication, WSS, public-origin hardening, or independent security review.
+
+## Current security verification — simultaneous room isolation and lost welcome
+
+The next test pass verifies that two live rooms, even with identical player names on the same TCP peer, cannot receive each other's room snapshots or operate on a client-supplied different room code. The snapshot builder must verify the exact enrolled player object rather than accepting an unrelated or forged player identity. After room expiry, stale socket cleanup must not broadcast snapshots from a room that is no longer owned by the engine.
+
+**Fail-closed reconnect recovery:** A valid reconnect rotates its secret before the `welcome` is received by the browser. If this message is lost, the previous pass is deliberately invalid and the browser cannot reclaim that operator. To protect against replay, do **not** automatically reinstate the older token, accept the room code as proof of identity, or build a recovery backdoor. The user must start a new local room. An account-based recovery design would require explicit independent review before public deployment. Verify this interruption behavior with live WebSocket tests; no human recovery guarantee is claimed.
 
 ## Minimum threat model before any public trial
 
