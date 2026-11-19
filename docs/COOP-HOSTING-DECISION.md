@@ -42,11 +42,15 @@ Python CI covers real two-tab handoff, old-token replay, wrong-room rejection, h
 
 **Fail-closed reconnect recovery:** A valid reconnect rotates its secret before the `welcome` is received by the browser. If this message is lost, the previous pass is deliberately invalid and the browser cannot reclaim that operator. To protect against replay, do **not** automatically reinstate the older token, accept the room code as proof of identity, or build a recovery backdoor. The user must start a new local room. An account-based recovery design would require explicit independent review before public deployment. Live WebSocket tests verify this interruption behavior; no human recovery guarantee is claimed.
 
-## Current cleanup hardening — disconnect expired room sockets
+## Shipped cleanup hardening — disconnect expired room sockets
 
-The in-memory engine enforces a 45-minute absolute room lifetime and reaps inactive rooms at periodic cleanup. Previously it removed stale room records but could leave already-connected participants' WebSockets open. Those sockets retained per-peer/global slots until the client closed them or sent another action, despite their rooms no longer existing.
+[PR #59](https://github.com/MasynNay/Keystoria/pull/59) merged at `7dc13ff`. [Server-security CI](https://github.com/MasynNay/Keystoria/actions/runs/44448828662) and [production Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44448828821) both passed. The engine's existing 45-minute absolute and idle expirations now notify and close sockets attached to retired rooms, releasing their connection slots. Clients in other rooms or still waiting to join are not disturbed. Cleanup runs periodically, about once per minute, rather than at an exact deadline.
 
-The next local-only change retains the engine's existing cleanup rules but delivers a final `Room expired` error and closes sockets belonging to retired rooms after removing room state, so reconnect passes are invalid before notification. Keep live, unrelated room connections and not-yet-joined sockets untouched. Test single- and two-operator expiry with real aiohttp sockets, capacity release, blocked reconnect and continued play in another room. Cleanup is periodic (currently once each minute), not an exact-time room termination guarantee. The service remains single-process and loopback-only by default.
+## Current hardening — bound unauthenticated room join and reconnect attempts
+
+The local server already limits open sockets, room creation and per-socket message floods. However, a client can restart a socket repeatedly and guess room codes or private reconnect tokens without an identity-specific rolling limit. Add **12 pre-room join/reconnect attempts per actual TCP peer per rolling 60 seconds**, counting both successful and unsuccessful requests. This caps repeated probes across socket restarts and new tabs without storing attempted codes or tokens. Once the window is exhausted, retry after it expires; the limit is **not** a password reset, a room-code secret, or internet-safe authentication. Already joined operators continue to play and room creation retains its separate quota.
+
+Track no more than **256 observed peers** for access windows in memory and prune expiry each minute and when evaluating requests. Do not trust `X-Forwarded-For`. A reverse proxy consolidates clients under its observed address and causes shared quotas. Live aiohttp tests must cover invalid code/token probes across distinct sockets with spoofed forwarded headers, throttled correct credentials, an existing active room, and successful join/reconnect after the window expires. Public server exposure remains disallowed.
 
 ## Minimum threat model before any public trial
 

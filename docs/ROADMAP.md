@@ -23,9 +23,13 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 
 [PR #58](https://github.com/MasynNay/Keystoria/pull/58) restricted private room snapshots to enrolled player objects, suppressed broadcasts for retired rooms and tested two simultaneous rooms against cross-room actions and token access. Lost reconnect welcome messages fail closed: start a new local room, never reuse a spent token. [Post-merge security CI](https://github.com/MasynNay/Keystoria/actions/runs/44441236587) and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44441236620) passed.
 
-## Current security engineering — expiring live room sockets (#4)
+## Released expired room socket cleanup (#4)
 
-When the engine reaps a room after its lifetime or idle limit, connected sockets must receive a room-expired error and be closed automatically so they cannot consume active-socket quota indefinitely. A room must be removed from the engine before notifying its operators, with no stale broadcasts, and all unrelated rooms or idle pre-room sockets remain usable. Run live two-room and two-player expiration tests, validate capacity release and reject reconnect with retired credentials. No public hosted multiplayer or independent security certification is implied.
+[PR #59](https://github.com/MasynNay/Keystoria/pull/59) sends a room-expired notice and closes WebSockets whose in-memory rooms have expired, releasing connection slots while preserving other rooms and idle sockets. [Post-merge Python security tests](https://github.com/MasynNay/Keystoria/actions/runs/44448828662) and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44448828821) passed. Local-only, not publicly hosted.
+
+## Current security engineering — join/reconnect probing limits (#4)
+
+Throttle **join and reconnect attempts together** by observed TCP peer: at most **12 per rolling 60 seconds**, counting both correct and incorrect attempts across socket restarts. Keep an in-memory ceiling of 256 tracked peer windows; reject additional new peers when full. Block attempts after the threshold without rotating a legitimate player's secret or mutating room state. Preserve existing players' gameplay and independent create limits. Test simulated time expiry, incorrect codes and tokens, spoofed forwarded headers, and successful join/reconnect after cooldown. This is an abuse limiter, not login authentication or public-hosting approval. Keep #4 open.
 
 ## Latest verified release — mobile Word Focus (November 18, 2026)
 

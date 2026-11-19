@@ -17,6 +17,8 @@ from server.game import MAX_ROOM_AGE
 from server.socket_limits import (
     SocketLimits, MAX_OPEN_SOCKETS, MAX_SOCKETS_PER_PEER,
     MAX_CREATES_PER_PEER, CREATE_WINDOW_SECONDS, MAX_TRACKED_CREATE_PEERS,
+    MAX_ROOM_ACCESS_ATTEMPTS_PER_PEER, ROOM_ACCESS_WINDOW_SECONDS,
+    MAX_TRACKED_ACCESS_PEERS,
 )
 
 
@@ -70,6 +72,29 @@ class SocketQuotaUnitTests(unittest.TestCase):
         self.assertTrue(limits.allow_create("203.0.113.99"))
         self.assertEqual(len(limits.creates), 1)
 
+
+    def test_access_attempt_window_bounded_and_independent_of_creation(self):
+        now = [250.0]
+        limits = SocketLimits(clock=lambda: now[0])
+        for _ in range(MAX_ROOM_ACCESS_ATTEMPTS_PER_PEER):
+            self.assertTrue(limits.allow_room_access("192.0.2.1"))
+        self.assertFalse(limits.allow_room_access("192.0.2.1"))
+        self.assertFalse(limits.allow_room_access(""))
+        self.assertTrue(limits.allow_create("192.0.2.1"))
+        self.assertTrue(limits.allow_room_access("192.0.2.2"))
+        now[0] += ROOM_ACCESS_WINDOW_SECONDS - 0.001
+        self.assertFalse(limits.allow_room_access("192.0.2.1"))
+        now[0] += 0.001
+        self.assertTrue(limits.allow_room_access("192.0.2.1"))
+        for i in range(MAX_TRACKED_ACCESS_PEERS - 1):
+            self.assertTrue(limits.allow_room_access(f"198.51.100.{i}"))
+        self.assertFalse(limits.allow_room_access("203.0.113.23"))
+        self.assertLessEqual(len(limits.room_access), MAX_TRACKED_ACCESS_PEERS)
+        now[0] += ROOM_ACCESS_WINDOW_SECONDS
+        self.assertTrue(limits.allow_room_access("203.0.113.23"))
+        self.assertEqual(len(limits.room_access), 1)
+        limits.prune()
+        self.assertEqual(len(limits.room_access), 1)
 
 class SocketBoundaryTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
@@ -484,6 +509,84 @@ class SocketBoundaryTests(unittest.IsolatedAsyncioTestCase):
                         self.assertEqual(await close_expired_rooms(self.runner.app), 0)
         finally:
             if code is not None:
+                ENGINE.rooms.pop(code, None)
+
+    async def test_room_access_attempts_are_shared_across_sockets_and_forwarded_headers(self):
+        """Invalid join/reconnect guesses exhaust a peer quota, not game state."""
+        code = None
+        try:
+            async with self.client.ws_connect(self.address) as host:
+                await host.send_json({"type": "create", "name": "CAPTAIN"})
+                initial = await host.receive_json(timeout=3)
+                self.assertEqual(initial["type"], "welcome")
+                code, original_pass = initial["code"], initial["token"]
+                await host.receive_json(timeout=3)  # Initial snapshot.
+                limits = self.runner.app[SOCKET_LIMITS_KEY]
+                original_clock = limits.clock
+                try:
+                    async with self.client.ws_connect(
+                        self.address, headers={"X-Forwarded-For": "198.51.100.11"}
+                    ) as first:
+                        for index in range(MAX_ROOM_ACCESS_ATTEMPTS_PER_PEER // 2):
+                            await first.send_json({"type": "join", "code": "WRONG1",
+                                                   "name": "PROBE"})
+                            error = await first.receive_json(timeout=3)
+                            self.assertEqual(error["type"], "error")
+                            self.assertIn("Room not found", error["message"])
+                    async with self.client.ws_connect(
+                        self.address, headers={"X-Forwarded-For": "203.0.113.9"}
+                    ) as second:
+                        for index in range(MAX_ROOM_ACCESS_ATTEMPTS_PER_PEER // 2):
+                            await second.send_json({"type": "reconnect", "code": code,
+                                                    "token": "not-a-real-pass"})
+                            error = await second.receive_json(timeout=3)
+                            self.assertEqual(error["type"], "error")
+                            self.assertIn("reconnect pass", error["message"])
+                        self.assertEqual(
+                            len(limits.room_access.get("127.0.0.1", ())),
+                            MAX_ROOM_ACCESS_ATTEMPTS_PER_PEER,
+                        )
+                        # Even a valid request is throttled until its window
+                        # expires. No private identity mutation may occur.
+                        await second.send_json({"type": "reconnect", "code": code,
+                                                "token": original_pass})
+                        blocked = await second.receive_json(timeout=3)
+                        self.assertEqual(blocked["type"], "error")
+                        self.assertIn("room access attempts", blocked["message"])
+                        await second.send_json({"type": "join", "code": code, "name": "GUEST"})
+                        blocked_join = await second.receive_json(timeout=3)
+                        self.assertEqual(blocked_join["type"], "error")
+                        self.assertIn("room access attempts", blocked_join["message"])
+                        self.assertEqual(ENGINE.rooms[code].players[0].token, original_pass)
+                        self.assertEqual(len(ENGINE.rooms[code].players), 1)
+                        self.assertTrue(ENGINE.rooms[code].players[0].connected)
+
+                        # Already authenticated hosts remain playable even
+                        # while this TCP peer's pre-room attempts are capped.
+                        await host.send_json({"type": "difficulty", "difficulty": "story"})
+                        for _ in range(12):
+                            result = await host.receive_json(timeout=3)
+                            if result.get("type") == "snapshot" and result["room"]["difficulty"] == "story":
+                                break
+                        else:
+                            self.fail("active room became unresponsive during throttling")
+
+                        limits.clock = lambda: original_clock() + ROOM_ACCESS_WINDOW_SECONDS + 1
+                        await second.send_json({"type": "join", "code": code, "name": "GUEST"})
+                        accepted = await second.receive_json(timeout=3)
+                        self.assertEqual(accepted["type"], "welcome")
+                        self.assertEqual(accepted["code"], code)
+                        self.assertEqual(len(ENGINE.rooms[code].players), 2)
+                    async with self.client.ws_connect(self.address) as replacement:
+                        await replacement.send_json({"type": "reconnect",
+                                                     "code": code, "token": original_pass})
+                        recovered = await replacement.receive_json(timeout=3)
+                        self.assertEqual(recovered["type"], "welcome")
+                        self.assertNotEqual(recovered["token"], original_pass)
+                finally:
+                    limits.clock = original_clock
+        finally:
+            if code:
                 ENGINE.rooms.pop(code, None)
 
     async def test_excessive_messages_close_connection(self):
