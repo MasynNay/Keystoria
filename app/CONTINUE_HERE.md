@@ -1,16 +1,16 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #59; join/reconnect probing limit next.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #60; reconnect recovery UI next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
 
-## Current local co-op access throttling pass — November 18, 2026
+## Current reconnect recovery pass — November 18, 2026
 
-[PR #59](https://github.com/MasynNay/Keystoria/pull/59) merged as `7dc13ff`; [post-merge local co-op security CI](https://github.com/MasynNay/Keystoria/actions/runs/44448828662) and [production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44448828821) both succeeded. Expired rooms now notify and disconnect their operators, freeing socket quota without affecting others.
+[PR #60](https://github.com/MasynNay/Keystoria/pull/60) merged as `ab6a76f`, with [green post-merge security CI](https://github.com/MasynNay/Keystoria/actions/runs/44457856372) and [successful Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44457856448). Local story co-op room probing is now rate-limited.
 
-**In development:** `security/limit-room-access-attempts`. Add a 12-per-60-second rolling limit for join/reconnect attempts by the observed TCP peer, across new tabs and socket restarts, using at most 256 in-memory peer windows. Do not store entered tokens/codes; deny excess attempts without modifying room state. Test invalid room codes, private passes, forged forwarded headers, recovery after simulated window expiry, and continued host gameplay. Run Python security and browser PR gates, then post-merge security and Pages verification; no public co-op hosting. Issue #4 stays open.
+**In development:** `fix/local-coop-reconnect-recovery`. Add a persistent accessible local-story browser panel for invalid/expired vs temporary throttled session recovery. Terminal errors clear saved passes and offer create/join, while temporary cooldowns preserve passes and permit deliberate retry. Test pure recovery classification/UI copy in both security and Pages gates, and validate syntax plus all existing server and gameplay regressions before merging. Keep public co-op hosting disabled and security issue #4 open.
 
 ## Latest verified release — Word Focus, November 18, 2026
 

@@ -12,6 +12,7 @@ import { trainingLibrary } from "./training-view.js";
 import { speedLibrary } from "./speed-view.js";
 import { readHistory, readCareer, summarizeHistory, MILESTONES } from "./progression.js";
 import { deploymentDisplay } from "./deployment.js";
+import { sessionRecoveryPanel } from "./session-recovery.js";
 import { storyReelTemplate } from "./story-reel.js";
 
 export function createViews(state) {
@@ -59,6 +60,7 @@ function homeTemplate() {
   const career = readCareer();
   const expanded = Boolean(state.missionsExpanded);
   return `${header()}<main>
+  ${sessionRecoveryPanel(state.recovery)}
   <section class="hero shell" aria-labelledby="hero-title">
     <div class="hero-copy">
       <div class="hero-kicker"><span class="live-pulse"></span> KEYSTORIA <span class="dot-separator">/</span> A WORLD OF TYPING ADVENTURES</div>

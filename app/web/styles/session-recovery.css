@@ -1,0 +1,36 @@
+/* Local Python story/co-op recovery notice; not part of static Pages play. */
+.session-recovery { padding-top:24px; }
+.session-recovery-card {
+  max-width:1040px;
+  border:1px solid var(--danger);
+  border-left:4px solid var(--danger);
+  border-radius:12px;
+  background:linear-gradient(120deg,var(--panel),var(--bg-alt));
+  padding:26px 30px;
+  box-shadow:0 14px 36px rgb(0 0 0 / 18%);
+}
+.session-recovery-eyebrow {
+  display:block;
+  font:600 11px/1.4 var(--mono);
+  letter-spacing:.09em;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+.session-recovery h2 {
+  font:800 clamp(24px,3.3vw,40px)/1.12 var(--display);
+  letter-spacing:.01em;
+  margin:0 0 12px;
+}
+.session-recovery h2:focus { outline:2px solid var(--accent); outline-offset:5px; }
+.session-recovery p { max-width:720px; color:var(--muted); line-height:1.65; margin:0; }
+.session-recovery-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:22px; }
+.session-recovery-actions button { min-height:44px; }
+@media(max-width:640px) {
+  .session-recovery { padding-top:16px; }
+  .session-recovery-card { padding:20px; }
+  .session-recovery-actions { flex-direction:column; }
+  .session-recovery-actions button { width:100%; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .session-recovery * { transition:none !important; }
+}

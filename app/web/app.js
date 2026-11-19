@@ -14,6 +14,7 @@ import { moveStoryReel } from "./ui/story-reel.js";
 import { deploymentDisplay } from "./ui/deployment.js";
 import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";
 import { createViews } from "./ui/views.js";
+import { describeSessionRecovery } from "./ui/session-recovery.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
@@ -29,6 +30,7 @@ const state = {
   socket: null, online: false, room: null, token: null, selectedMission: "station", missionsExpanded: false,
   nickname: savedName, modal: params.has("room") || params.get("demo") === "1" ? null : "welcome", layout: "", targetId: null, pending: false,
   autoStart: false, reconnectTimer: null, disconnectedAt: 0, retryAttempt: 0,
+  reconnectPending: false, recovery: null,
   renderedTargetSignature: "",
   lobbySignature: "", logSignature: "", progressSignature: "",
   preferences: loadPreferences(), inviteCode: params.get("room") || "",
@@ -376,7 +378,9 @@ function connect() {
    if(params.get("room") && session?.code !== params.get("room")?.toUpperCase()) {
      session=null;sessionStorage.removeItem("panic.session");
    }
-   if(session?.code&&session?.token){ send({type:"reconnect",code:session.code,token:session.token}); }
+   if(session?.code&&session?.token && state.recovery?.kind !== "cooldown"){
+     state.reconnectPending=send({type:"reconnect",code:session.code,token:session.token});
+   }
    else if(params.get("demo")==="1"){
       state.selectedMission=MISSIONS[params.get("mission")]?params.get("mission"):"station";
       send({type:"create",name:savedName||"GHOST_01",mission:state.selectedMission,solo:true});state.autoStart=true;
@@ -386,6 +390,8 @@ function connect() {
  ws.addEventListener("message",event=>{
    let message;try{message=JSON.parse(event.data);}catch{return;}
    if(message.type==="welcome"){
+     state.reconnectPending=false;
+     state.recovery=null;
      state.token=message.token;
      sessionStorage.setItem("panic.session",JSON.stringify({code:message.code,token:message.token}));
      const url=new URL(location.href);url.searchParams.delete("room");url.searchParams.delete("demo");url.searchParams.delete("mission");history.replaceState({},"",url);
@@ -400,10 +406,24 @@ function connect() {
      if(state.autoStart&&state.room.phase==="lobby"&&state.room.solo&&state.room.viewerId===state.room.hostId){state.autoStart=false;send({type:"start"});}
      if(wasPhase==="armed"&&state.room.phase==="playing")sound("success");
    }else if(message.type==="error"){
-     toast(message.message,"error");
-     if(message.message.includes("reconnect pass")||message.message.includes("expired")){
-       sessionStorage.removeItem("panic.session");state.room=null;state.layout="";render();
-     }
+     const recovery=describeSessionRecovery(message.message,{
+       reconnecting:state.reconnectPending,
+       hasRoom:Boolean(state.room),
+     });
+     state.reconnectPending=false;
+     if(recovery){
+       if(recovery.discardSession){
+         sessionStorage.removeItem("panic.session");
+         state.token=null;
+       }
+       state.recovery=recovery;
+       state.room=null;
+       state.autoStart=false;
+       state.modal=null;
+       state.layout="";
+       render();
+       $("#session-recovery-title")?.focus({preventScroll:true});
+     }else toast(message.message,"error");
    }
  });
  ws.addEventListener("close",()=>{
@@ -518,6 +538,38 @@ app.addEventListener("click",event=>{
   case "speed-home":speedController.close();showModal("welcome");break;
   case "create":showModal("create");break;
   case "show-join":showModal("join");break;
+  case "recovery-retry": {
+    if(!state.online){toast("Connect to the local server before retrying.","error");break;}
+    let session;
+    try {session=JSON.parse(sessionStorage.getItem("panic.session")||"null");} catch {session=null;}
+    if(!session?.code||!session?.token){
+      sessionStorage.removeItem("panic.session");
+      state.recovery=describeSessionRecovery("Your reconnect pass is no longer valid.",{reconnecting:true});
+      state.layout="";render();
+      break;
+    }
+    if(send({type:"reconnect",code:session.code,token:session.token})){
+      state.reconnectPending=true;
+      state.recovery=null;
+      state.layout="";
+      render();
+    }
+    break;
+  }
+  case "recovery-create":
+  case "recovery-join":
+    // Recovery actions deliberately abandon the previous identity. No room
+    // code may restore a missing or invalid single-use reconnect pass.
+    sessionStorage.removeItem("panic.session");
+    state.token=null;
+    state.reconnectPending=false;
+    state.recovery=null;
+    state.room=null;
+    state.autoStart=false;
+    state.modal=null;
+    state.layout="";
+    showModal(action==="recovery-create"?"create":"join");
+    break;
   case "close-modal":dismissModal();break;
   case "edit-mission":state.modal=null;render();document.getElementById("operations")?.scrollIntoView({behavior:"smooth"});break;
   case "toggle-missions":state.missionsExpanded=!state.missionsExpanded;state.layout="";render();document.getElementById("operations")?.scrollIntoView({block:"start",behavior:"instant"});break;
