@@ -17,6 +17,7 @@ from urllib.parse import urlsplit
 from aiohttp import WSMsgType, web, ClientSession, ClientTimeout
 
 from .game import GameEngine, GameError, Player, Room
+from .socket_limits import SocketLimits
 from .video_match import VideoResolver
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,6 +25,7 @@ WEB = ROOT / "web"
 ENGINE = GameEngine()
 LOG = logging.getLogger("keystoria")
 SESSIONS_KEY = web.AppKey("sessions", dict[str, web.WebSocketResponse])
+SOCKET_LIMITS_KEY = web.AppKey("socket_limits", SocketLimits)
 GAME_TASK_KEY = web.AppKey("game_task", asyncio.Task)
 VIDEO_RESOLVER_KEY = web.AppKey("video_resolver", VideoResolver)
 VIDEO_SESSION_KEY = web.AppKey("video_session", ClientSession)
@@ -59,6 +61,7 @@ async def game_loop(app: web.Application) -> None:
             if finished_now or previous_phase != room.phase or room.phase in ("playing", "switching", "countdown") or (room.phase in ("lobby", "armed") and iteration % 4 == 0):
                 await broadcast(app, room)
         if iteration % 240 == 0:  # Every 60 seconds.
+            app[SOCKET_LIMITS_KEY].prune()
             count = ENGINE.cleanup()
             if count:
                 LOG.info("Expired %d inactive rooms", count)
@@ -75,7 +78,8 @@ async def stop_loop(app: web.Application) -> None:
         await task
     except asyncio.CancelledError:
         pass
-    for ws in app[SESSIONS_KEY].values():
+    # Include idle / not-yet-joined sockets, not only operator sessions.
+    for ws in list(app[SOCKET_LIMITS_KEY].active):
         if not ws.closed:
             await ws.close(code=1001, message=b"Server shutting down")
 
@@ -95,6 +99,15 @@ def local_bind_host(environ: dict[str, str] | None = None) -> str:
     return env.get("HOST", "").strip() or "127.0.0.1"
 
 
+def socket_transport_peer(request: web.Request) -> str:
+    """Use only the TCP connection address, not spoofable forwarded headers."""
+    transport = request.transport
+    identity = transport.get_extra_info("peername") if transport else None
+    if not isinstance(identity, tuple) or not identity or not isinstance(identity[0], str):
+        raise web.HTTPForbidden(text="Socket peer could not be verified.")
+    return identity[0]
+
+
 async def websocket(request: web.Request) -> web.WebSocketResponse:
     # Browser connections must originate from this site's host. A direct CLI
     # WebSocket client may omit Origin, as specified by the WebSocket protocol.
@@ -103,9 +116,17 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
         source = urlsplit(origin)
         if source.scheme not in ("http", "https") or source.netloc != request.host:
             raise web.HTTPForbidden(text="Cross-origin room connections are disabled.")
-    ws = web.WebSocketResponse(heartbeat=25, max_msg_size=2048, autoping=True)
-    await ws.prepare(request)
     app = request.app
+    limits = app[SOCKET_LIMITS_KEY]
+    peer = socket_transport_peer(request)
+    ws = web.WebSocketResponse(heartbeat=25, max_msg_size=2048, autoping=True)
+    if not limits.acquire(ws, peer):
+        raise web.HTTPTooManyRequests(text="Too many local game connections.")
+    try:
+        await ws.prepare(request)
+    except BaseException:
+        limits.release(ws)
+        raise
     sessions: dict[str, web.WebSocketResponse] = app[SESSIONS_KEY]
     current_room: Room | None = None
     current_player: Player | None = None
@@ -131,6 +152,8 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
                         if current_player is not None:
                             raise GameError("Already in a room. Reload to change rooms.")
                         if kind == "create":
+                            if not limits.allow_create(peer):
+                                raise GameError("Room creation limit reached. Try again in a minute.")
                             room, player = ENGINE.create(
                                 payload.get("name", ""), payload.get("mission", "station"),
                                 payload.get("solo") is True,
@@ -186,6 +209,7 @@ async def websocket(request: web.Request) -> web.WebSocketResponse:
             elif message.type == WSMsgType.ERROR:
                 LOG.warning("WebSocket error: %s", ws.exception())
     finally:
+        limits.release(ws)
         if current_room and current_player and sessions.get(current_player.id) is ws:
             sessions.pop(current_player.id, None)
             ENGINE.disconnect(current_room, current_player)
@@ -240,6 +264,7 @@ async def health(request: web.Request) -> web.Response:
 def create_app() -> web.Application:
     app = web.Application(client_max_size=4096)
     app[SESSIONS_KEY] = {}
+    app[SOCKET_LIMITS_KEY] = SocketLimits()
     app.router.add_get("/ws", websocket)
     app.router.add_get("/health", health)
     app.router.add_get("/api/music/resolve", resolve_music_video)

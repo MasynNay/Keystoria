@@ -1,6 +1,6 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #54; local co-op hardening next.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #55; local co-op quotas next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
@@ -8,9 +8,9 @@
 
 ## Next local co-op security pass — November 18, 2026
 
-PR #54 shipped the accuracy-qualified Practice Compass best as merge `60a12e4` with [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44361406725). Post-merge Mobile, Themes and screenshot checks passed; screenshot automation advanced `main` to `710b58e`.
+[PR #55](https://github.com/MasynNay/Keystoria/pull/55) shipped loopback-only default startup and dedicated Python WebSocket security CI as merge `8576597`. Both [post-merge security CI](https://github.com/MasynNay/Keystoria/actions/runs/44429880931) and [Pages release](https://github.com/MasynNay/Keystoria/actions/runs/44429880937) succeeded. PR #54 had already shipped accuracy-qualified Practice Compass scoring with [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44361406725).
 
-**Current branch:** `security/loopback-default-coop`. Audit the default Python listener: it previously bound all interfaces. Bind to loopback by default, document explicit LAN access and loopback host-port Docker publishing, and gate real WebSocket origin/size/rate tests in GitHub Actions. This is not a public server launch or independent security certification. Do not merge without green CI; keep #4 open.
+**Current development:** `security/local-coop-connection-quotas` caps open WebSockets at 8 per TCP peer / 32 global and room creation attempts at 4 per rolling minute. Include idle/pre-room sockets, cleanup after disconnect, join/reconnect continuity and spoofed forwarded-header tests. Do not merge before both Python security and Pages browser gates pass. This is not public server launch or security certification; #4 remains open.
 
 ## Latest verified release — Word Focus, November 18, 2026
 
