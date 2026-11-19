@@ -18,6 +18,12 @@ A public cooperative demo is worth reconsidering only after the safeguards and t
 | Controlled, time-limited demo | Can demonstrate shared rooms with bounded exposure | Requires isolated deployment, quotas, monitoring, cleanup and incident response | **Research later** |
 | Public persistent multiplayer | Accessible to anyone at any time | Highest operational cost, denial-of-service exposure, moderation and data-handling burden | **Not approved** |
 
+## In-progress local-network safeguard (not public-hosting approval)
+
+The CLI Python entrypoint previously bound `0.0.0.0` by default, exposing rooms on all reachable interfaces whenever the process ran. The hardening change under development switches its default to `127.0.0.1` and requires an intentional `HOST=0.0.0.0` or interface-specific override to offer trusted-LAN sessions. The Docker image intentionally retains an internal wildcard listener because the **Docker host publish address** controls external reachability; document and test loopback-only host port mapping. This avoids surprise network exposure on ordinary Mac, Windows and Linux installs, but it does not authenticate LAN users or make reverse-proxy/public hosting safe.
+
+New Python CI will exercise the default/opt-in bind selection, same-origin and rejected-origin websocket handshakes, and bounded WebSocket frames/rate protection without contacting any external service. Keep issue #4 open for authentication, stronger host/proxy checks, connection/room creation quotas, WSS, infrastructure isolation and an independent security review. No hosted co-op demo is being deployed.
+
 ## Minimum threat model before any public trial
 
 1. **Network isolation:** Dedicated unprivileged service/container, no privileged mounts, host network or access to LAN devices. HTTPS/WSS behind a reverse proxy; no direct public Python debug server.

@@ -7,13 +7,17 @@
 
 Keystoria is an evolving typing game collection with 24 authored story adventures, Lyric Lab, Speed Lab, and Field Academy. Mobile-first gameplay is a near-term priority based on direct feedback, separate from desktop accessibility and planned content features. This roadmap records why the next changes matter, how we will verify them, and which features have already been delivered. Priorities may change after testing or feedback; the roadmap is not a promise of dates.
 
+## Current security engineering — local co-op interface binding (#4)
+
+The 24-mission Python server is local-only by design, but its CLI entrypoint previously listened on all interfaces by default. A focused hardening PR will make **127.0.0.1 the default bind address**, require explicit `HOST` for LAN access, keep Docker host ports documented as loopback-only, and add real aiohttp WebSocket security integration tests to CI. This is a *local safety improvement*, not authentication, public WSS hosting, a penetration test or an approval to launch network multiplayer. Issue #4 remains open.
+
 ## Latest verified release — mobile Word Focus (November 18, 2026)
 
 [PR #53](https://github.com/MasynNay/Keystoria/pull/53) introduced optional Word Focus for compact touch Speed Lab while keeping the full passage default. It preserves native input focus, earlier-caret corrections, pending Space and Numpad group tracking, full WPM/CPM scoring and existing phone keyboard-assistance labels. Six PR checks and [production GitHub Pages run 44351316321](https://github.com/MasynNay/Keystoria/actions/runs/44351316321) passed, along with post-merge Mobile/Theme/Screenshot checks. Actual iOS/Android and screen-reader verification remain open in #3/#11.
 
-## Current engineering pass — Practice Compass qualified best (#5, not yet released)
+## Released Practice Compass qualified best (#5)
 
-Practice Compass's recent-five trend should not be presented as a lifetime personal best. The next change labels this scope explicitly and adds the best matching speed recorded at or above the selected accuracy goal, computed over at most 25 locally saved results. Category, duration, exact/assisted input mode and Numpad CPM remain isolated; adjusting the 90/95/98% goal updates the best without rewriting any scores, changing the export format or adding cloud storage. Unit and mobile/desktop browser checks cover older saved records, changes to goal thresholds, clearing/export, input focus and history scope. This feature is not shipped until release CI, merge and GitHub Pages succeed. Actual user feedback is still required before closing progression issue #5.
+Practice Compass's recent-five trend should not be presented as a lifetime personal best. The next change labels this scope explicitly and adds the best matching speed recorded at or above the selected accuracy goal, computed over at most 25 locally saved results. Category, duration, exact/assisted input mode and Numpad CPM remain isolated; adjusting the 90/95/98% goal updates the best without rewriting any scores, changing the export format or adding cloud storage. Unit and mobile/desktop browser checks cover older saved records, changes to goal thresholds, clearing/export, input focus and history scope. [PR #54](https://github.com/MasynNay/Keystoria/pull/54) merged at `60a12e4` after five green pull-request workflows, and [production Pages run 44361406725](https://github.com/MasynNay/Keystoria/actions/runs/44361406725) completed successfully. The pilot remains open for user feedback. Actual user feedback is still required before closing progression issue #5.
 
 ## Priority fix: Speed Lab mobile lag (reported November 11, 2026 Mountain Time)
 

@@ -1,10 +1,16 @@
 # Keystoria — current development handoff
 
-**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #53; Practice Compass next.  
+**Checkpoint:** November 18, 2026 (America/Denver) — verified production through PR #54; local co-op hardening next.  
 **Repository:** [MasynNay/Keystoria](https://github.com/MasynNay/Keystoria)  
 **Website:** https://keystoria.masynnay.com/  
 **Playable static browser edition:** https://keystoria.masynnay.com/play/  
 **Current work tracker:** [docs/ROADMAP.md](../docs/ROADMAP.md) and [open issues](https://github.com/MasynNay/Keystoria/issues)
+
+## Next local co-op security pass — November 18, 2026
+
+PR #54 shipped the accuracy-qualified Practice Compass best as merge `60a12e4` with [successful production Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44361406725). Post-merge Mobile, Themes and screenshot checks passed; screenshot automation advanced `main` to `710b58e`.
+
+**Current branch:** `security/loopback-default-coop`. Audit the default Python listener: it previously bound all interfaces. Bind to loopback by default, document explicit LAN access and loopback host-port Docker publishing, and gate real WebSocket origin/size/rate tests in GitHub Actions. This is not a public server launch or independent security certification. Do not merge without green CI; keep #4 open.
 
 ## Latest verified release — Word Focus, November 18, 2026
 

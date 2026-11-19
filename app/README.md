@@ -8,6 +8,21 @@ Keystoria brings together twenty-four illustrated cooperative story missions, Ly
 
 See [portfolio deployment options](docs/PORTFOLIO_DEPLOYMENT.md) before hosting: **GitHub Pages is not sufficient for the live campaign** because multiplayer and automatic video matching use a Python server. A static portfolio showcase can display screenshots and explain the project.
 
+### Local network safety
+
+The Python story/co-op server now binds to **127.0.0.1 by default** when launched directly (macOS, Windows, Linux or `python -m server.app`). It is accessible from the **same computer only**. Opening the game with `http://localhost:8080` still works for all local solo modes and two tabs on the same machine.
+
+To deliberately let another device on a trusted LAN join via a room code, the operator can launch with `HOST=0.0.0.0` (or a specific trusted interface). This allows access from other machines and should be used only with a firewall and an understood network boundary. It is **not a safe public internet configuration**; room codes are not a substitute for authentication. Stop the server when finished.
+
+Docker must listen on `0.0.0.0` **inside the container** to accept forwarded traffic. Keep the host port loopback-only, for example after building from `app/`:
+
+```bash
+docker build -t keystoria-local .
+docker run --rm -p 127.0.0.1:8080:8080 keystoria-local
+```
+
+Do **not** publish a public port, reverse-proxy this server to the internet, or forward router ports. The hosted GitHub Pages edition remains static and does not expose cooperative rooms. See [co-op security and hosting decision](../docs/COOP-HOSTING-DECISION.md). Remote multiplayer still requires a separate security review and explicit deployment decision.
+
 ## Identity and continuity
 
 The project was formerly called **Panic Protocol**. Keystoria is the current name, but existing `panic.*` localStorage and sessionStorage keys are **intentionally retained** to preserve saved progress and linked music. Older development journal entries and legacy browser previews retain historic naming for traceability.
