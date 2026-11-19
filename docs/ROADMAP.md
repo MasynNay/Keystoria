@@ -7,9 +7,13 @@
 
 Keystoria is an evolving typing game collection with 24 authored story adventures, Lyric Lab, Speed Lab, and Field Academy. Mobile-first gameplay is a near-term priority based on direct feedback, separate from desktop accessibility and planned content features. This roadmap records why the next changes matter, how we will verify them, and which features have already been delivered. Priorities may change after testing or feedback; the roadmap is not a promise of dates.
 
-## Current security engineering — local co-op interface binding (#4)
+## Latest local co-op security release (#4)
 
-The 24-mission Python server is local-only by design, but its CLI entrypoint previously listened on all interfaces by default. A focused hardening PR will make **127.0.0.1 the default bind address**, require explicit `HOST` for LAN access, keep Docker host ports documented as loopback-only, and add real aiohttp WebSocket security integration tests to CI. This is a *local safety improvement*, not authentication, public WSS hosting, a penetration test or an approval to launch network multiplayer. Issue #4 remains open.
+[PR #55](https://github.com/MasynNay/Keystoria/pull/55) corrected the direct Python server's bind address to **127.0.0.1 by default**, with explicit `HOST` required for LAN access. The Docker host-port example is loopback-only and the new real aiohttp WebSocket security gate exercises origin, oversized-frame, and message rate controls. [Production Pages deployment 44429880937](https://github.com/MasynNay/Keystoria/actions/runs/44429880937) and [post-merge server-security run 44429880931](https://github.com/MasynNay/Keystoria/actions/runs/44429880931) both succeeded. No public co-op service was deployed.
+
+## Current security engineering — room creation and connection quotas (#4)
+
+The next local-only safeguard will cap simultaneous sockets to **32 globally / 8 per observed TCP peer**, covering pre-room WebSockets, and throttle room creation attempts to **4 per peer per rolling minute**. It must preserve the join/reconnect paths and release socket slots when clients disconnect. Client-supplied forwarded headers cannot change the limit identity; 256 tracked peer windows cap in-memory accounting. Run live aiohttp tests plus the full existing Pages regression before merging. This is not cross-worker coordination, public auth, WSS, or permission to host co-op publicly. Keep #4 open.
 
 ## Latest verified release — mobile Word Focus (November 18, 2026)
 
