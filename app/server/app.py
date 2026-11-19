@@ -84,13 +84,23 @@ async def send_error(ws: web.WebSocketResponse, message: str) -> None:
     await ws.send_json({"type": "error", "message": message})
 
 
+def local_bind_host(environ: dict[str, str] | None = None) -> str:
+    """Bind local installs to loopback unless the operator explicitly opts in.
+
+    Docker intentionally sets HOST=0.0.0.0 *inside* the container; host
+    exposure is then controlled by the port publish address. This is not
+    a public-hosting security boundary on its own.
+    """
+    env = os.environ if environ is None else environ
+    return env.get("HOST", "").strip() or "127.0.0.1"
+
+
 async def websocket(request: web.Request) -> web.WebSocketResponse:
     # Browser connections must originate from this site's host. A direct CLI
     # WebSocket client may omit Origin, as specified by the WebSocket protocol.
     origin = request.headers.get("Origin")
     if origin:
         source = urlsplit(origin)
-        destination = urlsplit(f"//{request.host}")
         if source.scheme not in ("http", "https") or source.netloc != request.host:
             raise web.HTTPForbidden(text="Cross-origin room connections are disabled.")
     ws = web.WebSocketResponse(heartbeat=25, max_msg_size=2048, autoping=True)
@@ -244,4 +254,7 @@ def create_app() -> web.Application:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    web.run_app(create_app(), host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8080")))
+    host = local_bind_host()
+    if host in ("0.0.0.0", "::"):
+        LOG.warning("Listening on all interfaces by explicit HOST opt-in; not safe for public hosting.")
+    web.run_app(create_app(), host=host, port=int(os.getenv("PORT", "8080")))
