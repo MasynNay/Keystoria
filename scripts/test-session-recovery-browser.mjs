@@ -111,7 +111,7 @@ try{
   f.send(error);
   panel=await checkPanel(f,'cooldown',/TEMPORARILY LIMITED/);
   assert.equal(await f.getPass(),JSON.stringify(f.session));
-  await f.page.locator('[data-action="show-join"]').first().click();
+  await f.page.locator('[data-action="show-join"]:visible').first().click();
   await f.page.locator('.modal-backdrop[data-mode="join"]').waitFor();
   assert.equal(await f.getPass(),JSON.stringify(f.session),
    'opening join does not silently discard the saved pass');
