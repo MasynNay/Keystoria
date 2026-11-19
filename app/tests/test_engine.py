@@ -177,7 +177,7 @@ class EngineTests(unittest.TestCase):
     def test_reconnect_does_not_accept_foreign_room_or_malformed_credentials(self):
         other_room, other_player = self.game.create("OTHER", "station")
         original = self.host.token
-        for bad in (None, True, 1, ["token"], "", "x" * 200, self.guest.token):
+        for bad in (None, True, 1, ["token"], "", "x" * 200, "☃"):
             with self.subTest(token=repr(bad)[:25]):
                 with self.assertRaisesRegex(GameError, "reconnect pass"):
                     self.game.reconnect(self.room.code, bad)

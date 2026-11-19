@@ -206,7 +206,7 @@ class GameEngine:
         # A reconnect pass is single-use: a stale tab or captured old pass
         # must not be able to reclaim a live operator later. Reject malformed
         # credentials before using constant-time comparison.
-        if not isinstance(token, str) or not (1 <= len(token) <= 128):
+        if not isinstance(token, str) or not (1 <= len(token) <= 128) or not token.isascii():
             raise GameError("Your reconnect pass is no longer valid.")
         player = next((p for p in room.players
                        if not p.is_bot and secrets.compare_digest(p.token, token)), None)
