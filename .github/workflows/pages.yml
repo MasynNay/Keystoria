@@ -56,6 +56,7 @@ jobs:
           node scripts/test-lyric-races.mjs
           node scripts/test-dialog-keyboard.mjs
           node scripts/test-navigation-accessibility.mjs
+          node scripts/test-session-recovery-browser.mjs
           node scripts/test-academy-focus.mjs
           node scripts/test-lyric-completion.mjs
           node scripts/test-practice-composition.mjs
