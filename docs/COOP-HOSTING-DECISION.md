@@ -46,11 +46,13 @@ Python CI covers real two-tab handoff, old-token replay, wrong-room rejection, h
 
 [PR #59](https://github.com/MasynNay/Keystoria/pull/59) merged at `7dc13ff`. [Server-security CI](https://github.com/MasynNay/Keystoria/actions/runs/44448828662) and [production Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44448828821) both passed. The engine's existing 45-minute absolute and idle expirations now notify and close sockets attached to retired rooms, releasing their connection slots. Clients in other rooms or still waiting to join are not disturbed. Cleanup runs periodically, about once per minute, rather than at an exact deadline.
 
-## Current hardening — bound unauthenticated room join and reconnect attempts
+## Shipped room-access probing limit
 
-The local server already limits open sockets, room creation and per-socket message floods. However, a client can restart a socket repeatedly and guess room codes or private reconnect tokens without an identity-specific rolling limit. Add **12 pre-room join/reconnect attempts per actual TCP peer per rolling 60 seconds**, counting both successful and unsuccessful requests. This caps repeated probes across socket restarts and new tabs without storing attempted codes or tokens. Once the window is exhausted, retry after it expires; the limit is **not** a password reset, a room-code secret, or internet-safe authentication. Already joined operators continue to play and room creation retains its separate quota.
+[PR #60](https://github.com/MasynNay/Keystoria/pull/60), merge `ab6a76f`, passed [post-merge security CI](https://github.com/MasynNay/Keystoria/actions/runs/44457856372) and [Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44457856448). The local server now counts successful and unsuccessful join/reconnect attempts together, at most 12 per observed TCP peer per rolling 60 seconds, with no more than 256 tracked peer windows. It ignores spoofable forwarded headers. This is not internet authentication.
 
-Track no more than **256 observed peers** for access windows in memory and prune expiry each minute and when evaluating requests. Do not trust `X-Forwarded-For`. A reverse proxy consolidates clients under its observed address and causes shared quotas. Live aiohttp tests must cover invalid code/token probes across distinct sockets with spoofed forwarded headers, throttled correct credentials, an existing active room, and successful join/reconnect after the window expires. Public server exposure remains disallowed.
+## Current work: transparent reconnect recovery
+
+The local story browser should no longer give only a disappearing toast when a room expires or a one-use reconnect pass is spent. Provide persistent, accessible and actionable instructions for starting a new local room or joining another. Clear unusable tokens; do not offer a secret-recovery backdoor. Distinguish a temporary room-access cooldown: **keep** the private saved pass and offer a manual retry after the cooldown instead of automatic retry floods. The notice must not render unescaped server data or reveal credentials. Gate pure recovery tests and frontend syntax in both Python-security and Pages workflows. Hosted public multiplayer remains off.
 
 ## Minimum threat model before any public trial
 

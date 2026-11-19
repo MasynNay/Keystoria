@@ -27,9 +27,13 @@ Keystoria is an evolving typing game collection with 24 authored story adventure
 
 [PR #59](https://github.com/MasynNay/Keystoria/pull/59) sends a room-expired notice and closes WebSockets whose in-memory rooms have expired, releasing connection slots while preserving other rooms and idle sockets. [Post-merge Python security tests](https://github.com/MasynNay/Keystoria/actions/runs/44448828662) and [Pages deployment](https://github.com/MasynNay/Keystoria/actions/runs/44448828821) passed. Local-only, not publicly hosted.
 
-## Current security engineering — join/reconnect probing limits (#4)
+## Released join/reconnect probing limits (#4)
 
-Throttle **join and reconnect attempts together** by observed TCP peer: at most **12 per rolling 60 seconds**, counting both correct and incorrect attempts across socket restarts. Keep an in-memory ceiling of 256 tracked peer windows; reject additional new peers when full. Block attempts after the threshold without rotating a legitimate player's secret or mutating room state. Preserve existing players' gameplay and independent create limits. Test simulated time expiry, incorrect codes and tokens, spoofed forwarded headers, and successful join/reconnect after cooldown. This is an abuse limiter, not login authentication or public-hosting approval. Keep #4 open.
+[PR #60](https://github.com/MasynNay/Keystoria/pull/60) added a 12-request rolling-minute quota per observed TCP peer across failed and valid join/reconnect attempts, without changing existing player controls. [Security CI](https://github.com/MasynNay/Keystoria/actions/runs/44457856372) and [Pages publishing](https://github.com/MasynNay/Keystoria/actions/runs/44457856448) passed.
+
+## Current local-client recovery experience (#4)
+
+When a room expires or a reconnect pass is invalid, replace transient error toasts with a persistent, screen-reader-accessible panel that offers creating a new room or joining a new invite. Clear unusable cached credentials; do not retry stale passes. On a temporary room-access cooldown, preserve the pass, avoid repeated automatic guesses and offer an explicit retry once permitted. Include pure tests in the server-security and Pages CI gates. The static Pages practice edition remains unchanged; no public multiplayer is being enabled. Keep #4 open.
 
 ## Latest verified release — mobile Word Focus (November 18, 2026)
 
