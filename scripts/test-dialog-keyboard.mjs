@@ -12,15 +12,45 @@ try{
   await page.locator('#app .brand-name').waitFor();
   assert.equal(await page.locator('.welcome-modal[role="dialog"][aria-modal="true"]').count(),1);
   await page.locator('.welcome-continue').focus();
+  // A modal must isolate the background from screen readers, focus calls,
+  // pointer interaction and the browser's natural Tab order. The skip link
+  // and the browser-edition portfolio link are OUTSIDE #app.
+  assert.equal(await page.locator('main#app-main').evaluate(el=>el.inert),true,
+   'welcome modal makes underlying main inert');
+  assert.equal(await page.locator('.skip-link').evaluate(el=>el.inert),true,
+   'welcome modal makes external skip navigation inert');
+  assert.equal(await page.locator('.browser-edition-note').evaluate(el=>el.inert),true,
+   'welcome modal makes browser edition portfolio navigation inert');
+  assert.equal(await page.locator('#app > :not(.modal-backdrop)').evaluateAll(
+   nodes=>nodes.length>=2 && nodes.every(el=>el.inert)),true,
+   'header, main, footer and any other background siblings are inert');
+  await page.locator('.skip-link').evaluate(el=>el.focus());
+  assert.equal(await page.locator('.welcome-continue').evaluate(el=>document.activeElement===el),true,
+   'programmatic focus cannot escape an open dialog through the skip link');
+  await page.locator('main#app-main').evaluate(el=>el.focus());
+  assert.equal(await page.locator('.welcome-continue').evaluate(el=>document.activeElement===el),true,
+   'underlying main cannot steal focus from an open dialog');
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(()=>document.activeElement?.classList.contains('close-modal')),true,'Tab wraps to dialog close control');
   await page.keyboard.press('Shift+Tab');
   assert.equal(await page.evaluate(()=>document.activeElement?.classList.contains('welcome-continue')),true,'Shift+Tab wraps to last dialog action');
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.modal-backdrop').count(),0,'Escape closes welcome dialog');
+  assert.equal(await page.locator('main#app-main').evaluate(el=>el.inert),false,
+   'closing welcome restores the main landmark');
+  assert.equal(await page.locator('.skip-link').evaluate(el=>el.inert),false,
+   'closing welcome restores external skip navigation');
+  assert.equal(await page.locator('.browser-edition-note').evaluate(el=>el.inert),false,
+   'closing welcome restores the portfolio link');
   const settings=page.locator('.prefs-toggle').first();
   await settings.focus();await page.keyboard.press('Enter');
   await page.locator('.settings-modal').waitFor();
+  assert.equal(await page.locator('main#app-main').evaluate(el=>el.inert),true,
+   'settings modal isolates the main app');
+  assert.equal(await page.locator('.skip-link').evaluate(el=>el.inert),true,
+   'settings modal isolates skip navigation');
+  assert.equal(await page.locator('.browser-edition-note').evaluate(el=>el.inert),true,
+   'settings modal isolates browser-edition navigation');
   await page.waitForFunction(()=>document.activeElement?.classList.contains('close-modal'));
   await page.keyboard.press('Shift+Tab');
   assert.equal(await page.evaluate(()=>document.activeElement?.textContent.trim()),'DONE','reverse Tab wraps inside the settings dialog');
@@ -30,6 +60,8 @@ try{
   await page.keyboard.press('Enter');
   assert.equal(await page.locator('.theme-choice[data-theme-id="aurora"]').getAttribute('aria-pressed'),'true');
   assert.match(await page.locator('#theme-selection-status').innerText(),/Aurora/i);
+  assert.equal(await page.locator('main#app-main').evaluate(el=>el.inert),true,
+   'theme changes within a dialog never reactivate underlying content');
   // Every preference must update without detaching the button or closing the
   // dialog. Rebuilding it used to discard keyboard focus and scroll position.
   const optionClasses={largerType:'larger-type',highContrast:'high-contrast',reducedMotion:'reduce-motion'};
@@ -56,7 +88,20 @@ try{
   }
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.settings-modal').count(),0);
+  assert.equal(await page.locator('main#app-main').evaluate(el=>el.inert),false,
+   'closing settings restores main content');
+  assert.equal(await page.locator('.skip-link').evaluate(el=>el.inert),false,
+   'closing settings restores the skip link');
+  assert.equal(await page.locator('.browser-edition-note').evaluate(el=>el.inert),false,
+   'closing settings restores portfolio navigation');
   assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.action),'settings','focus returns to opener');
+  // Reopened dialogs must isolate the same background, without leaving a
+  // stale inert flag on the app after the second dismissal.
+  await page.locator('.prefs-toggle').first().click();
+  await page.locator('.settings-modal').waitFor();
+  assert.equal(await page.locator('main#app-main').evaluate(el=>el.inert),true);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('main#app-main').evaluate(el=>el.inert),false);
   await context.close();
  }
  assert.deepEqual(errors,[],'no uncaught errors during modal keyboard interaction');

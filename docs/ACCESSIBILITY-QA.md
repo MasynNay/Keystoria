@@ -1,5 +1,12 @@
 # Accessibility QA and device validation
 
+## True modal background isolation
+
+The Welcome, Settings, and other in-app dialogs use `role="dialog"` / `aria-modal` with keyboard Tab cycling and return-focus handling. A dialog is not truly modal unless the underlying app and external navigation stop being focusable and exposed to assistive technology while it is open. Each render now makes all non-dialog `#app` children, the external skip link, and the browser-edition portfolio note **inert** while a dialog is shown; those elements become interactive again immediately after dismissal. The toast live-status region stays available for announcements.
+
+`scripts/test-dialog-keyboard.mjs` exercises blocked programmatic focus on background landmarks, keyboard Tab containment, accessible Settings controls, repeated open/close, inert restoration and opener focus return at phone, tablet and desktop widths. This is Chromium-level automated testing; actual VoiceOver/TalkBack/NVDA and physical device testing remains open under issue #3.
+
+
 ## Player-controlled practice pause in Speed Lab
 
 Speed Lab now offers an explicit **PAUSE** thumb action and **PAUSE PRACTICE** desktop control after the first typed character. Both are disabled until the timer is running, and pausing transfers keyboard focus to **RESUME TYPING** without detaching the native input. The original typed text, selection, and timer are preserved. To keep timed comparisons fair, deliberately paused runs are labeled practice-only and **not saved** to personal records; fresh uninterrupted runs remain comparable. The four thumb controls use two columns instead of forcing a cramped three-across layout.
