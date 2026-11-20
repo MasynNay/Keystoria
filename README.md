@@ -93,6 +93,7 @@ The original built-in song, timed lyric display, playback controls, live typing 
 - **Speed Lab.** Try timed word drills, dedicated Numpad numbers with CPM scoring, or six curated workplace word banks (legal, education, government, healthcare administration, finance, hospitality). WPM, accuracy, and records stay local.
 - **Field Academy.** Practice useful command-line typing in a game-oriented environment.
 - **Mobile practice Phase 1.** Input-adjacent cues and touch-friendly controls in Speed Lab, Lyric Lab, and Field Academy. Speed Lab suspends a running drill when its tab is backgrounded and offers explicit resume; interrupted results are practice-only and never enter personal bests. Browser regressions passed; real iOS/Android keyboard QA remains open in issue #11.
+- **Practice-only pause.** Speed Lab now has an optional thumb-friendly and desktop Pause control. Resuming preserves the native typing input and timer; paused runs never overwrite comparable personal records.
 - **Responsive interface.** A browser frontend designed for desktop and smaller screens, with a responsive 15-theme selector.
 - **Progress compatibility.** The rebrand preserves existing internal save identifiers so earlier progress is not discarded solely because of the new name.
 
