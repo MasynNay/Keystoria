@@ -4,10 +4,17 @@ import {chromium} from 'playwright';
 
 // Production browser code, not a fake controller. Browser visibility events
 // are simulated: actual iOS/Android app switching still needs device QA.
-for(const filename of ['speed-controller.js','speed-view.js']){
- const local=readFileSync(new URL('../app/web/ui/'+filename,import.meta.url),'utf8');
- const hosted=readFileSync(new URL('../site/play/assets/ui/'+filename,import.meta.url),'utf8');
- assert.equal(local,hosted,filename+' must match the local and Pages editions');
+const localController=readFileSync(new URL('../app/web/ui/speed-controller.js',import.meta.url),'utf8');
+const browserController=readFileSync(new URL('../site/play/assets/ui/speed-controller.js',import.meta.url),'utf8');
+assert.equal(localController,browserController,'shared Speed Lab timer must match across editions');
+// The views intentionally have local-vs-hosted navigation wording, so check
+// the interruption surface rather than comparing their complete source.
+for(const filename of ['../app/web/ui/speed-view.js','../site/play/assets/ui/speed-view.js']){
+ const view=readFileSync(new URL(filename,import.meta.url),'utf8');
+ for(const marker of ['id="speed-pause-banner"','data-action="speed-resume"',
+  'INTERRUPTED PRACTICE (NOT SAVED)','practice-only and was not added to personal records']){
+  assert.ok(view.includes(marker),filename+' lacks shared pause UI: '+marker);
+ }
 }
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const errors=[];
