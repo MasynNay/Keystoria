@@ -1,5 +1,11 @@
 # Accessibility QA and device validation
 
+## Player-controlled practice pause in Speed Lab
+
+Speed Lab now offers an explicit **PAUSE** thumb action and **PAUSE PRACTICE** desktop control after the first typed character. Both are disabled until the timer is running, and pausing transfers keyboard focus to **RESUME TYPING** without detaching the native input. The original typed text, selection, and timer are preserved. To keep timed comparisons fair, deliberately paused runs are labeled practice-only and **not saved** to personal records; fresh uninterrupted runs remain comparable. The four thumb controls use two columns instead of forcing a cramped three-across layout.
+
+The existing `scripts/test-speed-interruption.mjs` now checks deliberate pausing on phone portrait, touch landscape, desktop, and Numpad, in addition to hidden-tab and back/forward-cache recovery. Browser automation cannot verify real native keyboard behavior or screen readers; continue physical-device QA in issue #11.
+
 ## Background interruption recovery in Speed Lab
 
 **Navigation/BFCache follow-up:** Alongside `visibilitychange`, the browser now handles `pagehide` even when a document has not become hidden yet. A restored back/forward-cache page remains paused, with an explicit resume action and practice-only scoring. Automated Chromium scenarios dispatch persisted pagehide/pageshow events, including duplicate events and saved-record isolation. Actual Safari back navigation and phone app-switch behavior still require physical-device testing.
