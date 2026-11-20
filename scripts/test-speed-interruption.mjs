@@ -92,6 +92,35 @@ async function scenario({width,height,phone,numpad}){
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]'));
   assert.equal(saved.length,1,'uninterrupted sessions still save normally');
   assert.equal(saved[0].interrupted,undefined,'exported result schema remains unchanged');
+
+  // A page restored from the back/forward cache may never become "hidden"
+  // before pagehide fires. Simulate persisted navigation without reloading
+  // and insist that the existing timed run stops and requires user action.
+  await page.locator('[data-action="speed-restart"]').first().click();
+  const restoredReference=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+  const restoredStart=restoredReference.slice(0,18);
+  await page.locator('#speed-input').fill(restoredStart);
+  assert.equal(await page.locator('#speed-mode').textContent(),'SESSION LIVE');
+  await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
+  assert.equal(await page.locator('#speed-pause-banner').isVisible(),true,
+   'pagehide pauses even when the document.hidden signal has not fired');
+  assert.equal(await page.locator('#speed-input').inputValue(),restoredStart);
+  assert.equal(await page.locator('#speed-input').getAttribute('readonly'),'');
+  await page.evaluate(()=>{
+   window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+   window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));
+  });
+  assert.equal(await page.locator('#speed-pause-banner').isVisible(),true,
+   'duplicate navigation events cannot auto-resume a suspended session');
+  await page.locator('#speed-pause-banner [data-action="speed-resume"]').click();
+  assert.equal(await page.locator('#speed-pause-banner').isVisible(),false);
+  assert.equal(await page.locator('#speed-input').inputValue(),restoredStart);
+  await page.locator('#speed-input').fill(restoredReference);
+  await page.locator('#speed-results-heading').waitFor();
+  assert.match(await page.locator('.speed-assist-result-label').innerText(),/INTERRUPTED PRACTICE/);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]').length),1,
+   'BFCache-interrupted practice cannot replace the one comparable saved run');
+
   await page.evaluate(()=>window.__visibilityForTest(true));
   assert.equal(await page.locator('#speed-pause-banner').count(),0,'finished result must not pause');
   console.log('PASS speed interruption '+width+'x'+height+(numpad?' numpad':phone?' touch':' desktop'));

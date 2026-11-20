@@ -219,6 +219,13 @@ export function createSpeedController({ state, onRender, playSound }) {
     // Returning to a visible tab must NOT restart the clock on its own.
   }
 
+  // BFCache navigation can preserve the page without a document.hidden event.
+  // Treat pagehide as an interruption even if the tab is still technically
+  // visible. The existing paused state makes duplicate events idempotent.
+  function onPageHide() {
+    pauseForInterruption();
+  }
+
   function finish() {
     const session=state.speed;
     if (!session || session.status==='complete') return;
@@ -356,5 +363,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,resume,finish,tick};
+  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,resume,finish,tick};
 }

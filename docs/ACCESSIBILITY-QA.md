@@ -2,6 +2,8 @@
 
 ## Background interruption recovery in Speed Lab
 
+**Navigation/BFCache follow-up:** Alongside `visibilitychange`, the browser now handles `pagehide` even when a document has not become hidden yet. A restored back/forward-cache page remains paused, with an explicit resume action and practice-only scoring. Automated Chromium scenarios dispatch persisted pagehide/pageshow events, including duplicate events and saved-record isolation. Actual Safari back navigation and phone app-switch behavior still require physical-device testing.
+
 When Speed Lab is already running and a device locks or a tab goes into the background, the local browser clock suspends instead of silently reaching zero. On return, the existing typed reference, caret, and native input stay mounted and an accessible **Resume Typing** action requires an explicit click. The paused input is read-only, and repeated background/foreground notifications cannot keep adding time to a still-running clock. Interrupted sessions remain visible as practice-only results but do **not** overwrite saved personal bests or mix with Practice Compass history; uninterrupted runs retain the same exported score schema.
 
 `scripts/test-speed-interruption.mjs` simulates browser visibility changes at phone portrait, touch landscape and desktop sizes (including Numpad), checks frozen time and input identity, blocked paused edits, explicit resume focus, history isolation and normal fresh-run saving. This is **Chromium event simulation**, not a physical device lock or mobile OS keyboard test. Continue human iOS Safari and Android Chrome checks in issue #11 and assistive technology review in issue #3.
