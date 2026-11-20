@@ -19,6 +19,8 @@ try {
   const input=page.locator('#speed-input');
   assert.equal(await insight.getAttribute('data-matches'),'0','new visitors have no comparable progress yet');
   assert.match(await insight.innerText(),/Finish a run/);
+  assert.match(await insight.locator('.speed-insight-next strong').innerText(),/Complete your first timed run/,
+   'new players get a useful first-run suggestion without inventing a prior score');
   await page.evaluate(()=>{
     window.__speedInputNode=document.getElementById('speed-input');
     window.__compassBefore=document.getElementById('speed-practice-insights');
@@ -83,6 +85,9 @@ try {
   assert.match(await insight.locator('.speed-insight-qualified strong').innerText(),/88 WPM/,
     'qualified best includes older saved results, not just the trend');
   assert.match(await insight.locator('.speed-insight-qualified').innerText(),/6 comparable saved runs/);
+  assert.match(await insight.locator('.speed-insight-next strong').innerText(),/Try 52 WPM at 95%\+ accuracy/,
+   'next target follows latest matching run (50 WPM), not an older qualified best (88 WPM)');
+  assert.match(await insight.locator('.speed-insight-next p').innerText(),/not a record to beat/);
   assert.match(await insight.locator('.speed-insight-trend').innerText(),/3 consecutive runs/);
   assert.equal(await page.evaluate(()=>document.getElementById('speed-input')===window.__speedInputNode),true,
    'changing the goal preserves the original practice textarea');
@@ -91,6 +96,10 @@ try {
    'streak recalculates when accuracy goal increases');
   assert.match(await insight.locator('.speed-insight-qualified strong').innerText(),/10 WPM/,
     'raising the goal recalculates the qualified best without modifying history');
+  assert.match(await insight.locator('.speed-insight-next strong').innerText(),/Reach 98%\+ accuracy/,
+   'latest saved run below new accuracy goal switches suggestion from speed to precision');
+  assert.match(await insight.locator('.speed-insight-tip').innerText(),/Next session: Reach 98%\+ accuracy/,
+   'existing polite live status announces an updated target after a goal change');
   assert.match(await insight.locator('.speed-insight-tip').innerText(),/Accuracy goal 98%:/,
    'a goal change updates the existing polite screen-reader announcement');
   assert.equal(await insight.locator('.speed-insight-trail li').count(),5,'a long history uses at most five bars');
@@ -123,6 +132,8 @@ try {
   await page.locator('[data-action="speed-clear"]').click();
   assert.equal(await insight.getAttribute('data-matches'),'0');
   assert.match(await insight.locator('.speed-insight-qualified').innerText(),/No matching saved run reached this goal/);
+  assert.match(await insight.locator('.speed-insight-next strong').innerText(),/Complete your first timed run/,
+   'clearing local records resets the next-session suggestion');
   assert.equal(await insight.locator('.speed-insight-trail').count(),0,'clearing removes the stale trend');
   assert.deepEqual(await page.evaluate(()=>({
     panel:document.getElementById('speed-practice-insights')===window.__compassBeforeClear,
@@ -144,6 +155,8 @@ try {
   await page.locator('[data-action="speed-open"]').first().click();
   assert.equal(await page.locator('[data-action="speed-goal"][data-goal="98"]').getAttribute('aria-pressed'),'true','accuracy goal persists independently of result history');
   assert.equal(await page.locator('#speed-practice-insights').getAttribute('data-matches'),'0');
+  assert.match(await page.locator('.speed-insight-next strong').innerText(),/Complete your first timed run/,
+   'no stored results after reload means no invented progress target');
   await context.close();
  }
  assert.deepEqual(errors,[],'practice progress browser actions must be error-free');
