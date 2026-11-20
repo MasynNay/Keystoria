@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.45.0';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.48.0';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -26,6 +26,16 @@ export function speedInsightsPanel(session) {
   const mode = practiceMode(session);
   const friendlyMode = mode === 'mobile-assisted' ? 'PHONE ASSISTED'
     : mode === 'mobile-exact' ? 'PHONE EXACT' : 'DESKTOP EXACT';
+  const target = pulse.nextTarget;
+  const nextLabel = target.kind === 'start' ? 'Complete your first timed run'
+    : target.kind === 'accuracy' ? `Reach ${goal}%+ accuracy`
+    : target.kind === 'maintain' ? `Hold ${target.speed} ${pulse.metric} at ${goal}%+ accuracy`
+    : `Try ${target.speed} ${pulse.metric} at ${goal}%+ accuracy`;
+  const nextHelp = target.kind === 'start'
+    ? 'A completed, saved run in this category, duration and input mode unlocks a personal suggestion.'
+    : target.kind === 'accuracy'
+      ? 'Your latest comparable run missed this accuracy goal. Find a comfortable pace before trying to go faster.'
+      : 'Based on your latest comparable saved run. This is a small practice suggestion, not a record to beat or a requirement.';
   return `<section id="speed-practice-insights" class="speed-insights" aria-label="Practice Compass" data-matches="${pulse.count}">
     <span>// PRACTICE COMPASS · PRIVATE BY DEFAULT</span>
     <h3>BUILD YOUR NEXT BEST.</h3>
@@ -44,6 +54,11 @@ export function speedInsightsPanel(session) {
         ? 'No matching saved run reached this goal yet.'
         : `${pulse.goalQualifiedCount} of ${pulse.matchingCount} comparable saved ${pulse.matchingCount===1?'run':'runs'} met the goal.`} Based on at most 25 locally stored results.</p>
     </div>
+    <div class="speed-insight-next" aria-label="Suggested next practice session">
+      <small>NEXT SESSION · OPTIONAL SUGGESTION</small>
+      <strong>${nextLabel}</strong>
+      <p>${nextHelp}</p>
+    </div>
     ${pulse.recent.length ? `<div class="speed-insight-trail">
       <div class="speed-insight-trail-heading"><strong>RECENT MATCHING RUNS</strong><small>Oldest to newest · up to five</small></div>
       <ol aria-label="Recent comparable typing scores, oldest to newest">
@@ -55,7 +70,7 @@ export function speedInsightsPanel(session) {
       </ol>
       <p class="speed-insight-trend">LAST VS PREVIOUS: <strong>${pulse.paceChange===null?'Need two runs':(pulse.paceChange>0?'+':'')+pulse.paceChange+' '+pulse.metric}</strong> · ACCURACY GOAL: <strong>${pulse.goalStreak} consecutive ${pulse.goalStreak===1?'run':'runs'} (max 5)</strong></p>
     </div>` : ''}
-    <p class="speed-insight-tip" role="status" aria-live="polite" aria-atomic="true">Accuracy goal ${goal}%: ${pulse.message}</p>
+    <p class="speed-insight-tip" role="status" aria-live="polite" aria-atomic="true">Accuracy goal ${goal}%: ${pulse.message} Next session: ${nextLabel}.</p>
     <div class="speed-insight-privacy"><button type="button" data-action="speed-export">EXPORT RESULTS</button>
       <button type="button" data-action="speed-import">RESTORE EXPORT</button>
       <input id="speed-import-file" class="speed-import-file" type="file" accept=".json,application/json" tabindex="-1" aria-label="Select a Speed Lab results JSON export" />

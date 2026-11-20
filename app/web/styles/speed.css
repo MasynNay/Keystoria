@@ -133,6 +133,10 @@
 .speed-insight-qualified strong{display:block;color:var(--accent);font:900 clamp(24px,3.5vw,37px)/1.2 var(--display);margin-top:5px}
 .speed-insight-qualified strong small{font:700 12px/1.5 var(--mono)}
 .speed-insight-qualified p{flex:1 1 180px;color:var(--text);font:12px/1.55 var(--body);margin:0}
+.speed-insight-next{min-width:0;margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;background:var(--panel-2);color:var(--text)}
+.speed-insight-next small{display:block;font:700 10px/1.5 var(--mono);letter-spacing:.04em}
+.speed-insight-next strong{display:block;overflow-wrap:anywhere;margin-top:5px;font:800 clamp(15px,3vw,19px)/1.4 var(--display)}
+.speed-insight-next p{margin:6px 0 0;font:12px/1.55 var(--body)}
 .speed-insight-goals>span{display:block;color:var(--text);font:700 11px var(--mono);margin-bottom:8px}
 .speed-insight-buttons,.speed-insight-privacy{display:flex;flex-wrap:wrap;gap:8px}
 .speed-insight-buttons button,.speed-insight-privacy button{min-height:44px;padding:9px 13px;border:1px solid var(--accent);border-radius:6px;background:transparent;color:var(--text);font:700 11px/1.5 var(--mono);cursor:pointer}

@@ -42,9 +42,11 @@ export function summarizeSpeedPractice(history, session, goal = 95) {
       && Number.isFinite(Number(run.accuracy))
       && Number(run.accuracy) >= 0 && Number(run.accuracy) <= 100);
   const matching = matchingAll.slice(0, 5);
+  const safeGoal = ACCURACY_GOALS.includes(Number(goal)) ? Number(goal) : 95;
   const empty = {
     count:0, matchingCount:0, metric, best:null, average:null, averageAccuracy:null,
     goalQualifiedBest:null, goalQualifiedCount:0,
+    nextTarget:{kind:'start',speed:null},
     paceChange:null, goalStreak:0, recent:[],
     message:'Finish a run in this category, duration and input mode to start tracking progress.'
   };
@@ -52,11 +54,22 @@ export function summarizeSpeedPractice(history, session, goal = 95) {
   const scores = matching.map(speed);
   const avg = Math.round(scores.reduce((a,b) => a+b,0) / scores.length);
   const avgAccuracy = Math.round(matching.reduce((a,r) => a + Number(r.accuracy),0) / matching.length);
-  const safeGoal = ACCURACY_GOALS.includes(Number(goal)) ? Number(goal) : 95;
   // The recent trend uses five runs; the best earned at an accuracy goal
   // must include the complete saved 25-run window and exclude non-matches.
   const goalQualified = matchingAll.filter(run => Number(run.accuracy) >= safeGoal);
   const goalQualifiedBest = goalQualified.length ? Math.max(...goalQualified.map(speed)) : null;
+  // A gentle next-session suggestion: recover accuracy first when the latest
+  // comparable run missed the goal; only suggest a small pace increase after
+  // a successful latest run. Never base an achievable next step on an older
+  // lifetime best, another input mode, or a score outside saved history.
+  const newest=matching[0];
+  const step=numpad ? 5 : 2;
+  const latestSpeed=speed(newest);
+  const nextTarget=Number(newest.accuracy)<safeGoal
+    ? {kind:'accuracy',speed:null}
+    : latestSpeed+step>limit
+      ? {kind:'maintain',speed:Math.round(latestSpeed)}
+      : {kind:'pace',speed:Math.ceil(latestSpeed)+step};
   // A streak starts at the most recent run and stops at the first miss.
   const goalStreak = matching.findIndex(run => Number(run.accuracy) < safeGoal);
   // Preserve the exact metric used by this pack, with the oldest at left.
@@ -79,7 +92,7 @@ export function summarizeSpeedPractice(history, session, goal = 95) {
   return {
     count:matching.length, matchingCount:matchingAll.length, metric,
     best:Math.max(...scores), average:avg, averageAccuracy:avgAccuracy,
-    goalQualifiedBest, goalQualifiedCount:goalQualified.length,
+    goalQualifiedBest, goalQualifiedCount:goalQualified.length, nextTarget,
     paceChange, goalStreak:goalStreak < 0 ? matching.length : goalStreak,
     recent, message,
   };
