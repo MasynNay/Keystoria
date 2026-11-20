@@ -63,7 +63,7 @@ export function createSpeedController({ state, onRender, playSound }) {
       pack:selectedPack,
       seconds:DURATIONS.includes(seconds) ? seconds : 30,
       reference:createWordStream(selectedPack),
-      typed:'',startedAt:null,status:'idle',keystrokes:0,result:null,
+      typed:'',startedAt:null,pausedAt:null,interrupted:false,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
       focusPractice:phoneLayout && preferredFocus(),
     };
@@ -108,7 +108,8 @@ export function createSpeedController({ state, onRender, playSound }) {
 
   function elapsed() {
     const session=state.speed;
-    return session?.startedAt == null ? 0 : Math.min(session.seconds,(performance.now()-session.startedAt)/1000);
+    return session?.startedAt == null ? 0
+      : Math.min(session.seconds,((session.pausedAt ?? performance.now())-session.startedAt)/1000);
   }
 
   /** Follow the native editing caret in both the visual next-key cue and
@@ -170,7 +171,52 @@ export function createSpeedController({ state, onRender, playSound }) {
     text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
     text('speed-accuracy',`${metrics.accuracy}%`);
     text('speed-raw',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.replace(/[^0-9]/g,'').length/Math.max(1,seconds)*60):metrics.rawWpm) : 0));
-    text('speed-mode',session.status === 'running' ? 'SESSION LIVE' : 'TIMER STARTS WHEN YOU TYPE');
+    text('speed-mode',session.status === 'paused' ? 'PAUSED · RESUME TO CONTINUE'
+      : session.status === 'running' ? 'SESSION LIVE' : 'TIMER STARTS WHEN YOU TYPE');
+  }
+
+  /** Stop a running clock when the tab becomes hidden. A resumed exercise
+   * remains available for practice, but cannot become a comparable record.
+   * No input DOM is replaced, so typed characters and caret survive.
+   */
+  function pauseForInterruption() {
+    const session=state.speed;
+    if(!session || session.status!=='running')return;
+    const now=performance.now();
+    if((now-session.startedAt)/1000>=session.seconds){finish();return;}
+    session.pausedAt=now;
+    session.interrupted=true;
+    session.status='paused';
+    clearTimer();
+    const field=node('speed-input');
+    if(field)field.readOnly=true;
+    const banner=node('speed-pause-banner');
+    if(banner)banner.hidden=false;
+    paint();
+  }
+
+  /** Only the player can resume a backgrounded run. Paused wall-clock time
+   * is excluded without rewriting the scoring or stored-result formats.
+   */
+  function resume() {
+    const session=state.speed;
+    if(!session || session.status!=='paused' || document.hidden)return;
+    session.startedAt+=performance.now()-session.pausedAt;
+    session.pausedAt=null;
+    session.status='running';
+    const field=node('speed-input');
+    if(field)field.readOnly=false;
+    const banner=node('speed-pause-banner');
+    if(banner)banner.hidden=true;
+    clearTimer();
+    interval=setInterval(tick,250);
+    paint();
+    if(field?.isConnected)field.focus({preventScroll:true});
+  }
+
+  function onVisibilityChange() {
+    if(document.hidden)pauseForInterruption();
+    // Returning to a visible tab must NOT restart the clock on its own.
   }
 
   function finish() {
@@ -184,9 +230,12 @@ export function createSpeedController({ state, onRender, playSound }) {
       pack:session.pack,seconds:session.seconds,at:new Date().toISOString(),
       keyboardAssisted:session.keyboardAssistedEver===true,
       practiceMode:session.phoneLayout ? (session.keyboardAssistedEver?'mobile-assisted':'mobile-exact') : 'standard-exact',
+      interrupted:session.interrupted===true,
     };
     session.status='complete';
-    saveSpeedResult(session.result);
+    // Background pauses make timed scores non-comparable; never persist them
+    // or include them in personal best / Practice Compass calculations.
+    if(!session.interrupted)saveSpeedResult(session.result);
     playSound('success');
     onRender();
     requestAnimationFrame(()=>node('speed-results-heading')?.focus({preventScroll:true}));
@@ -194,6 +243,7 @@ export function createSpeedController({ state, onRender, playSound }) {
 
   function tick() {
     if (state.speed?.status !== 'running') return;
+    if (document.hidden){pauseForInterruption();return;}
     if (elapsed() >= state.speed.seconds) finish();
     else paint();
   }
@@ -201,6 +251,12 @@ export function createSpeedController({ state, onRender, playSound }) {
   function input(value) {
     const session=state.speed;
     if (!session || session.status==='complete') return;
+    if(document.hidden){pauseForInterruption();return;}
+    if(session.status==='paused'){
+      const pausedField=node('speed-input');
+      if(pausedField && pausedField.value!==session.typed)pausedField.value=session.typed;
+      return;
+    }
     session.typed=(session.pack==='numpad'?value.replace(/[^0-9 ]/g,''):value.replace(/[\r\n]/g,'')).slice(0,session.reference.length);
     const field=node('speed-input');
     if (field && field.value!==session.typed) field.value=session.typed;
@@ -220,7 +276,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   function insertSpace(){
     const session=state.speed;
     const field=node('speed-input');
-    if(!session||session.status==='complete'||!field||field.disabled)return;
+    if(!session||session.status==='complete'||session.status==='paused'||document.hidden||!field||field.disabled)return;
     const start=Number.isInteger(field.selectionStart)?field.selectionStart:field.value.length;
     const end=Number.isInteger(field.selectionEnd)?field.selectionEnd:start;
     // Replacing selected text is allowed at the reference limit; overflowing is not.
@@ -238,7 +294,7 @@ export function createSpeedController({ state, onRender, playSound }) {
    */
   function backWord(){
     const session=state.speed,field=node('speed-input');
-    if(!session||session.status==='complete'||!field||field.disabled)return;
+    if(!session||session.status==='complete'||session.status==='paused'||document.hidden||!field||field.disabled)return;
     const {start,end}=previousWordRange(field.value,field.selectionStart,field.selectionEnd);
     if(start!==end){
       field.setRangeText('',start,end,'start');
@@ -301,5 +357,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,finish,tick};
+  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,resume,finish,tick};
 }
