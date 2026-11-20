@@ -21,9 +21,9 @@ try{
    'welcome modal makes external skip navigation inert');
   assert.equal(await page.locator('.browser-edition-note').evaluate(el=>el.inert),true,
    'welcome modal makes browser edition portfolio navigation inert');
-  assert.deepEqual(await page.locator('#app > :not(.modal-backdrop)').evaluateAll(
-   nodes=>nodes.map(el=>el.inert)),[true,true],
-   'header and main are excluded from interaction while welcome is open');
+  assert.equal(await page.locator('#app > :not(.modal-backdrop)').evaluateAll(
+   nodes=>nodes.length>=2 && nodes.every(el=>el.inert)),true,
+   'header, main, footer and any other background siblings are inert');
   await page.locator('.skip-link').evaluate(el=>el.focus());
   assert.equal(await page.locator('.welcome-continue').evaluate(el=>document.activeElement===el),true,
    'programmatic focus cannot escape an open dialog through the skip link');
