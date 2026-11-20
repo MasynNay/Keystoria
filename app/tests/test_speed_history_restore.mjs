@@ -55,6 +55,17 @@ test('reject invalid JSON, wrong product/version and more than 25 records',()=>{
  ])assert.throws(()=>parseSpeedHistoryExport(text),Error);
 });
 
+test('128 KB import limit measures UTF-8 bytes, not JavaScript string length',()=>{
+ const oversized=payload([example()],{opaque:'é'.repeat(70000)});
+ assert.ok(oversized.length<SPEED_IMPORT_MAX_BYTES,
+  'UTF-16 code unit length alone would accept the oversized file');
+ assert.ok(new TextEncoder().encode(oversized).byteLength>SPEED_IMPORT_MAX_BYTES);
+ assert.throws(()=>parseSpeedHistoryExport(oversized),/128 KB safety limit/);
+ const allowed=payload([example()],{opaque:'é'.repeat(50)});
+ assert.equal(parseSpeedHistoryExport(allowed).length,1,
+  'small Unicode metadata should remain valid and be discarded safely');
+});
+
 test('reject invalid pack, duration, scoring, numeric mode, dates and row shapes',()=>{
  for(const row of [
   example({pack:'made-up'}),

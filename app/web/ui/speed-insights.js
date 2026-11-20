@@ -143,7 +143,8 @@ function validImportedRun(run) {
 }
 
 export function parseSpeedHistoryExport(json) {
-  if (typeof json !== 'string' || json.length > SPEED_IMPORT_MAX_BYTES) {
+  if (typeof json !== 'string' || json.length > SPEED_IMPORT_MAX_BYTES
+      || new TextEncoder().encode(json).byteLength > SPEED_IMPORT_MAX_BYTES) {
     throw new Error('Import file exceeds the 128 KB safety limit.');
   }
   let payload;
