@@ -171,6 +171,11 @@ export function createSpeedController({ state, onRender, playSound }) {
     text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
     text('speed-accuracy',`${metrics.accuracy}%`);
     text('speed-raw',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.replace(/[^0-9]/g,'').length/Math.max(1,seconds)*60):metrics.rawWpm) : 0));
+    // Both the thumb action and desktop control track the same live state.
+    // A paused or not-yet-started run cannot be paused again.
+    document.querySelectorAll('[data-action="speed-pause"]').forEach(button=>{
+      button.disabled=session.status!=='running';
+    });
     text('speed-mode',session.status === 'paused' ? 'PAUSED · RESUME TO CONTINUE'
       : session.status === 'running' ? 'SESSION LIVE' : 'TIMER STARTS WHEN YOU TYPE');
   }
@@ -193,6 +198,18 @@ export function createSpeedController({ state, onRender, playSound }) {
     const banner=node('speed-pause-banner');
     if(banner)banner.hidden=false;
     paint();
+  }
+
+  /** Intentional breaks use the same safe clock-freeze and practice-only
+   * record policy as background interruptions. Never create a second timer.
+   * Focus the newly shown Resume button for keyboard accessibility.
+   */
+  function pauseManually() {
+    if(document.hidden || state.speed?.status!=='running')return;
+    pauseForInterruption();
+    if(state.speed?.status==='paused')
+      node('speed-pause-banner')?.querySelector('[data-action="speed-resume"]')
+        ?.focus(); // Let the browser reveal the focused button to keyboard users.
   }
 
   /** Only the player can resume a backgrounded run. Paused wall-clock time
@@ -363,5 +380,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,resume,finish,tick};
+  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
 }

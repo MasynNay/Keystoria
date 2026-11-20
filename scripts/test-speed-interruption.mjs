@@ -121,6 +121,49 @@ async function scenario({width,height,phone,numpad}){
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]').length),1,
    'BFCache-interrupted practice cannot replace the one comparable saved run');
 
+  // A player may also pause deliberately to answer a question or step
+  // away from the keyboard. Such runs must never alter comparable records.
+  await page.locator('[data-action="speed-restart"]').first().click();
+  const manualRef=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+  const pauseActions=page.locator('[data-action="speed-pause"]');
+  assert.equal(await pauseActions.count(),2,'thumb and desktop pause controls use the same action');
+  assert.deepEqual(await pauseActions.evaluateAll(nodes=>nodes.map(n=>n.disabled)),[true,true],
+   'pause cannot be activated before the timer starts');
+  const manualInput=page.locator('#speed-input');
+  await manualInput.fill(manualRef.slice(0,22));
+  const livePause=page.locator('[data-action="speed-pause"]:visible').first();
+  assert.equal(await livePause.isEnabled(),true,'running drill enables the visible Pause action');
+  await livePause.click();
+  assert.equal(await page.locator('#speed-pause-banner').isVisible(),true);
+  assert.equal(await page.locator('#speed-mode').textContent(),'PAUSED · RESUME TO CONTINUE');
+  assert.equal(await manualInput.getAttribute('readonly'),'');
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'speed-resume',
+   'manual pause hands keyboard focus to the Resume action');
+  assert.deepEqual(await pauseActions.evaluateAll(nodes=>nodes.map(n=>n.disabled)),[true,true],
+   'both Pause actions disable while already paused');
+  const pausedValue=await manualInput.inputValue();
+  const pausedClock=await page.locator('#speed-time').textContent();
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator('#speed-time').textContent(),pausedClock,
+   'manual pause also stops elapsed clock time');
+  await manualInput.evaluate(el=>{
+   el.value='unwanted edit';
+   el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  assert.equal(await manualInput.inputValue(),pausedValue,
+   'a manually paused run cannot accept synthetic input');
+  await page.locator('#speed-pause-banner [data-action="speed-resume"]').click();
+  assert.equal(await page.locator('#speed-pause-banner').isVisible(),false);
+  assert.equal(await manualInput.inputValue(),pausedValue);
+  assert.equal(await manualInput.evaluate(el=>document.activeElement===el),true,
+   'Resume returns to the original native input');
+  assert.equal(await livePause.isEnabled(),true);
+  await manualInput.fill(manualRef);
+  await page.locator('#speed-results-heading').waitFor();
+  assert.match(await page.locator('.speed-assist-result-label').innerText(),/INTERRUPTED PRACTICE/);
+  assert.match(await page.locator('.speed-results > p').last().innerText(),/practice-only.*not added to personal records/i);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]').length),1,
+   'manual pauses cannot change comparable history');
   await page.evaluate(()=>window.__visibilityForTest(true));
   assert.equal(await page.locator('#speed-pause-banner').count(),0,'finished result must not pause');
   console.log('PASS speed interruption '+width+'x'+height+(numpad?' numpad':phone?' touch':' desktop'));
