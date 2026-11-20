@@ -122,9 +122,9 @@ export function mobileFocusBounds(field) {
  return {top:Math.min(target.top,input.top),bottom:Math.max(target.bottom,input.bottom)};
 }
 
-/** Update a mobile Academy lesson without detaching its native text input.
- * Keeping the same focused input node avoids closing the software keyboard
- * between accepted commands on touch devices. Returns false for final screens.
+/** Patch an Academy step without detaching its native input or live status.
+ * Keeps phone keyboards open and screen-reader status updates discoverable on
+ * desktop. Completed courses still use the full result screen.
  */
 export function patchMobileTraining(current,next){
  if(!current||!next||next.querySelector('.training-complete'))return false;
@@ -137,13 +137,21 @@ export function patchMobileTraining(current,next){
    '.terminal-inner > .typing-legend',
    '.mobile-academy-target','.academy-mobile-entry > label',
    '.academy-mobile-entry > .mobile-entry-actions',
-   '.terminal-inner > .training-feedback',
    '.terminal-inner > .training-buttons','.reference-panel'
  ];
  for(const selector of selectors){
    const old=current.querySelector(selector);
    const replacement=next.querySelector(selector);
    if(old&&replacement)old.replaceWith(replacement.cloneNode(true));
+ }
+ // Replacing a status node on submit hides the update from some screen
+ // readers. Keep its DOM identity and update its message only when changed.
+ const status=current.querySelector('#training-feedback');
+ const nextStatus=next.querySelector('#training-feedback');
+ if(status&&nextStatus){
+   status.className=nextStatus.className;
+   if(status.textContent!==nextStatus.textContent)
+     status.textContent=nextStatus.textContent;
  }
  for(const [selector,insert] of [
    ['.terminal-inner > .sample-output',()=>current.querySelector('.terminal-inner > .training-buttons')],
@@ -162,6 +170,7 @@ export function patchMobileTraining(current,next){
  original.value=fresh.value;
  original.readOnly=fresh.readOnly;
  original.disabled=fresh.disabled;
+ original.setAttribute?.('aria-invalid',fresh.getAttribute?.('aria-invalid')||'false');
  return true;
 }
 

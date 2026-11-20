@@ -1,5 +1,11 @@
 # Accessibility QA and device validation
 
+## Field Academy command feedback continuity
+
+Field Academy command submissions now keep both the real native typing input and its `role="status"` feedback element mounted during ordinary lesson steps on **desktop, narrow reflow, and touch layouts**. On failed checks, the input exposes `aria-invalid="true"` and the existing polite live status announces the correction guidance. On the first subsequent edit, the invalid state clears and the same status announces retry instructions **once**, not after every key. Successful submissions update that same status node and move focus to the visible Next action when activated from a Check button; typing with Enter retains input focus. Completing the course still replaces the active practice screen with the accessible result heading.
+
+`scripts/test-academy-focus.mjs` checks failed commands, editing and retry, stable input/status node identity, correct Next focus, reshuffling, and full course completion at phone portrait, touch landscape, narrow desktop reflow and desktop. The mobile patch unit tests and existing IME composition tests also run in CI. Browser DOM checks cannot establish actual screen-reader speech or physical phone keyboard behavior, so NVDA, VoiceOver, TalkBack and iOS/Android hands-on testing remain open under issues #3 and #11.
+
 ## True modal background isolation
 
 The Welcome, Settings, and other in-app dialogs use `role="dialog"` / `aria-modal` with keyboard Tab cycling and return-focus handling. A dialog is not truly modal unless the underlying app and external navigation stop being focusable and exposed to assistive technology while it is open. Each render now makes all non-dialog `#app` children, the external skip link, and the browser-edition portfolio note **inert** while a dialog is shown; those elements become interactive again immediately after dismissal. The toast live-status region stays available for announcements.
