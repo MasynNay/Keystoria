@@ -79,6 +79,10 @@ try {
     assert.equal(await input.getAttribute('aria-invalid'),'false');
     assert.equal(await input.inputValue(),'','reshuffle starts with a fresh command');
   }
+  // The previous deliberately incorrect long input may append extra
+  // character spans to the rendered reference. Remove the test draft
+  // before reading its original command text in the full-course loop.
+  await input.fill('');
   let total=0;
   for(let i=0;i<20;i++){
    const steps=await page.locator('.terminal-bar').innerText();
