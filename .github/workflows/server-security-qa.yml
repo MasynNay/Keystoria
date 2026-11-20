@@ -67,7 +67,7 @@ jobs:
       - name: Install Chromium for real recovery UI regressions
         run: |
           npm install --no-save --no-package-lock playwright@1.56.0
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps --only-shell chromium
       - name: Check browser recovery interactions and keyboard focus
         run: node scripts/test-session-recovery-browser.mjs
       - name: Install local server dependencies
