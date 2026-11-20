@@ -1,7 +1,7 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js?v=0.28.0";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.46.0";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.46.1";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.47.0";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.47.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.32.0";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.40.0";
@@ -499,6 +499,7 @@ app.addEventListener("click",event=>{
   case "lyric-open":lyricController.open();break;
   case "speed-open":speedController.open();break;
   case "speed-resume":speedController.resume();break;
+   case "speed-pause":speedController.pauseManually();break;
    case "speed-space":speedController.insertSpace();break;
   case "speed-back-word":speedController.backWord();break;
   case "speed-assist":speedController.toggleKeyboardAssist();break;
