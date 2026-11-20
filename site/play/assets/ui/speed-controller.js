@@ -209,7 +209,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     pauseForInterruption();
     if(state.speed?.status==='paused')
       node('speed-pause-banner')?.querySelector('[data-action="speed-resume"]')
-        ?.focus({preventScroll:true});
+        ?.focus(); // Let the browser reveal the focused button to keyboard users.
   }
 
   /** Only the player can resume a backgrounded run. Paused wall-clock time
