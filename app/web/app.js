@@ -205,6 +205,7 @@ const speedController=createSpeedController({
 // Preserve the timer when a mobile device locks or the tab is backgrounded.
 // Returning requires an explicit action: never restart a clock behind the user.
 document.addEventListener('visibilitychange',()=>speedController.onVisibilityChange());
+window.addEventListener('pagehide',()=>speedController.onPageHide());
 
 async function restoreSpeedFile(field) {
   const file=field.files?.[0];
