@@ -103,8 +103,12 @@ try{
   {mode:'speed',width:390,height:844,phone:true},
   {mode:'speed',width:844,height:390,phone:true},
   {mode:'academy',width:390,height:844,phone:true},
+  {mode:'academy',width:844,height:390,phone:true},
   {mode:'lyric',width:390,height:844,phone:true},
+  {mode:'lyric',width:844,height:390,phone:true},
   {mode:'speed',width:1440,height:844,phone:false},
+  {mode:'academy',width:1440,height:844,phone:false},
+  {mode:'lyric',width:1440,height:844,phone:false},
  ])await testCase(params);
  assert.deepEqual(errors,[],'viewport recovery causes no browser exceptions');
  console.log('PASS: instant mobile keyboard scroll, foreground recheck, and focused-input safety');
