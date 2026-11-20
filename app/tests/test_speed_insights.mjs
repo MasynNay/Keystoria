@@ -163,3 +163,42 @@ test('qualified best isolates Numpad CPM, accuracy, duration and input mode',()=
  assert.equal(pulse.goalQualifiedCount,1);
  assert.equal(summarizeSpeedPractice(rows,s,98).goalQualifiedBest,null);
 });
+
+
+test('next practice session prioritizes accuracy before suggesting a small speed increase',()=>{
+ const s={pack:'everyday',seconds:30,practiceMode:'standard-exact'};
+ const empty=summarizeSpeedPractice([],s);
+ assert.deepEqual(empty.nextTarget,{kind:'start',speed:null});
+ const rows=[
+  {pack:'everyday',seconds:30,practiceMode:'standard-exact',wpm:42,accuracy:93},
+  {pack:'everyday',seconds:30,practiceMode:'standard-exact',wpm:38,accuracy:97},
+ ];
+ assert.deepEqual(summarizeSpeedPractice(rows,s,95).nextTarget,{kind:'accuracy',speed:null},
+  'the newest missed goal means recover accuracy, not chase an old record');
+ assert.deepEqual(summarizeSpeedPractice(rows,s,90).nextTarget,{kind:'pace',speed:44},
+  'a lower selected goal immediately makes the same newest run qualifying');
+ assert.deepEqual(summarizeSpeedPractice([{...rows[0],accuracy:96}],s,95).nextTarget,{kind:'pace',speed:44});
+ assert.deepEqual(summarizeSpeedPractice([{...rows[0],accuracy:99,wpm:4999}],s,95).nextTarget,
+  {kind:'maintain',speed:4999},'never propose a next target beyond the accepted score limit');
+});
+
+test('next suggestion isolates practice mode, duration, pack and Numpad CPM',()=>{
+ const s={pack:'numpad',seconds:30,practiceMode:'mobile-exact'};
+ const rows=[
+  {pack:'numpad',seconds:30,practiceMode:'mobile-assisted',cpm:800,wpm:100,accuracy:100},
+  {pack:'numpad',seconds:60,practiceMode:'mobile-exact',cpm:600,wpm:100,accuracy:100},
+  {pack:'everyday',seconds:30,practiceMode:'mobile-exact',cpm:500,wpm:100,accuracy:100},
+  {pack:'numpad',seconds:30,practiceMode:'mobile-exact',cpm:132,wpm:26,accuracy:97},
+  {pack:'numpad',seconds:30,practiceMode:'mobile-exact',cpm:119,wpm:24,accuracy:99}
+ ];
+ const pulse=summarizeSpeedPractice(rows,s,95);
+ assert.equal(pulse.matchingCount,2);
+ assert.equal(pulse.metric,'CPM');
+ assert.deepEqual(pulse.nextTarget,{kind:'pace',speed:137},'Numpad uses latest qualified CPM plus five');
+ assert.deepEqual(summarizeSpeedPractice(rows,s,98).nextTarget,{kind:'accuracy',speed:null},
+  'raising accuracy goal recalculates immediately without rewriting saved records');
+ assert.deepEqual(summarizeSpeedPractice(rows,{...s,practiceMode:'standard-exact'},95).nextTarget,
+  {kind:'start',speed:null},'unrelated input modes cannot manufacture personal recommendations');
+ assert.deepEqual(summarizeSpeedPractice(rows,{...s,seconds:15},95).nextTarget,
+  {kind:'start',speed:null});
+});
