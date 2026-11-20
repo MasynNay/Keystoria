@@ -245,7 +245,15 @@ try{
   await page.locator('[data-action="speed-home"]').first().click();
   await homeFromModal(page);
   await page.locator('[data-action="lyric-open"]').first().click();
-  await page.locator('[data-action="lyric-demo"]').click();
+  // This same-task click reads the newly inserted DOM BEFORE requestAnimationFrame
+  // runs the lyric player's mount/updateUI. The spoken first word must already
+  // be present for instant keyboard focus and assistive-technology descriptions.
+  const initialSpoken=await page.evaluate(()=>{
+    document.querySelector('[data-action="lyric-demo"]').click();
+    return document.querySelector('#lyric-screenreader-word')?.textContent;
+  });
+  assert.equal(initialSpoken,'Current word: Signals',
+   'Lyric Lab must expose the first word synchronously before its async mount');
   await page.locator('#lyric-input').waitFor();
   assert.equal(await page.locator('#lyric-input').getAttribute('aria-describedby'),
    'lyric-screenreader-word lyric-typing-hint',
