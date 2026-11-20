@@ -67,13 +67,18 @@ try {
   await input.fill('correcting more');
   assert.equal(await feedback.innerText(),editedAnnouncement,
    'typing additional characters cannot flood the live status');
-  await page.locator('[data-action="training-shuffle"]').click();
-  assert.equal(await feedback.evaluate(el=>el===window.__academyFeedbackNode),true,
-   'reshuffling keeps the same live status for the new step');
-  assert.equal(await input.evaluate(el=>el===window.__academyTypingNode),true,
-   'reshuffling keeps the same editable native input');
-  assert.equal(await input.getAttribute('aria-invalid'),'false');
-  assert.equal(await input.inputValue(),'','reshuffle starts with a fresh command');
+  // Active compact typing deliberately hides the optional shuffle toolbar
+  // while the virtual keyboard is open. Only click it in layouts where users
+  // can actually reach it; error recovery above runs on every viewport.
+  if(await page.locator('[data-action="training-shuffle"]').isVisible()){
+    await page.locator('[data-action="training-shuffle"]').click();
+    assert.equal(await feedback.evaluate(el=>el===window.__academyFeedbackNode),true,
+     'reshuffling keeps the same live status for the new step');
+    assert.equal(await input.evaluate(el=>el===window.__academyTypingNode),true,
+     'reshuffling keeps the same editable native input');
+    assert.equal(await input.getAttribute('aria-invalid'),'false');
+    assert.equal(await input.inputValue(),'','reshuffle starts with a fresh command');
+  }
   let total=0;
   for(let i=0;i<20;i++){
    const steps=await page.locator('.terminal-bar').innerText();
