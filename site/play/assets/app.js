@@ -363,6 +363,19 @@ function render() {
      setTimeout(()=> (state.modal === "welcome" ? $(".welcome-continue") : $("#callsign") || $(".modal-backdrop [data-action=close-modal]"))?.focus({preventScroll:true}),10);
    }
  } else $(".modal-backdrop")?.remove();
+
+ // The keyboard Tab trap alone does not make a dialog truly modal:
+ // header, main, external skip navigation, and browser-edition links can
+ // otherwise remain accessible behind it. Inert excludes those surfaces
+ // from both keyboard navigation and the accessibility tree without
+ // replacing the underlying practice DOM or disrupting its session state.
+ const modalOpen=Boolean(state.modal);
+ for(const child of app.children){
+   if(!child.classList.contains("modal-backdrop"))child.inert=modalOpen;
+ }
+ for(const node of document.querySelectorAll('.skip-link, .browser-edition-note')){
+   node.inert=modalOpen;
+ }
 }
 
 function send(payload) {
