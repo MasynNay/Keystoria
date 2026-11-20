@@ -251,12 +251,12 @@ export function createSpeedController({ state, onRender, playSound }) {
   function input(value) {
     const session=state.speed;
     if (!session || session.status==='complete') return;
-    if(document.hidden){pauseForInterruption();return;}
     if(session.status==='paused'){
       const pausedField=node('speed-input');
       if(pausedField && pausedField.value!==session.typed)pausedField.value=session.typed;
       return;
     }
+    if(document.hidden){pauseForInterruption();return;}
     session.typed=(session.pack==='numpad'?value.replace(/[^0-9 ]/g,''):value.replace(/[\r\n]/g,'')).slice(0,session.reference.length);
     const field=node('speed-input');
     if (field && field.value!==session.typed) field.value=session.typed;
