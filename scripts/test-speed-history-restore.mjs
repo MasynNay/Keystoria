@@ -56,6 +56,16 @@ try {
   await select(' '.repeat(131073));
   await page.locator('#toast-layer').getByText(/128 KB safety limit/).waitFor();
 
+  // The file picker must enforce bytes, not JavaScript UTF-16 length.
+  const unicodeOversize=JSON.stringify({
+    format:'keystoria.speed.history',version:1,records,padding:'é'.repeat(70000)
+  });
+  assert.ok(unicodeOversize.length<131072);
+  assert.ok(Buffer.byteLength(unicodeOversize,'utf8')>131072);
+  await select(unicodeOversize);
+  await page.locator('#toast-layer').getByText(/128 KB safety limit/).last().waitFor();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
+
   const cancelled=page.waitForEvent('dialog');
   const cancelUpload=select(fixture);
   const cancelDialog=await cancelled;
