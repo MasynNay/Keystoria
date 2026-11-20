@@ -1,8 +1,8 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { trainingTemplate } from "./ui/training-view.js?v=0.28.0";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.47.0";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.0";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.47.0";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.32.0";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.0";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.40.0";
 import { paintTypingFeedback } from "./ui/typing-feedback.js";
@@ -243,7 +243,7 @@ function refreshSpeedInsights() {
     const next=host.firstElementChild;
     if(next){
       pulse.dataset.matches=next.dataset.matches;
-      for(const selector of [".speed-insight-scope",".speed-insight-stats",".speed-insight-qualified"]){
+      for(const selector of [".speed-insight-scope",".speed-insight-stats",".speed-insight-qualified",".speed-insight-next"]){
         const current=pulse.querySelector(selector);
         const updated=next.querySelector(selector);
         if(current&&updated&&current.innerHTML!==updated.innerHTML)
