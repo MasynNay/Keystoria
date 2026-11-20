@@ -230,7 +230,6 @@ export function createSpeedController({ state, onRender, playSound }) {
       pack:session.pack,seconds:session.seconds,at:new Date().toISOString(),
       keyboardAssisted:session.keyboardAssistedEver===true,
       practiceMode:session.phoneLayout ? (session.keyboardAssistedEver?'mobile-assisted':'mobile-exact') : 'standard-exact',
-      interrupted:session.interrupted===true,
     };
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
