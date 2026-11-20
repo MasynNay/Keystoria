@@ -21,6 +21,7 @@ node scripts/test-mobile-viewport-recovery.mjs
 node scripts/test-academy-focus.mjs
 node scripts/test-practice-composition.mjs
 node scripts/test-speed-mobile-performance.mjs
+node scripts/test-speed-interruption.mjs
 node scripts/test-speed-keyboard-assist.mjs
 node scripts/test-speed-insights-browser.mjs
 node scripts/test-speed-history-restore.mjs

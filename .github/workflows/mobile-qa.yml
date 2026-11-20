@@ -13,6 +13,7 @@ on:
       - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
+      - 'scripts/test-speed-interruption.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
       - 'scripts/test-speed-word-focus.mjs'
       - 'scripts/test-speed-insights-browser.mjs'
@@ -33,6 +34,7 @@ on:
       - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
+      - 'scripts/test-speed-interruption.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
       - 'scripts/test-speed-word-focus.mjs'
       - 'scripts/test-speed-insights-browser.mjs'
@@ -86,6 +88,7 @@ jobs:
           node scripts/test-lyric-completion.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
+          node scripts/test-speed-interruption.mjs
           node scripts/test-speed-keyboard-assist.mjs
           node scripts/test-speed-word-focus.mjs
           node scripts/test-speed-insights-browser.mjs
