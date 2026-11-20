@@ -1,5 +1,5 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
-import { trainingTemplate } from "./ui/training-view.js?v=0.28.0";
+import { trainingTemplate } from "./ui/training-view.js?v=0.49.0";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.0";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.47.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.0";
@@ -17,7 +17,7 @@ import { createViews } from "./ui/views.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
-import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.43.0";
+import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.49.0";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
@@ -637,16 +637,20 @@ function renderTrainingInPlace() {
     }
     $("#lesson-input")?.focus({preventScroll:true});
   };
-  // Never remove the focused native input while a phone's keyboard is up.
-  if (focused && !state.lesson?.completed && window.matchMedia(MOBILE_TYPING_MEDIA).matches) {
+  // Keep the input and role=status feedback mounted after every command.
+  // Phone keyboards remain open and desktop screen readers can hear the
+  // changed status without losing its existing accessibility tree identity.
+  const softKeyboardLayout=window.matchMedia(MOBILE_TYPING_MEDIA).matches;
+  if (focused && !state.lesson?.completed) {
     const draft=document.createElement("div");
     draft.innerHTML=trainingTemplate(state.lesson,header);
     if(patchMobileTraining($(".academy-play"),draft.querySelector(".academy-play"))){
+      if(!softKeyboardLayout)window.scrollTo({top,behavior:"instant"});
       focusAfterUpdate();
       return;
     }
   }
-  state.layout="";
+    state.layout="";
   render();
   if(state.lesson?.completed){
     // The native input no longer exists on the result screen. Move focus to
@@ -758,6 +762,14 @@ app.addEventListener("input",event=>{
  if(state.lyric && lyricController.handleInput(event))return;
  if(event.target.id === "lesson-input" && state.lesson) {
    state.lesson.draft=event.target.value;
+   if(state.lesson.errorMessage){
+     // Clear invalid state when the player starts correcting an error;
+     // announce the new guidance once rather than per keystroke.
+     state.lesson.errorMessage="";
+     event.target.setAttribute("aria-invalid","false");
+     const feedback=$("#training-feedback");
+     if(feedback)feedback.textContent="Command edited. Press Enter or select Check Command to try again. Nothing was executed.";
+   }
    const target=LESSONS[state.lesson.os].commands[activeCommandIndex(state.lesson)].text;
    paintTypingFeedback($("#lesson-target-text"),target,state.lesson.draft);
     paintTypingFeedback($("#lesson-mobile-target"),target,state.lesson.draft);
