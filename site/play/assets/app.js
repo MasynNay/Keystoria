@@ -650,7 +650,7 @@ function renderTrainingInPlace() {
       return;
     }
   }
-    state.layout="";
+  state.layout="";
   render();
   if(state.lesson?.completed){
     // The native input no longer exists on the result screen. Move focus to
