@@ -63,7 +63,7 @@ try {
   assert.ok(unicodeOversize.length<131072);
   assert.ok(Buffer.byteLength(unicodeOversize,'utf8')>131072);
   await select(unicodeOversize);
-  await page.locator('#toast-layer').getByText(/128 KB safety limit/).waitFor();
+  await page.locator('#toast-layer').getByText(/128 KB safety limit/).last().waitFor();
   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),null);
 
   const cancelled=page.waitForEvent('dialog');
