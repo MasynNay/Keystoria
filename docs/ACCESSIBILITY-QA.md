@@ -1,5 +1,11 @@
 # Accessibility QA and device validation
 
+## Lyric Lab first-word readiness
+
+The lyric stage's spoken **Current word** description is present in the initial rendered HTML for each selected song, including the original offline demo. Previously the label was empty until an animation-frame `mount()` callback repainted the stage. Depending on browser scheduling, a keyboard or screen-reader user could reach an input whose referenced current word was not yet populated. The normal lyric clock and word-boundary updates continue to use the same mounted live region; no extra per-keystroke announcements or changes to scoring, music providers or stored records.
+
+`scripts/test-mobile-typing.mjs` now clicks the demo and reads the new spoken cue **in the same JavaScript task, before the requestAnimationFrame mount can run**, at narrow mobile, normal phone, and desktop widths. This targets the intermittent first-word failure seen in the [post-merge Mobile QA run 44804233032](https://github.com/MasynNay/Keystoria/actions/runs/44804233032). It is automated Chromium readiness evidence only, not actual VoiceOver/TalkBack/NVDA or physical phone validation.
+
 ## Field Academy command feedback continuity
 
 Field Academy command submissions now keep both the real native typing input and its `role="status"` feedback element mounted during ordinary lesson steps on **desktop, narrow reflow, and touch layouts**. On failed checks, the input exposes `aria-invalid="true"` and the existing polite live status announces the correction guidance. On the first subsequent edit, the invalid state clears and the same status announces retry instructions **once**, not after every key. Successful submissions update that same status node and move focus to the visible Next action when activated from a Check button; typing with Enter retains input focus. Completing the course still replaces the active practice screen with the accessible result heading.
