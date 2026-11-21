@@ -207,27 +207,37 @@ const speedController=createSpeedController({
 document.addEventListener('visibilitychange',()=>speedController.onVisibilityChange());
 window.addEventListener('pagehide',()=>speedController.onPageHide());
 
+let speedImportGeneration=0;
 async function restoreSpeedFile(field) {
   const file=field.files?.[0];
   field.value=''; // Allow choosing the same file again after cancel/error.
   if(!state.speed || !file)return;
   const activeSession=state.speed;
+  const generation=++speedImportGeneration;
+  // A file read can finish after leaving Speed Lab, starting another drill,
+  // or choosing a newer export. Only the latest still-mounted picker may act.
+  const isCurrent=()=>generation===speedImportGeneration
+    && state.speed===activeSession && field.isConnected;
   try {
   if(file.size>SPEED_IMPORT_MAX_BYTES) {
     toast("Import file exceeds the 128 KB safety limit.","error"); return;
   }
   let records;
   try { records=parseSpeedHistoryExport(await file.text()); }
-  catch(error) { toast(error instanceof Error ? error.message : "Could not read that export.","error"); return; }
+  catch(error) {
+    if(isCurrent())toast(error instanceof Error ? error.message : "Could not read that export.","error");
+    return;
+  }
+  if(!isCurrent())return;
   const previous=readSpeedHistory().length;
   if(!window.confirm("Replace "+previous+" saved Speed Lab result(s) with "+records.length+" from this export? Export your current results first if you want a backup.")) return;
+  if(!isCurrent())return;
   if(!restoreSpeedHistory(records)) { toast("Could not save imported results on this device.","error"); return; }
   refreshSpeedInsights();
   toast("Restored "+records.length+" Speed Lab result(s) on this device.");
   } finally {
-    // File-picker errors and cancelled confirmations must return keyboard focus.
-    // Do not steal focus if the user navigated to a different session meanwhile.
-    if (state.speed===activeSession)
+    // Never steal focus from a newer import, drill, or navigation target.
+    if(isCurrent())
       document.querySelector('[data-action="speed-import"]')?.focus({preventScroll:true});
   }
 }

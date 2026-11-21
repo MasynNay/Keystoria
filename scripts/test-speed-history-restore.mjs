@@ -140,6 +140,65 @@ try {
   assert.equal(await page.evaluate(()=>document.querySelector('.speed-insight-tip')===window.__compassStatusBefore),true,
     'clear history updates the original screen-reader status');
   assert.equal(await input.inputValue(),'ke','clearing records must preserve ongoing typing');
+  // Delayed file reads must not supersede a more recent export selection.
+  // These checks run on both phone and desktop sizes.
+  await page.evaluate(()=>{
+    const nativeRead=File.prototype.text;
+    let holdNext=false;
+    window.__holdSpeedRead=()=>{holdNext=true;};
+    window.__releaseSpeedRead=null;
+    File.prototype.text=function(){
+      if(!holdNext)return nativeRead.call(this);
+      holdNext=false;
+      const selectedFile=this;
+      return new Promise((resolve,reject)=>{
+        window.__releaseSpeedRead=()=>nativeRead.call(selectedFile).then(resolve,reject);
+      });
+    };
+    window.__speedConfirmCalls=0;
+    window.confirm=()=>{window.__speedConfirmCalls++;return true;};
+  });
+  const makeImport=wpm=>JSON.stringify({
+    format:'keystoria.speed.history',version:1,records:[
+      {pack:'everyday',seconds:30,wpm,accuracy:96,practiceMode:mode}
+    ]
+  });
+  await page.evaluate(()=>window.__holdSpeedRead());
+  await select(makeImport(15),'first-export.json');
+  await page.waitForFunction(()=>typeof window.__releaseSpeedRead==='function');
+  await select(makeImport(27),'newer-export.json');
+  await page.waitForFunction(()=>{
+    try{return JSON.parse(localStorage.getItem('panic.speed.results.v1'))[0]?.wpm===27;}
+    catch{return false;}
+  });
+  await page.evaluate(async()=>{
+    const release=window.__releaseSpeedRead;
+    window.__releaseSpeedRead=null;
+    await release();
+  });
+  await page.waitForTimeout(40);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1'))[0].wpm),27,
+    'an older completed file read cannot overwrite the newer import');
+  assert.equal(await page.evaluate(()=>window.__speedConfirmCalls),1,
+    'only the most recent import may ask to replace saved results');
+
+  // Leaving the drill while an import is pending also cancels its confirmation
+  // and cannot steal focus from the new screen or replace existing results.
+  await page.evaluate(()=>window.__holdSpeedRead());
+  await select(makeImport(99),'abandoned-export.json');
+  await page.waitForFunction(()=>typeof window.__releaseSpeedRead==='function');
+  await page.locator('[data-action="speed-home"]').click();
+  await page.evaluate(async()=>{
+    const release=window.__releaseSpeedRead;
+    window.__releaseSpeedRead=null;
+    await release();
+  });
+  await page.waitForTimeout(40);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1'))[0].wpm),27);
+  assert.equal(await page.evaluate(()=>window.__speedConfirmCalls),1,
+    'an abandoned import must not open a replacement confirmation');
+  assert.equal(await page.locator('#speed-input').count(),0,
+    'navigation away from Speed Lab remains intact');
   await context.close();
  }
  assert.deepEqual(errors,[],'file import must not cause unhandled browser errors');
