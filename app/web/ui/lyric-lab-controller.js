@@ -267,7 +267,7 @@ export function createLyricLabController({state,onRender}){
   const mobileToggle=$('lyric-mobile-toggle');if(mobileToggle){mobileToggle.textContent=active?'PAUSE':'PLAY';mobileToggle.setAttribute('aria-pressed',String(active));}
   const nextKeystroke=$('lyric-next-keystroke');
   if(nextKeystroke){
-   const suggestedKey=phase==='done'?'':lineHasForeignScript(line.text)?'SKIP LINE':feedback.nextKey;
+   const suggestedKey=phase==='done'?'':feedback.nextKey;
    nextKeystroke.textContent=suggestedKey?`NEXT KEY  ${suggestedKey.length===1?suggestedKey.toUpperCase():suggestedKey}`:'';
    nextKeystroke.hidden=!suggestedKey;
   }
@@ -283,7 +283,7 @@ export function createLyricLabController({state,onRender}){
   const meter=$('lyric-line-meter-fill');if(meter)meter.style.width=`${Math.round((index-line.startWord)/Math.max(1,line.words.length)*100)}%`;
   // Keep mode-specific Enter instructions in separate CSS-controlled spans:
   // unlike text replacement, display:none updates immediately on rotation/zoom.
-  const hint=$('lyric-hint-message');if(hint)hint.textContent=lineHasForeignScript(line.text)?'Different alphabet detected. Use SKIP LINE to move on without credit.':feedback.errors>0?'A red letter does not match. Use BACKSPACE to correct it.':wrong?'Not quite. Type the word again or use SKIP LINE.':lagPaused?'Video paused for catch-up. Use SKIP LINE to move on.':strict?'STRICT MODE: match punctuation and case.':'Punctuation is optional (including apostrophes).';
+  const hint=$('lyric-hint-message');if(hint)hint.textContent=feedback.errors>0?'A red letter does not match. Use BACKSPACE to correct it.':wrong?'Not quite. Type the word again or use SKIP LINE.':lagPaused?'Video paused for catch-up. Use SKIP LINE to move on.':strict?'STRICT MODE: match punctuation and case.':lineHasForeignScript(line.text)?'Type using the lyric’s alphabet. Punctuation is optional.':'Punctuation is optional (including apostrophes).';
  }
  function startBeat(){if(!selected?.demo)return;stopBeat();try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;beatCtx=new Audio();if(beatCtx.state==='suspended')beatCtx.resume();beatTimer=setInterval(()=>{
   if(!active||!beatCtx)return;const o=beatCtx.createOscillator(),g=beatCtx.createGain();o.type='triangle';o.frequency.value=beatNum%4===0?220:beatNum%2===0?330:440;g.gain.setValueAtTime(.0001,beatCtx.currentTime);g.gain.exponentialRampToValueAtTime(.06,beatCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,beatCtx.currentTime+.16);o.connect(g);g.connect(beatCtx.destination);o.start();o.stop(beatCtx.currentTime+.18);beatNum++;

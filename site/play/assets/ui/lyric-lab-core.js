@@ -98,7 +98,7 @@ export function coverStyle(track){
  const layers=[thumbnail,generatedCoverArt(track)].filter(Boolean);
  return 'background-image:'+layers.map(url=>`url("${url}")`).join(',')+';';
 }
-export function lineHasForeignScript(text){return /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7a3\u0400-\u04ff\u0600-\u06ff]/u.test(String(text||''));}
+export function lineHasForeignScript(text){return Array.from(String(text??'')).some(character=>/\p{L}/u.test(character) && !/\p{Script=Latin}/u.test(character));}
 export function calibratedOffset(lineStart,videoTime){
  const t=Number(videoTime),start=Number(lineStart);
  return Number.isFinite(t)&&Number.isFinite(start)?Math.max(-120,Math.min(120,Math.round((start-t)*4)/4)):0;
@@ -106,7 +106,10 @@ export function calibratedOffset(lineStart,videoTime){
 // Lyric Lab's relaxed mode scores letters and digits, not punctuation.
 // Apostrophes, parentheses, hyphens, quotation marks, and other symbols stay
 // visible in the original lyric, but are never required to type.
-export const cleanWord = input => String(input ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+// Keep letters, numbers and script-forming marks from every alphabet.
+// Existing relaxed Latin accent folding still applies; NFC recomposes
+// Hangul and IME sequences before comparing the visible word and typed text.
+export const cleanWord = input => String(input ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}\p{M}]/gu,'').normalize('NFC');
 export const sameWord = (a,b) => cleanWord(a) === cleanWord(b) && cleanWord(b).length > 0;
 export function parseLRC(lrc, duration=0) {
   const input=String(lrc || '').slice(0,100000);
