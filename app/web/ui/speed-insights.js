@@ -8,10 +8,13 @@ const GOAL_KEY = 'keystoria.speed.accuracyGoal.v1';
 const RESULTS_KEY = 'panic.speed.results.v1';
 
 export function practiceMode(session = {}) {
+  // An explicit mode is authoritative for new saved runs. Older exports can
+  // carry the assisted flag without phoneLayout or a practiceMode string:
+  // never misclassify those scores as desktop-exact.
   if (session.practiceMode) return session.practiceMode;
-  return session.phoneLayout
-    ? (session.keyboardAssistedEver || session.keyboardAssisted ? 'mobile-assisted' : 'mobile-exact')
-    : 'standard-exact';
+  if (session.keyboardAssistedEver === true || session.keyboardAssisted === true)
+    return 'mobile-assisted';
+  return session.phoneLayout ? 'mobile-exact' : 'standard-exact';
 }
 
 export function readAccuracyGoal(storage = globalThis.localStorage) {

@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.48.0';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.48.1';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -14,18 +14,22 @@ export function speedLibrary() {
   </section>`;
 }
 
+function displayPracticeMode(record) {
+  const mode=practiceMode(record);
+  return mode==='mobile-assisted' ? 'PHONE ASSISTED'
+    : mode==='mobile-exact' ? 'PHONE EXACT' : 'DESKTOP EXACT';
+}
+
 export function speedHistoryPanel() {
   const history = readSpeedHistory();
   if (!history.length) return `<div class="speed-empty">Your personal records appear here after your first completed run. Scores are kept on this device.</div>`;
-  return `<div class="speed-history">${history.slice(0, 5).map(run => `<div><strong>${run.pack==="numpad"?Number(run.cpm??0):Number(run.wpm)} <small>${run.pack==="numpad"?"CPM":"WPM"}</small></strong><span>${safe(PACKS[run.pack]?.title || 'EVERYDAY')} · ${Number(run.seconds)}s</span><b>${Number(run.accuracy)}% accuracy · ${run.keyboardAssisted===true?"ASSISTED":"EXACT"}</b></div>`).join('')}</div>`;
+  return `<div class="speed-history">${history.slice(0, 5).map(run => `<div><strong>${run.pack==="numpad"?Number(run.cpm??0):Number(run.wpm)} <small>${run.pack==="numpad"?"CPM":"WPM"}</small></strong><span>${safe(PACKS[run.pack]?.title || 'EVERYDAY')} · ${Number(run.seconds)}s</span><b>${Number(run.accuracy)}% accuracy · ${displayPracticeMode(run)}</b></div>`).join('')}</div>`;
 }
 
 export function speedInsightsPanel(session) {
   const goal = readAccuracyGoal();
   const pulse = summarizeSpeedPractice(readSpeedHistory(),session,goal);
-  const mode = practiceMode(session);
-  const friendlyMode = mode === 'mobile-assisted' ? 'PHONE ASSISTED'
-    : mode === 'mobile-exact' ? 'PHONE EXACT' : 'DESKTOP EXACT';
+  const friendlyMode = displayPracticeMode(session);
   const target = pulse.nextTarget;
   const nextLabel = target.kind === 'start' ? 'Complete your first timed run'
     : target.kind === 'accuracy' ? `Reach ${goal}%+ accuracy`

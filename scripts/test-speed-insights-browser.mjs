@@ -157,6 +157,28 @@ try {
   assert.equal(await page.locator('#speed-practice-insights').getAttribute('data-matches'),'0');
   assert.match(await page.locator('.speed-insight-next strong').innerText(),/Complete your first timed run/,
    'no stored results after reload means no invented progress target');
+  // Older exports may have the keyboardAssisted flag but no practiceMode.
+  // Recent results and the Compass must agree about their assisted status.
+  await page.evaluate(()=>{
+    localStorage.setItem('panic.speed.results.v1',JSON.stringify([
+      {pack:'everyday',seconds:30,wpm:31,accuracy:96,keyboardAssisted:true},
+      {pack:'everyday',seconds:30,wpm:37,accuracy:97,practiceMode:'mobile-assisted'},
+      {pack:'everyday',seconds:30,wpm:44,accuracy:98,practiceMode:'mobile-exact'},
+      {pack:'everyday',seconds:30,wpm:51,accuracy:99,practiceMode:'standard-exact'},
+    ]));
+  });
+  // Compact phone layouts and desktop both render a Restart control.
+  // Target the currently visible button rather than an ambiguous pair.
+  await page.locator('[data-action="speed-restart"]:visible').first().click();
+  const labels=await page.locator('#speed-history-panel .speed-history > div b').allTextContents();
+  assert.equal(labels.length,4);
+  for(const [index,expected] of ['PHONE ASSISTED','PHONE ASSISTED','PHONE EXACT','DESKTOP EXACT'].entries())
+    assert.match(labels[index],new RegExp(expected),
+      'saved result '+index+' must have a faithful mode label');
+  assert.equal(await page.locator('#speed-practice-insights').getAttribute('data-matches'),mobile?'2':'1',
+    'legacy assisted and exact sessions must not cross-contaminate comparison scopes');
+  assert.equal(await page.locator('#speed-input').inputValue(),'',
+    'mode label refresh must not change the new typing field');
   await context.close();
  }
  assert.deepEqual(errors,[],'practice progress browser actions must be error-free');
