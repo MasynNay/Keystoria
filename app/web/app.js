@@ -686,8 +686,23 @@ function renderTrainingInPlace() {
   // Clicking CHECK replaces that button with NEXT. Focus the next available
   // action for keyboard/screen-reader users instead of dropping to <body>.
   // Enter from the input itself continues to keep focus on the native field.
-  const checkedFromButton=document.activeElement?.matches?.('button[data-action="training-submit"]')===true;
+  const activated=document.activeElement;
+  const checkedFromButton=activated?.matches?.('button[data-action="training-submit"]')===true;
+  // The reference list and guide toggle rebuild their own buttons. Restore
+  // the same keyboard destination instead of abruptly reopening the input
+  // (and a phone's software keyboard) after the user chose to read the guide.
+  const referenceIndex=activated?.matches?.('button[data-action="training-reference"]')
+    ? Number(activated.dataset.index) : null;
+  const guideSelector=activated?.matches?.('button[data-action="training-review"]')
+    ? (activated.closest('.academy-mobile-entry')
+      ? '.academy-mobile-entry [data-action="training-review"]'
+      : '.terminal-inner > .training-buttons [data-action="training-review"]') : null;
   const focusAfterUpdate=()=>{
+    const selector=referenceIndex!==null && Number.isInteger(referenceIndex)
+      ? '.mini-glossary [data-action="training-reference"][data-index="'+referenceIndex+'"]'
+      : guideSelector;
+    const preserved=selector ? $(selector) : null;
+    if(preserved?.getClientRects().length){preserved.focus({preventScroll:true});return;}
     if(checkedFromButton && state.lesson?.answered){
       const next=[
         $('.academy-mobile-entry [data-action="training-next"]'),
