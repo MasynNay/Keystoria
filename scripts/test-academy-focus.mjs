@@ -82,6 +82,41 @@ try {
   // The previous deliberately incorrect long input may append extra
   // character spans to the rendered reference. Remove the test draft
   // before reading its original command text in the full-course loop.
+  // The reference sidebar is a keyboard navigation tool, not another
+  // prompt to type. A rerender must not steal focus from the selected entry
+  // or reopen the mobile software keyboard.
+  await input.fill('practice draft');
+  const glossary=page.locator('.mini-glossary [data-action="training-reference"]');
+  for(const [index,key] of [[0,'Enter'],[1,'Space']]){
+    await glossary.nth(index).focus();
+    await page.keyboard.press(key);
+    assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'training-reference',
+      'reference selection keeps keyboard focus in the command guide');
+    assert.equal(await page.evaluate(()=>document.activeElement?.dataset.index),String(index),
+      'focus returns to the chosen command after replacing the guide');
+    assert.equal(await glossary.nth(index).getAttribute('aria-pressed'),'true');
+    assert.equal(await input.inputValue(),'practice draft',
+      'reading another command does not erase the active draft');
+    assert.equal(await input.evaluate(el=>el===window.__academyTypingNode),true,
+      'the native Academy input is still mounted after navigating the guide');
+  }
+  const review=page.locator(compact
+    ?'.academy-mobile-entry .mobile-entry-actions [data-action="training-review"]'
+    :'.terminal-inner > .training-buttons [data-action="training-review"]');
+  await review.focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await page.locator('.training-glossary').count(),1,
+    'guide toggle reveals the full reference');
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'training-review',
+    'revealing the full guide retains focus on the activated button');
+  await page.keyboard.press('Space');
+  assert.equal(await page.locator('.training-glossary').count(),0,
+    'same focused guide button can hide the full reference');
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'training-review',
+    'hiding the full guide retains focus, rather than moving to the typing field');
+
+  // Resume command practice with its prior keyboard and pointer semantics.
+  await input.focus();
   await input.fill('');
   let total=0;
   for(let i=0;i<20;i++){
