@@ -202,3 +202,27 @@ test('next suggestion isolates practice mode, duration, pack and Numpad CPM',()=
  assert.deepEqual(summarizeSpeedPractice(rows,{...s,seconds:15},95).nextTarget,
   {kind:'start',speed:null});
 });
+
+test('legacy phone-assisted results never become desktop exact comparisons',()=>{
+ const legacy={pack:'everyday',seconds:30,wpm:31,accuracy:96,keyboardAssisted:true};
+ const mobile={pack:'everyday',seconds:30,wpm:37,accuracy:97,practiceMode:'mobile-assisted'};
+ const phoneExact={pack:'everyday',seconds:30,wpm:44,accuracy:98,practiceMode:'mobile-exact'};
+ const desktop={pack:'everyday',seconds:30,wpm:51,accuracy:99,practiceMode:'standard-exact'};
+ assert.equal(practiceMode(legacy),'mobile-assisted','legacy persisted flag must define mode');
+ assert.equal(practiceMode({keyboardAssistedEver:true}),'mobile-assisted');
+ assert.equal(practiceMode({phoneLayout:true,keyboardAssisted:false}),'mobile-exact');
+ assert.equal(practiceMode({keyboardAssisted:true,practiceMode:'mobile-exact'}),'mobile-exact',
+   'explicit modern practice mode wins over legacy flags');
+ assert.equal(practiceMode({}),'standard-exact');
+ const rows=[legacy,mobile,phoneExact,desktop];
+ const assisted=summarizeSpeedPractice(rows,{pack:'everyday',seconds:30,phoneLayout:true,keyboardAssistedEver:true},95);
+ assert.equal(assisted.count,2,'both tagged and untagged assisted runs are comparable');
+ assert.equal(assisted.best,37);
+ assert.equal(assisted.goalQualifiedCount,2);
+ const desktopSummary=summarizeSpeedPractice(rows,{pack:'everyday',seconds:30},95);
+ assert.equal(desktopSummary.count,1,'legacy assisted run must not inflate desktop history');
+ assert.equal(desktopSummary.best,51);
+ const exactPhone=summarizeSpeedPractice(rows,{pack:'everyday',seconds:30,phoneLayout:true,keyboardAssisted:false},95);
+ assert.equal(exactPhone.count,1,'mobile exact and assisted scores remain distinct');
+ assert.equal(exactPhone.best,44);
+});
