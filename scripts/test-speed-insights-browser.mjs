@@ -167,7 +167,9 @@ try {
       {pack:'everyday',seconds:30,wpm:51,accuracy:99,practiceMode:'standard-exact'},
     ]));
   });
-  await page.locator('[data-action="speed-restart"]').click();
+  // Compact phone layouts and desktop both render a Restart control.
+  // Target the currently visible button rather than an ambiguous pair.
+  await page.locator('[data-action="speed-restart"]:visible').first().click();
   const labels=await page.locator('#speed-history-panel .speed-history > div b').allTextContents();
   assert.equal(labels.length,4);
   for(const [index,expected] of ['PHONE ASSISTED','PHONE ASSISTED','PHONE EXACT','DESKTOP EXACT'].entries())
