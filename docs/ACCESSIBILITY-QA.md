@@ -126,3 +126,7 @@ The same checks run in GitHub Pages pull-request CI before deployment. These are
 - **Outcomes:** Record device/browser version, steps, expected/actual result and screenshots for failures. Add a focused issue rather than treating emulated results as native-device evidence.
 
 **Release boundary:** Automated checks address specific high-impact cases only. They do not establish WCAG conformance, guarantee every assistive-technology combination, or close the physical-device requirements of issue #11.
+
+## Unicode Lyric Lab typing — November 21, 2026
+
+Relaxed Lyric Lab typing now preserves letters, numbers, and language-specific combining marks from non-Latin scripts. The visual caret advances by Unicode grapheme clusters instead of splitting syllables such as Devanagari conjuncts. Cyrillic, Hindi, Korean, Japanese, CJK and Arabic examples are covered by pure tests; a mocked Cyrillic/Hindi/Korean track runs in phone/desktop Chromium. Strict mode still requires exact input, and native IME composition handling remains unchanged. **This is not physical iOS/Android keyboard, IME, font or screen-reader verification**; those checks remain open.

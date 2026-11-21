@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderLyricWordFeedback } from '../web/ui/lyric-word-feedback.js';
-import { cleanWord, sameWord } from '../web/ui/lyric-lab-core.js';
+import { cleanWord, sameWord, lineHasForeignScript } from '../web/ui/lyric-lab-core.js';
 
 
 test('the first letter flashes, and advances with each live typed character', () => {
@@ -100,4 +100,40 @@ test('actual word matching ignores optional symbols in relaxed mode', () => {
  assert.equal(sameWord("rock and roll","rock-and-roll"),true);
  assert.equal(sameWord("word","world"),false);
  assert.equal(sameWord("!!!","?"),false);
+});
+
+test('relaxed lyric matching supports non-Latin letters and native IME text', () => {
+ assert.equal(cleanWord('Привет!'),'привет');
+ assert.equal(sameWord('Привет','привет'),true);
+ assert.equal(sameWord('приве','привет'),false);
+ assert.equal(sameWord('こんにちは','こんにちは'),true);
+ assert.equal(sameWord('안녕','안녕'),true);
+ assert.equal(sameWord('नमस्ते','नमस्ते'),true);
+ assert.equal(sameWord('مرحبا','مرحبا'),true);
+ assert.equal(sameWord('你好','你好'),true);
+ assert.equal(cleanWord('café'),'cafe','decomposed Latin accents retain relaxed scoring');
+ assert.equal(sameWord('!!!','?'),false,'punctuation-only input is not a word');
+ assert.equal(lineHasForeignScript('Café'),false);
+ assert.equal(lineHasForeignScript('Привет'),true);
+ assert.equal(lineHasForeignScript('नमस्ते'),true);
+});
+
+test('Unicode lyric typing guidance advances by grapheme, not code point', () => {
+ for(const [target,typed,next] of [
+  ['Привет','При','в'],
+  ['안녕','안','녕'],
+  ['नमस्ते','नम','स्ते'],
+  ['がんばれ','が','ん'],
+  ['Café','Caf','é'],
+ ]) {
+  const partial=renderLyricWordFeedback(target,typed);
+  assert.equal(partial.nextKey,next,target);
+  assert.equal(partial.errors,0,target);
+  assert.equal(renderLyricWordFeedback(target,target).nextKey,'SPACE',target);
+ }
+ const combined=renderLyricWordFeedback('नमस्ते','नम');
+ assert.match(combined.html,/data-next-key="स्ते"/);
+ assert.equal((combined.html.match(/type-char pending current/g)||[]).length,1,
+  'one highlighted next character covers the entire vowel-mark cluster');
+ assert.equal(renderLyricWordFeedback('你好','你',{strict:true}).nextKey,'好');
 });

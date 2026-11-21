@@ -5,9 +5,16 @@
 import { safe } from './helpers.js';
 import { cleanWord } from './lyric-lab-core.js';
 
+// One visual cursor per user-perceived character, including combining marks.
+const segmenter=typeof Intl.Segmenter==='function'
+  ? new Intl.Segmenter(undefined,{granularity:'grapheme'}) : null;
+const graphemes=value=>segmenter
+  ? Array.from(segmenter.segment(String(value)),item=>item.segment)
+  : Array.from(String(value));
+
 export function renderLyricWordFeedback(word, typed = '', { strict = false } = {}) {
-  const characters = Array.from(String(word ?? ''));
-  const submitted = Array.from(strict ? String(typed ?? '') : cleanWord(typed));
+  const characters = graphemes(String(word ?? ''));
+  const submitted = graphemes(strict ? String(typed ?? '') : cleanWord(typed));
   const equal = (a, b) => strict ? a === b : a.toLowerCase() === b.toLowerCase();
   let position = 0;
   let nextKey = null;
