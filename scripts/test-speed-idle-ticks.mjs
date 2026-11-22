@@ -33,6 +33,9 @@ try{
       assert.ok(reference.length>1000,'unabridged 700-word passage is intact');
       await input.fill(reference.slice(0,48));
       assert.equal(await letters.getAttribute('data-accuracy'),'100');
+      // The first input starts the stopwatch at approximately t=0; the
+      // first timer-driven nonzero rate appears on the following 250ms tick.
+      await page.waitForFunction(()=>Number(document.getElementById('speed-wpm')?.textContent)>0);
       const initialSpeed=Number(await page.locator('#speed-wpm').textContent());
       assert.ok(initialSpeed>0,'initial live speed updates on input');
 
