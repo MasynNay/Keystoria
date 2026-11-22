@@ -111,3 +111,27 @@
   .speed-focus-char.incorrect{color:var(--theme-text,var(--text));text-decoration:underline wavy #fa7185;text-decoration-thickness:2px}
   .speed-focus-char.current{border-left:2px solid var(--theme-accent,var(--accent));background:rgba(var(--accent-rgb),.2)}
 }
+
+
+/* Phone compositing budget. The fixed full-screen SVG fractal-noise layer
+ * forces expensive painting while scrolling, even above interactive fields.
+ * Drop only that subtle texture on real touch-sized devices; retain the
+ * entire design, theme and effects for mouse/large-screen layouts.
+ *
+ * While the software keyboard is focused, don't animate every colored
+ * character update or the Lyric Lab progress width. The visible correct/
+ * incorrect/caret states still change immediately; desktop motion and
+ * the existing reduced-motion preference remain untouched. */
+@media (max-width:760px) and (pointer:coarse), (max-height:520px) and (pointer:coarse) {
+  body > .grain { display:none; }
+  body.mobile-typing-active .typing-feedback .type-char {
+    transition:none;
+  }
+  body.mobile-typing-active .typing-feedback .type-char.current,
+  body.mobile-typing-active .typing-feedback .type-end-caret {
+    animation:none;
+  }
+  body.mobile-typing-active .lyric-live-progress span {
+    transition:none;
+  }
+}

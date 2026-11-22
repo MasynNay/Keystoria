@@ -36,6 +36,7 @@ jobs:
           node --test app/tests/test_academy_checkpoint.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs app/tests/test_lyric_provider.mjs app/tests/test_video_match.mjs app/tests/test_theme_contrast.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_history_restore.mjs
           diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/styles.css site/play/assets/styles.css
+          diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
           diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
           diff app/web/ui/speed-flow.js site/play/assets/ui/speed-flow.js
@@ -60,6 +61,7 @@ jobs:
           node scripts/test-dialog-keyboard.mjs
           node scripts/test-navigation-accessibility.mjs
           node scripts/test-mobile-viewport-recovery.mjs
+          node scripts/test-mobile-compositor.mjs
           node scripts/test-session-recovery-browser.mjs
           node scripts/test-academy-focus.mjs
           node scripts/test-lyric-completion.mjs
@@ -108,6 +110,7 @@ jobs:
           node --test app/tests/test_lyric_word_feedback.mjs
           diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/styles.css site/play/assets/styles.css
+          diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
           test -f site/styles.css
           test -f site/.nojekyll
