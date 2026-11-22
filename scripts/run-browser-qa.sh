@@ -23,6 +23,7 @@ node scripts/test-mobile-compositor.mjs
 node scripts/test-academy-focus.mjs
 node scripts/test-practice-composition.mjs
 node scripts/test-speed-mobile-performance.mjs
+node scripts/test-speed-idle-ticks.mjs
 node scripts/test-typing-dom-performance.mjs
 node scripts/test-speed-interruption.mjs
 node scripts/test-speed-keyboard-assist.mjs
