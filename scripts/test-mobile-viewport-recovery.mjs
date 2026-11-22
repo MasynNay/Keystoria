@@ -79,6 +79,49 @@ async function testCase({mode,width,height,phone}){
      type+' must not steal input focus');
     assert.equal(await page.evaluate(()=>window.__keyboardScroll[0].behavior),'instant');
    }
+   // Ordinary visualViewport scrolling happens while a user pans to reach
+   // the reference/controls. Previously each event scheduled a layout read
+   // and scrolled the document straight back to the typing field.
+   const manualScroll=await page.evaluate(id=>new Promise(resolve=>{
+    window.__keyboardScroll=[];
+    window.__viewportBoundsReads=0;
+    const field=document.querySelector(id),oldBounds=field.getBoundingClientRect;
+    field.getBoundingClientRect=function(){
+     window.__viewportBoundsReads++;
+     return oldBounds.call(this);
+    };
+    for(let i=0;i<12;i++)window.visualViewport?.dispatchEvent(new Event('scroll'));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>resolve({
+     corrections:window.__keyboardScroll.length,
+     reads:window.__viewportBoundsReads,
+     focused:document.activeElement===field,
+    })));
+   }),selector);
+   assert.deepEqual(manualScroll,{corrections:0,reads:0,focused:true},
+    'plain visualViewport scroll bursts must not force keyboard layout or snap a scrolling user back');
+
+   // A keyboard geometry shift that emits *only* a visualViewport scroll
+   // event must still restore the prompt. Override the read-only viewport
+   // dimension in this isolated Chromium test to model an iOS event gap.
+   const synthetic=await page.evaluate(()=>{
+    const viewport=window.visualViewport;
+    if(!viewport)return false;
+    try{
+     Object.defineProperty(viewport,'height',{configurable:true,value:viewport.height-120});
+    }catch{return false;}
+    window.__keyboardScroll=[];
+    viewport.dispatchEvent(new Event('scroll'));
+    return true;
+   });
+   if(synthetic){
+    await page.waitForFunction(()=>window.__keyboardScroll.length===1);
+    await page.evaluate(()=>{
+     delete window.visualViewport.height;
+     window.dispatchEvent(new Event('resize'));
+    });
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(resolve)));
+   }
+
    // Don't scroll a no-longer-focused field when its former session blurs
    // and a toolbar/button gets focus.
    await page.locator('.prefs-toggle').focus();

@@ -1,3 +1,7 @@
+## Uninterrupted manual scrolling during phone practice — November 22, 2026
+
+Previously `visualViewport.scroll` always re-centered a focused input, even when the player intentionally scrolled the reference area while keeping the phone keyboard open. The mobile event handler now skips scroll-only events that do not change the visual viewport's dimensions. Focus, keyboard resizing, orientation, foreground recovery and true geometry changes still trigger controlled placement. Playwright verifies the native field remains focused after twelve rapid visual-viewport scroll events with no scrolling or bounding-box reads. Physical iOS Safari and Android Chrome verification remains outstanding.
+
 ## Stable typing UI nodes — November 22, 2026
 
 Shared character feedback is updated in place during typing rather than rebuilding full target spans. Lyric Lab preserves its line navigation controls while a word is edited, re-rendering those controls only when the song/typing line changes. New synthetic phone and desktop Playwright tests verify stable DOM identity, identical character feedback (including Unicode and extra input), and retained native fields; live regions retain their prior behavior. This remains insufficient to certify physical iOS Safari or Android Chrome keyboard performance or screen-reader usability.
