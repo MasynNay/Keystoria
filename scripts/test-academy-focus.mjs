@@ -167,6 +167,37 @@ try {
     'polite step cue reflects the next command exactly once');
    if(phone)assert.equal(await input.evaluate(el=>document.querySelector('#lesson-input')===window.__academyOriginal),true,
     'the native phone input remains the same DOM node');
+   // Checkpoint at step three, then reload into a fresh browser document.
+   // It must preserve shuffled command order but never a private typed draft.
+   if(i===1){
+    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.academy.checkpoints.v1')||'{}').linux);
+    assert.equal(saved.index,2,'the next course step is committed locally');
+    assert.equal(saved.answered,false);
+    assert.equal(new Set(saved.order).size,total,'full randomized order persists');
+    await input.fill('DO NOT STORE THIS PRIVATE COMMAND DRAFT');
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('#app .brand-name').waitFor();
+    const again=page.locator('.welcome-continue');
+    if(await again.count()&&await again.isVisible())await again.click();
+    const course=page.locator('[data-action="learn"][data-os="linux"]');
+    assert.match(await course.innerText(),/CONTINUE COURSE/,
+     'home card offers a clear way to resume an unfinished course');
+    assert.match(await course.innerText(),new RegExp('IN PROGRESS\\s+2/'+total));
+    await course.click();
+    assert.match(await page.locator('.terminal-bar').innerText(),new RegExp('STEP\\s+0?3\\s*/\\s*'+total));
+    assert.equal((await page.locator('#lesson-target-text').textContent()).trim(),upcoming,
+     'the resumed course uses the original shuffled next command');
+    assert.equal(await input.inputValue(),'','typed drafts must never survive a reload');
+    assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+     'the resumed course returns focus to the native input');
+    await page.evaluate(()=>{
+      window.__academyTypingNode=document.querySelector('#lesson-input');
+      window.__academyOriginal=window.__academyTypingNode;
+      window.__academyFeedbackNode=document.querySelector('#training-feedback');
+      window.__academyStatusObserver=new MutationObserver(()=>{});
+      window.__academyStatusObserver.observe(window.__academyFeedbackNode,{childList:true});
+    });
+   }
   }
   assert.ok(total>1&&total<=20,'all lesson commands completed in finite number of steps');
   const complete=page.locator('#academy-complete-heading');
@@ -175,6 +206,8 @@ try {
   assert.equal(await complete.evaluate(el=>document.activeElement===el),true,
    'finishing the course focuses the result heading, not a removed input');
   assert.equal(await page.locator('#lesson-input').count(),0,'finished lesson has no stale typing input');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.academy.checkpoints.v1')||'{}').linux),undefined,
+   'successful completion clears the resumable checkpoint but keeps the completed badge');
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'training-restart',
    'Tab from completion heading reaches replay lesson');

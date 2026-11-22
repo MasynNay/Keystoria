@@ -1,5 +1,6 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
-import { trainingTemplate } from "./ui/training-view.js?v=0.49.0";
+import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint } from "./ui/academy-checkpoint.js?v=0.1.0";
+import { trainingTemplate } from "./ui/training-view.js?v=0.50.0";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.1";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.47.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.1";
@@ -615,10 +616,15 @@ app.addEventListener("click",event=>{
   case "learn":{
     const os=item.dataset.os;
     if(!LESSONS[os])break;
-    state.lesson={os,index:0,order:randomizedCourseOrder(os),answered:false,errors:0,completed:false,review:false,errorMessage:"",draft:"",referenceIndex:null};
+    // Re-enter the same randomized course, or begin a new one if no valid
+    // local checkpoint exists. We intentionally never store command drafts.
+    const resumed=readAcademyCheckpoint(os);
+    state.lesson=resumed||{os,index:0,order:randomizedCourseOrder(os),answered:false,errors:0,completed:false,review:false,errorMessage:"",draft:"",referenceIndex:null};
+    if(!resumed)saveAcademyCheckpoint(state.lesson);
     state.modal=null;state.layout="";render();
     window.scrollTo({top:0,behavior:"instant"});
-    $("#lesson-input")?.focus({preventScroll:true});
+    const next=resumed?.answered ? [...document.querySelectorAll('[data-action="training-next"]')].find(button=>button.getClientRects().length) : null;
+    (next||$("#lesson-input"))?.focus({preventScroll:true});
     break;
   }
   case "training-home":state.lesson=null;state.layout="";showModal("welcome");window.scrollTo({top:0,behavior:"instant"});break;
@@ -635,7 +641,7 @@ app.addEventListener("click",event=>{
     break;
   }
   case "training-shuffle":
-  case "training-restart":if(state.lesson){state.lesson={...state.lesson,index:0,order:randomizedCourseOrder(state.lesson.os),answered:false,errors:0,completed:false,review:false,errorMessage:"",draft:"",referenceIndex:null};renderTrainingInPlace();}break;
+  case "training-restart":if(state.lesson){state.lesson={...state.lesson,index:0,order:randomizedCourseOrder(state.lesson.os),answered:false,errors:0,completed:false,review:false,errorMessage:"",draft:"",referenceIndex:null};saveAcademyCheckpoint(state.lesson);renderTrainingInPlace();}break;
   case "training-next":advanceLesson();break;
   case "difficulty":send({type:"difficulty",difficulty:item.dataset.difficulty});break;
   case "ping":send({type:"ping",code:item.dataset.ping});break;
@@ -744,11 +750,13 @@ function advanceLesson() {
   if (session.index === LESSONS[session.os].commands.length-1) {
     session.completed=true;
     saveLesson(session.os);
+    clearAcademyCheckpoint(session.os);
   } else {
     session.index++;
     session.answered=false;
     session.errorMessage="";
     session.draft="";
+    saveAcademyCheckpoint(session);
   }
   session.referenceIndex=null;
   renderTrainingInPlace();
@@ -780,6 +788,7 @@ function submitLesson() {
     session.errorMessage="Not quite. Compare the command, spaces, capitals and flags, then try again. Nothing was executed.";
     sound("error");
   }
+  saveAcademyCheckpoint(session);
   renderTrainingInPlace();
 }
 
