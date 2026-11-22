@@ -212,6 +212,50 @@ try {
   assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'training-restart',
    'Tab from completion heading reaches replay lesson');
   await page.evaluate(()=>window.__academyStatusObserver.disconnect());
+  // Keep the existing completed Linux badge, then create an unfinished
+  // Windows checkpoint and test the explicit privacy reset from the library.
+  await page.locator('.training-nav [data-action="training-home"]').click();
+  const welcomeBack=page.locator('.welcome-continue');
+  if(await welcomeBack.count()&&await welcomeBack.isVisible())await welcomeBack.click();
+  assert.equal(await page.locator('[data-action="academy-clear-progress"]').count(),0,
+    'reset is hidden when no unfinished course exists');
+  assert.match(await page.locator('[data-action="learn"][data-os="linux"]').innerText(),/COMPLETED/,
+    'completed status remains after the checkpoint was cleared');
+  await page.locator('[data-action="learn"][data-os="windows"]').click();
+  await page.locator('#lesson-input').fill('THIS DRAFT IS NEVER SAVED');
+  await page.locator('.training-nav [data-action="training-home"]').click();
+  const homeAgain=page.locator('.welcome-continue');
+  if(await homeAgain.count()&&await homeAgain.isVisible())await homeAgain.click();
+  const clear=page.locator('[data-action="academy-clear-progress"]');
+  assert.equal(await clear.count(),1,'reset appears when a course can be resumed');
+  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.academy.checkpoints.v1')||'{}'));
+  assert.ok(before.windows && !JSON.stringify(before).includes('THIS DRAFT'),
+    'only the course step and shuffle, not native typing, may be stored');
+
+  const cancelled=page.waitForEvent('dialog');
+  const cancelClick=clear.click();
+  const cancelDialog=await cancelled;
+  assert.match(cancelDialog.message(),/Clear saved steps for 1 unfinished Field Academy course/);
+  assert.match(cancelDialog.message(),/Completed-course badges will stay/);
+  await cancelDialog.dismiss();
+  await cancelClick;
+  assert.equal(await clear.count(),1,'Cancel leaves the clear button and checkpoint intact');
+  assert.ok(await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.academy.checkpoints.v1')||'{}').windows));
+
+  await clear.focus();
+  const accepted=page.waitForEvent('dialog');
+  const acceptClick=clear.press('Enter');
+  const acceptDialog=await accepted;
+  await acceptDialog.accept();
+  await acceptClick;
+  assert.equal(await clear.count(),0,'successful reset removes the now-unneeded control');
+  assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.academy.checkpoints.v1')),null);
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),'academy-course-heading',
+    'reset restores keyboard focus to a stable heading instead of the body');
+  assert.match(await page.locator('[data-action="learn"][data-os="linux"]').innerText(),/COMPLETED/,
+    'clearing unfinished progress must not erase earned badges');
+  assert.match(await page.locator('[data-action="learn"][data-os="windows"]').innerText(),/OPEN TERMINAL/,
+    'cleared course offers a fresh start');
   await ctx.close();
  }
  assert.deepEqual(errors,[],'no uncaught runtime errors');

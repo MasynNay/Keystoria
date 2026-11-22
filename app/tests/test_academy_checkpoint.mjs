@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {LESSONS} from '../web/ui/lessons.js';
-import {readAcademyCheckpoints,readAcademyCheckpoint,saveAcademyCheckpoint,clearAcademyCheckpoint} from '../web/ui/academy-checkpoint.js';
+import {readAcademyCheckpoints,readAcademyCheckpoint,saveAcademyCheckpoint,clearAcademyCheckpoint,clearAllAcademyCheckpoints} from '../web/ui/academy-checkpoint.js';
 
 const key='keystoria.academy.checkpoints.v1';
 function storage(){
@@ -77,4 +77,20 @@ test('blocked storage preserves gameplay without throwing',()=>{
  assert.equal(saveAcademyCheckpoint(course(),denied),false);
  assert.equal(clearAcademyCheckpoint('linux',denied),false);
  assert.equal(clearAcademyCheckpoint('invalid',storage()),false);
+});
+
+test('explicit bulk reset erases only unfinished checkpoints, not earned badges',()=>{
+ const s=storage();
+ s.setItem('panic.lessons.v1',JSON.stringify({linux:true}));
+ assert.equal(saveAcademyCheckpoint(course('linux'),s),true);
+ assert.equal(saveAcademyCheckpoint({...course('windows'),index:3},s),true);
+ assert.deepEqual(Object.keys(readAcademyCheckpoints(s)).sort(),['linux','windows']);
+ assert.equal(clearAllAcademyCheckpoints(s),true);
+ assert.equal(s.getItem(key),null);
+ assert.deepEqual(readAcademyCheckpoints(s),{});
+ assert.equal(s.getItem('panic.lessons.v1'),JSON.stringify({linux:true}),
+   'completed course badges must remain intact');
+ // Clearing again is harmless; unavailable storage must be nonfatal.
+ assert.equal(clearAllAcademyCheckpoints(s),true);
+ assert.equal(clearAllAcademyCheckpoints({removeItem(){throw Error('blocked')}}),false);
 });
