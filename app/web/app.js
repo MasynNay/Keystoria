@@ -1,6 +1,6 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
-import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint } from "./ui/academy-checkpoint.js?v=0.1.0";
-import { trainingTemplate } from "./ui/training-view.js?v=0.50.0";
+import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.1";
+import { trainingTemplate } from "./ui/training-view.js?v=0.50.1";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.1";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.47.0";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.1";
@@ -611,6 +611,23 @@ app.addEventListener("click",event=>{
   case "back-to-live": {
     document.querySelector(".typing-zone")?.scrollIntoView({block:"start",behavior:"smooth"});
     $("#task-input")?.focus({preventScroll:true});
+    break;
+  }
+  case "academy-clear-progress":{
+    const count=Object.keys(readAcademyCheckpoints()).length;
+    if(!count)break;
+    const question=`Clear saved steps for ${count} unfinished Field Academy ${count===1?'course':'courses'} on this device? Completed-course badges will stay.`;
+    if(!window.confirm(question))break;
+    if(!clearAllAcademyCheckpoints()){
+      toast("Could not clear Academy progress. Browser storage may be blocked.","error");
+      break;
+    }
+    // Rebuild just the home layout so all cards show their new state.
+    // The pressed button is removed, so place focus on a stable heading.
+    state.layout="";
+    render();
+    document.getElementById("academy-course-heading")?.focus({preventScroll:true});
+    toast("Unfinished Academy progress cleared. Completed badges kept.","success");
     break;
   }
   case "learn":{

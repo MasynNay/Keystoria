@@ -59,3 +59,11 @@ export function clearAcademyCheckpoint(os,storage=globalThis.localStorage) {
     return true;
   }catch{return false;}
 }
+
+/** Forget all unfinished Academy steps without changing completed-course badges. */
+export function clearAllAcademyCheckpoints(storage=globalThis.localStorage) {
+  try {
+    storage.removeItem(KEY);
+    return true;
+  }catch{return false;}
+}

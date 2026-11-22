@@ -3104,3 +3104,8 @@ body[data-theme="casefile"] {
 .skip-link:focus-visible,.skip-link:focus{transform:none;outline:3px solid #f6c755;outline-offset:2px}
 textarea:focus-visible,select:focus-visible{outline:3px solid var(--accent,#fff);outline-offset:3px}
 #app-main{scroll-margin-top:20px}
+
+/* Reset only unfinished Academy checkpoints; keep this visible below cards. */
+.academy-progress-controls { display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px; margin-top:22px; }
+.academy-progress-controls p { margin:0; color:var(--muted); font:12px/1.5 var(--body); }
+.academy-heading h2:focus { outline:2px solid var(--accent); outline-offset:5px; }

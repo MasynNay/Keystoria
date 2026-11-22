@@ -1,3 +1,7 @@
+## Academy reset focus and privacy — November 22, 2026
+
+The new conditional **Clear Unfinished Course Progress** button uses a native confirmation prompt; cancelling keeps saved steps and focusable controls, while confirming removes only local resumable checkpoints. Because its activating button disappears, the Academy heading receives programmatic focus (visible outline), avoiding loss of keyboard context. The existing completed-course badges remain intact. Playwright covers 390px touch, touch landscape, 320px desktop reflow and 1440px desktop; it does not replace real VoiceOver, TalkBack, NVDA, iPhone Safari or Android Chrome verification.
+
 # Accessibility QA and device validation
 
 ## Lyric Lab first-word readiness
