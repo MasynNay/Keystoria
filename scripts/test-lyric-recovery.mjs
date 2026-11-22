@@ -34,6 +34,22 @@ try{
   assert.equal(await page.locator('[data-action="lyric-demo"]').count(),1,'original demo must remain available after a provider failure');
   await page.locator('[data-action="lyric-demo"]').click();
   await page.locator('#lyric-input').waitFor();
+  // While paused, the 180ms lyric timer has no new score to report. Rewriting
+  // five unchanged score nodes every tick still wakes mobile accessibility
+  // and style engines. Observe actual DOM changes across several timer ticks.
+  const unchangedScoreMutations=await page.evaluate(async()=>{
+   const ids=['lyric-wpm','lyric-accuracy','lyric-streak','lyric-skipped','lyric-progress'];
+   const nodes=ids.map(id=>document.getElementById(id));
+   if(nodes.some(node=>!node))throw new Error('Lyric scoreboard node missing');
+   let mutations=0;
+   const observer=new MutationObserver(records=>{mutations+=records.length;});
+   nodes.forEach(node=>observer.observe(node,{childList:true,characterData:true,subtree:true}));
+   await new Promise(resolve=>setTimeout(resolve,700));
+   observer.disconnect();
+   return mutations;
+  });
+  assert.equal(unchangedScoreMutations,0,
+   'the paused Lyric Lab must not churn unchanged scoreboard text');
   await page.locator('[data-action="lyric-back"]').first().click();
   await page.locator('#lyric-search-input').fill('Orbit Practice');
   await page.locator('#lyric-search-form button[type="submit"]').click();

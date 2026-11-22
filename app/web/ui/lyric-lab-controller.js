@@ -228,7 +228,12 @@ export function createLyricLabController({state,onRender}){
   const sc=scoreRun({correct,attempts,skipped,characters:chars,elapsed,bestStreak});
   const reportedDuration=playerReady?Number(player?.getDuration?.())||0:0;
   const updates={'lyric-wpm':sc.wpm,'lyric-accuracy':sc.accuracy+'%','lyric-streak':streak,'lyric-skipped':skipped,'lyric-progress':`${index}/${chart.words.length}`,'lyric-clock':`${fmt(time)} / ${fmt(reportedDuration||selected.duration)}`,'lyric-offset':`${offset>=0?'+':''}${offset.toFixed(2)}s`};
-  for(const [id,value] of Object.entries(updates))if($(id))$(id).textContent=String(value);
+  // A 180ms player tick must not rewrite unchanged DOM text repeatedly.
+  // Those mutations can trigger style/layout and accessibility work on phones.
+  for(const [id,value] of Object.entries(updates)){
+   const el=$(id),next=String(value);
+   if(el && el.textContent!==next)el.textContent=next;
+  }
   if($('lyric-seek-slider') && document.activeElement!==$('lyric-seek-slider'))$('lyric-seek-slider').value=String(Math.min(selected.duration,Math.max(0,time)));
   renderLyrics();
  }
@@ -245,10 +250,9 @@ export function createLyricLabController({state,onRender}){
   const key=`${index}|${audioLine}|${typeLine}|${phase}|${wrong}|${offset}|${strict}|${typed}|${active}`;
   const live=$('lyric-live-text'),liveTime=$('lyric-live-time'),liveFill=$('lyric-live-fill');
   if(liveFill){const l=chart.lines[audioLine];const ratio=l&&lyricTime>=chart.lines[0].time?Math.max(0,Math.min(1,(lyricTime-l.time)/Math.max(.5,l.end-l.time))):0;liveFill.style.width=(ratio*100).toFixed(2)+'%';}
-  if(liveTime)liveTime.textContent=fmt(time);
+  if(liveTime && liveTime.textContent!==fmt(time))liveTime.textContent=fmt(time);
   if(key===lastHtmlKey)return;lastHtmlKey=key;
   if(live){live.textContent=lyricTime<chart.lines[0].time?`Instrumental intro · first lyric at ${fmt(chart.lines[0].time-offset)}`:chart.lines[audioLine]?.text||'Waiting for first lyric…';}
-  if(liveTime)liveTime.textContent=fmt(time);
   const lag=$('lyric-lag-status');if(lag){
    const distance=audioLine-typeLine;
    lag.textContent=lyricTime<chart.lines[0].time?'The lyric will appear when its timestamp arrives.':distance>0?`You're ${distance} lyric ${distance===1?'line':'lines'} behind the music. Use SKIP LINE to move ahead.`:distance<0?`You're ${-distance} ${distance===-1?'line':'lines'} ahead of the music.`:'Your typing is on the current lyric line.';

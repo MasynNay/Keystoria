@@ -14,6 +14,7 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
   let start = 0, end = 0, letters = [];
   let previous = null, previousCaret = null, scrollLine = -1;
   let endCaret = null;
+  let scrollFrame = null, pendingScrollCursor = null, disposed = false;
 
   // The full exercise remains on the client, independent of the visual
   // window, so moving the window never resets timing, input, or accuracy.
@@ -46,6 +47,7 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
    * Caret-only changes never recompute accuracy or rewrite character classes.
    */
   function update(typed, selectionStart = undefined) {
+    if (disposed) return;
     const value = String(typed);
     const cursor = Number.isFinite(selectionStart)
       ? Math.max(0, Math.min(value.length, Math.trunc(selectionStart)))
@@ -88,7 +90,23 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
     previous = value;
     previousCaret = cursor;
 
-    const caret = letters[Math.min(Math.max(0, cursor - start), letters.length - 1)];
+    // Character highlighting stays synchronous, but layout reads may flush
+    // the entire mobile page after every native keyboard input. Coalesce the
+    // expensive caret geometry to the next animation frame instead.
+    pendingScrollCursor = cursor;
+    if (!windowed || typeof requestAnimationFrame !== 'function') {
+      scrollCaret(cursor);
+    } else if (scrollFrame === null) {
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = null;
+        if (!disposed) scrollCaret(pendingScrollCursor);
+      });
+    }
+  }
+
+  function scrollCaret(scrollCursor) {
+    if (disposed || !container.isConnected) return;
+    const caret = letters[Math.min(Math.max(0, scrollCursor - start), letters.length - 1)];
     if (!caret) return;
     const lineHeight = Number.parseFloat(getComputedStyle(container).lineHeight) || 33;
     const viewport = container.getBoundingClientRect();
@@ -102,7 +120,14 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
       container.scrollTop = Math.max(0, container.scrollTop - lines * lineHeight);
     }
     scrollLine = Math.round(container.scrollTop / lineHeight);
+
+  }
+  function dispose() {
+    disposed = true;
+    if (scrollFrame !== null && typeof cancelAnimationFrame === 'function')
+      cancelAnimationFrame(scrollFrame);
+    scrollFrame = null;
   }
 
-  return {update, windowed, get linesScrolled() {return scrollLine;}};
+  return {update, dispose, windowed, get linesScrolled() {return scrollLine;}};
 }
