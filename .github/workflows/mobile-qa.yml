@@ -16,6 +16,7 @@ on:
       - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
+      - 'scripts/test-speed-idle-ticks.mjs'
       - 'scripts/test-typing-dom-performance.mjs'
       - 'scripts/test-speed-interruption.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
@@ -41,6 +42,7 @@ on:
       - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
+      - 'scripts/test-speed-idle-ticks.mjs'
       - 'scripts/test-typing-dom-performance.mjs'
       - 'scripts/test-speed-interruption.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
@@ -100,6 +102,7 @@ jobs:
           node scripts/test-lyric-completion.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
+          node scripts/test-speed-idle-ticks.mjs
           node scripts/test-typing-dom-performance.mjs
           node scripts/test-speed-interruption.mjs
           node scripts/test-speed-keyboard-assist.mjs
