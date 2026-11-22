@@ -5,8 +5,8 @@ import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed
 import { createSpeedController } from "./ui/speed-controller.js?v=0.47.1";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.1";
 import { readSpeedHistory } from "./ui/speed-engine.js";
-import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.52.1";
-import { paintTypingFeedback } from "./ui/typing-feedback.js";
+import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.52.2";
+import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.0";
 import { sound, toggleSound, isSoundOn } from "./sound.js";
 import { MISSIONS } from "./ui/missions.js";
 import { updateMissionScene } from "./ui/mission-scenes.js";
