@@ -1,3 +1,7 @@
+## Mobile compositing and native keyboard animations — November 22, 2026
+
+On compact coarse-pointer touch layouts the full-screen SVG `feTurbulence` grain overlay is omitted to reduce viewport-wide filtered painting. When a native practice input has focus, character feedback and lyric progress do not animate; correct/incorrect/active cues, typed input, keyboard predictions, scoring, and focus behavior remain visible and available. Desktop effects and blur restoration are preserved. New `scripts/test-mobile-compositor.mjs` checks computed visual behavior across touch portrait/landscape and narrow/wide pointer-fine desktop; it does not simulate physical iOS/Android GPU latency. Real-device testing and screen-reader review remain outstanding under #82 and #3.
+
 ## Uninterrupted manual scrolling during phone practice — November 22, 2026
 
 Previously `visualViewport.scroll` always re-centered a focused input, even when the player intentionally scrolled the reference area while keeping the phone keyboard open. The mobile event handler now skips scroll-only events that do not change the visual viewport's dimensions. Focus, keyboard resizing, orientation, foreground recovery and true geometry changes still trigger controlled placement. Playwright verifies the native field remains focused after twelve rapid visual-viewport scroll events with no scrolling or bounding-box reads. Physical iOS Safari and Android Chrome verification remains outstanding.

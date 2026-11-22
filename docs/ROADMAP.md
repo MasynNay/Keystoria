@@ -1,3 +1,11 @@
+## Compact phone rendering budget — November 22, 2026
+
+**Pending release and physical-device verification.** The full-screen `.grain` overlay draws SVG fractal noise using `feTurbulence` above the entire page. Its fixed filtered layer can add GPU/compositor work while mobile users scroll and type. The new stylesheet omits only this low-opacity texture on touch-sized screens, preserving themes, controls, lessons, score feedback, and the original desktop design (including narrow desktop zoom).
+
+When a compact phone's native typing field has focus, character highlights no longer animate their color/background transitions or caret blinking, and Lyric Lab's progress bar updates without an extra width animation. Correct/incorrect/current states and timing information still change immediately. The existing effects return on blur; hardware-keyboard desktop animations remain unchanged. This is a paint/animation-budget optimization, not a gameplay rewrite.
+
+A new Playwright test checks computed styles across six touch/desktop viewport and pointer combinations, focus/blur restoration, and Lyric Lab progress behavior. It runs alongside the full mobile, accessibility and browser release gates. **No real-device frame-time improvement is claimed** until the affected phone is measured; [mobile lag issue #82](https://github.com/MasynNay/Keystoria/issues/82) remains open.
+
 ## Mobile manual-scroll and keyboard-recovery performance — November 22, 2026
 
 **Release verification pending.** The browser previously treated every `visualViewport.scroll` event like a keyboard resize, scheduling a main-thread focus-bounds measurement and scrolling the document back to the currently focused typing field. On phones this could fight an intentional swipe down to view reference material or actions, and create repeated layout and scroll events while typing. The viewport helper now **ignores ordinary pan/scroll events when viewport dimensions are unchanged**, while continuing to correct on focus, actual resize/rotation, BFCache return and document foregrounding. It still detects unusual mobile-browser geometry changes reported only as visual-viewport scroll events (width or height differs).
