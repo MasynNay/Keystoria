@@ -72,7 +72,9 @@ try{
       assert.equal(idle.accuracy,'100%','cached accuracy is still displayed');
       assert.equal(idle.focused,true,'native typing field keeps focus during idle ticks');
 
-      await input.fill(reference.slice(0,11)+'!');
+      // Numpad strips punctuation, so insert a different valid digit there.
+      const wrong=variant.pack==='numpad'?(reference[11]==='5'?'6':'5'):'!';
+      await input.fill(reference.slice(0,11)+wrong);
       assert.ok(Number(await letters.getAttribute('data-accuracy'))<100,
         'wrong edits invalidate the cached score');
       await input.fill(reference.slice(0,70));
