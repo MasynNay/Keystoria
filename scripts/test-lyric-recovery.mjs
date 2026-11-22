@@ -18,7 +18,7 @@ try{
     status:200,contentType:'application/json',
     body:JSON.stringify(term==='Unicode Practice'
      ? [{id:525252,trackName:'Unicode Practice',artistName:'QA Example',duration:28,
-        syncedLyrics:'[00:00.00] Привет мир\n[00:04.00] नमस्ते दुनिया\n[00:08.00] 안녕 세계'}]
+        syncedLyrics:'[00:00.00] Привет мир\n[00:04.00] नमस्ते दुनिया\n[00:08.00] 안녕 세계\n[00:12.00] ёж йога'}]
      : [{id:424242,trackName:'Orbit Practice',artistName:'QA Example',duration:28,syncedLyrics:words}]),
    });
   });
@@ -62,13 +62,34 @@ try{
    ['мир','नमस्ते'],
    ['नमस्ते','दुनिया'],
    ['दुनिया','안녕'],
+   ['안녕','세계'],
+   ['세계','ёж'],
   ]) {
    await typed.fill(answer);
    await typed.press('Space');
    assert.equal(await page.locator('#lyric-screenreader-word').textContent(),
     'Current word: '+next,'Unicode word '+answer+' is accepted');
   }
-  assert.equal(await typed.isEnabled(),true,'the lyric input remains usable across script changes');
+  // Latin-style folding must not accept a different Cyrillic character:
+  // ё is not е and й is not и. Decomposed native IME input remains valid.
+  assert.match(await page.locator('#lyric-next-keystroke').textContent(),/NEXT KEY\s+Ё/);
+  await typed.fill('еж');
+  await typed.press('Space');
+  assert.equal(await page.locator('#lyric-screenreader-word').textContent(),'Current word: ёж',
+   'plain е must not earn credit for ё');
+  await typed.fill('е\u0308ж');
+  await typed.press('Space');
+  assert.equal(await page.locator('#lyric-screenreader-word').textContent(),'Current word: йога',
+   'decomposed Cyrillic ё must be accepted');
+  await typed.fill('иога');
+  await typed.press('Space');
+  assert.equal(await page.locator('#lyric-screenreader-word').textContent(),'Current word: йога',
+   'plain и must not earn credit for й');
+  await typed.fill('и\u0306ога');
+  await typed.press('Space');
+  await page.locator('#lyric-finish-heading').waitFor();
+  assert.equal(await page.locator('#lyric-finish-heading').count(),1,
+   'decomposed й must correctly complete the last lyric word');
   await ctx.close();
  }
  assert.deepEqual(backendCalls,[],'static edition must never request its nonexistent video matching API');

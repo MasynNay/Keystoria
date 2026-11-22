@@ -3,7 +3,7 @@
  * punctuation/accents are optional for the current scoring mode.
  */
 import { safe } from './helpers.js';
-import { cleanWord } from './lyric-lab-core.js';
+import { cleanWord } from './lyric-lab-core.js?v=0.52.0';
 
 // One visual cursor per user-perceived character, including combining marks.
 const segmenter=typeof Intl.Segmenter==='function'

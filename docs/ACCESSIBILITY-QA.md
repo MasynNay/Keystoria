@@ -130,3 +130,7 @@ The same checks run in GitHub Pages pull-request CI before deployment. These are
 ## Unicode Lyric Lab typing — November 21, 2026
 
 Relaxed Lyric Lab typing now preserves letters, numbers, and language-specific combining marks from non-Latin scripts. The visual caret advances by Unicode grapheme clusters instead of splitting syllables such as Devanagari conjuncts. Cyrillic, Hindi, Korean, Japanese, CJK and Arabic examples are covered by pure tests; a mocked Cyrillic/Hindi/Korean track runs in phone/desktop Chromium. Strict mode still requires exact input, and native IME composition handling remains unchanged. **This is not physical iOS/Android keyboard, IME, font or screen-reader verification**; those checks remain open.
+
+## Script-aware accent matching — November 21, 2026
+
+Following the Unicode lyrics rollout, relaxed Latin accent folding was found to remove meaningful Cyrillic and Greek accent marks too, treating different words such as `ёж`/`еж`, `йога`/`иога`, and `όχι`/`οχι` as equal. Lyric Lab now removes optional combining marks only when they directly follow Latin-script base characters, preserving language-specific spelling distinctions and decomposed Unicode input in other alphabets. Mobile and desktop provider-mock tests check that wrong letters do not earn credit while correctly composed and decomposed Cyrillic input does. Actual platform IME and screen-reader validation is still outstanding.
