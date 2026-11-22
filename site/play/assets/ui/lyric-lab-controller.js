@@ -252,10 +252,10 @@ export function createLyricLabController({state,onRender}){
     ? (field.dataset.imeCommitted||"") : (field?.value||"");
   const key=`${index}|${audioLine}|${typeLine}|${phase}|${wrong}|${offset}|${strict}|${typed}|${active}`;
   const live=$('lyric-live-text'),liveTime=$('lyric-live-time'),liveFill=$('lyric-live-fill');
-  if(liveFill){const l=chart.lines[audioLine];const ratio=l&&lyricTime>=chart.lines[0].time?Math.max(0,Math.min(1,(lyricTime-l.time)/Math.max(.5,l.end-l.time))):0;liveFill.style.width=(ratio*100).toFixed(2)+'%';}
+  if(liveFill){const l=chart.lines[audioLine];const ratio=l&&lyricTime>=chart.lines[0].time?Math.max(0,Math.min(1,(lyricTime-l.time)/Math.max(.5,l.end-l.time))):0;const width=(ratio*100).toFixed(2)+'%';if(liveFill.style.width!==width)liveFill.style.width=width;}
   if(liveTime && liveTime.textContent!==fmt(time))liveTime.textContent=fmt(time);
   if(key===lastHtmlKey)return;lastHtmlKey=key;
-  if(live){live.textContent=lyricTime<chart.lines[0].time?`Instrumental intro · first lyric at ${fmt(chart.lines[0].time-offset)}`:chart.lines[audioLine]?.text||'Waiting for first lyric…';}
+  if(live){const label=lyricTime<chart.lines[0].time?`Instrumental intro · first lyric at ${fmt(chart.lines[0].time-offset)}`:chart.lines[audioLine]?.text||'Waiting for first lyric…';if(live.textContent!==label)live.textContent=label;}
   const lag=$('lyric-lag-status');if(lag){
    const distance=audioLine-typeLine;
    lag.textContent=lyricTime<chart.lines[0].time?'The lyric will appear when its timestamp arrives.':distance>0?`You're ${distance} lyric ${distance===1?'line':'lines'} behind the music. Use SKIP LINE to move ahead.`:distance<0?`You're ${-distance} ${distance===-1?'line':'lines'} ahead of the music.`:'Your typing is on the current lyric line.';
@@ -270,27 +270,46 @@ export function createLyricLabController({state,onRender}){
   const announcement=phase==='done'?'':currentWord?`Current word: ${currentWord}`:'';
   if(spoken && spoken.textContent!==announcement)spoken.textContent=announcement;
   const feedback=renderLyricWordFeedback(currentWord,typed,{strict});
-  const mobileWord=$('lyric-mobile-word');if(mobileWord)mobileWord.innerHTML=feedback.html;
-  const mobileToggle=$('lyric-mobile-toggle');if(mobileToggle){mobileToggle.textContent=active?'PAUSE':'PLAY';mobileToggle.setAttribute('aria-pressed',String(active));}
+  const mobileWord=$('lyric-mobile-word');if(mobileWord && mobileWord.innerHTML!==feedback.html)mobileWord.innerHTML=feedback.html;
+  const mobileToggle=$('lyric-mobile-toggle');if(mobileToggle){const label=active?'PAUSE':'PLAY',pressed=String(active);if(mobileToggle.textContent!==label)mobileToggle.textContent=label;if(mobileToggle.getAttribute('aria-pressed')!==pressed)mobileToggle.setAttribute('aria-pressed',pressed);}
   const nextKeystroke=$('lyric-next-keystroke');
   if(nextKeystroke){
    const suggestedKey=phase==='done'?'':feedback.nextKey;
-   nextKeystroke.textContent=suggestedKey?`NEXT KEY  ${suggestedKey.length===1?suggestedKey.toUpperCase():suggestedKey}`:'';
+   const label=suggestedKey?`NEXT KEY  ${suggestedKey.length===1?suggestedKey.toUpperCase():suggestedKey}`:'';if(nextKeystroke.textContent!==label)nextKeystroke.textContent=label;
    nextKeystroke.hidden=!suggestedKey;
   }
-  if(current){current.innerHTML=line.words.map((word,i)=>{
-   const wi=line.startWord+i,cls=wi<index?'lyric-correct':wi===index?'lyric-active-word lyric-live-word':'lyric-pending';
-   return `<span class="${cls}">${wi===index ? feedback.html : safe(word)}</span>`;
-  }).join(' ');current.setAttribute('data-audio-line',String(audioLine));}
-  if(next)next.textContent=chart.lines[typeLine+1]?.text || (phase==='done'?'Great run!':'Keep going…');
+  if(current){
+   const wordKey=typeLine+'|'+index;
+   if(current.dataset.wordKey!==wordKey){
+    // Rebuild the line only when the selected word changes. Key input should
+    // repaint the active span, not every completed/pending word around it.
+    current.innerHTML=line.words.map((word,i)=>{
+     const wi=line.startWord+i,cls=wi<index?'lyric-correct':wi===index?'lyric-active-word lyric-live-word':'lyric-pending';
+     return `<span class="${cls}">${wi===index ? feedback.html : safe(word)}</span>`;
+    }).join(' ');
+    current.dataset.wordKey=wordKey;
+   }else{
+    const activeWord=current.querySelector('.lyric-active-word');
+    if(activeWord && activeWord.innerHTML!==feedback.html)activeWord.innerHTML=feedback.html;
+   }
+   if(current.dataset.audioLine!==String(audioLine))current.dataset.audioLine=String(audioLine);
+  }
+  if(next){const label=chart.lines[typeLine+1]?.text || (phase==='done'?'Great run!':'Keep going…');if(next.textContent!==label)next.textContent=label;}
   const lines=$('lyric-lines');if(lines){
    const first=Math.max(0,typeLine-2),last=Math.min(chart.lines.length,typeLine+5);
-   lines.innerHTML=chart.lines.slice(first,last).map((l,i)=>`<div class="lyric-line-row"><button type="button" data-action="lyric-jump" data-index="${first+i}" class="lyric-line ${first+i===audioLine?'lyric-line-playing':''} ${first+i===typeLine?'lyric-line-typing':''}"><time>${fmt(l.time)}</time><span>${safe(l.text)}</span></button><button type="button" class="lyric-calibrate" data-action="lyric-calibrate" data-index="${first+i}" title="Set this lyric to the current video time">SYNC</button></div>`).join('');
+   const listKey=first+'|'+last+'|'+audioLine+'|'+typeLine;
+   if(lines.dataset.listKey!==listKey){
+    // The surrounding line buttons change only on audio/typing transitions.
+    // Keeping them mounted during individual letters avoids full list layout
+    // and prevents a focused JUMP/SYNC control from being detached mid-word.
+    lines.innerHTML=chart.lines.slice(first,last).map((l,i)=>`<div class="lyric-line-row"><button type="button" data-action="lyric-jump" data-index="${first+i}" class="lyric-line ${first+i===audioLine?'lyric-line-playing':''} ${first+i===typeLine?'lyric-line-typing':''}"><time>${fmt(l.time)}</time><span>${safe(l.text)}</span></button><button type="button" class="lyric-calibrate" data-action="lyric-calibrate" data-index="${first+i}" title="Set this lyric to the current video time">SYNC</button></div>`).join('');
+    lines.dataset.listKey=listKey;
+   }
   }
-  const meter=$('lyric-line-meter-fill');if(meter)meter.style.width=`${Math.round((index-line.startWord)/Math.max(1,line.words.length)*100)}%`;
+  const meter=$('lyric-line-meter-fill');if(meter){const width=`${Math.round((index-line.startWord)/Math.max(1,line.words.length)*100)}%`;if(meter.style.width!==width)meter.style.width=width;}
   // Keep mode-specific Enter instructions in separate CSS-controlled spans:
   // unlike text replacement, display:none updates immediately on rotation/zoom.
-  const hint=$('lyric-hint-message');if(hint)hint.textContent=feedback.errors>0?'A red letter does not match. Use BACKSPACE to correct it.':wrong?'Not quite. Type the word again or use SKIP LINE.':lagPaused?'Video paused for catch-up. Use SKIP LINE to move on.':strict?'STRICT MODE: match punctuation and case.':lineHasForeignScript(line.text)?'Type using the lyric’s alphabet. Punctuation is optional.':'Punctuation is optional (including apostrophes).';
+  const hint=$('lyric-hint-message');if(hint){const label=feedback.errors>0?'A red letter does not match. Use BACKSPACE to correct it.':wrong?'Not quite. Type the word again or use SKIP LINE.':lagPaused?'Video paused for catch-up. Use SKIP LINE to move on.':strict?'STRICT MODE: match punctuation and case.':lineHasForeignScript(line.text)?'Type using the lyric’s alphabet. Punctuation is optional.':'Punctuation is optional (including apostrophes).';if(hint.textContent!==label)hint.textContent=label;}
  }
  function startBeat(){if(!selected?.demo)return;stopBeat();try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;beatCtx=new Audio();if(beatCtx.state==='suspended')beatCtx.resume();beatTimer=setInterval(()=>{
   if(!active||!beatCtx)return;const o=beatCtx.createOscillator(),g=beatCtx.createGain();o.type='triangle';o.frequency.value=beatNum%4===0?220:beatNum%2===0?330:440;g.gain.setValueAtTime(.0001,beatCtx.currentTime);g.gain.exponentialRampToValueAtTime(.06,beatCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,beatCtx.currentTime+.16);o.connect(g);g.connect(beatCtx.destination);o.start();o.stop(beatCtx.currentTime+.18);beatNum++;

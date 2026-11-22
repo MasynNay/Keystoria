@@ -1,3 +1,7 @@
+## Stable typing UI nodes — November 22, 2026
+
+Shared character feedback is updated in place during typing rather than rebuilding full target spans. Lyric Lab preserves its line navigation controls while a word is edited, re-rendering those controls only when the song/typing line changes. New synthetic phone and desktop Playwright tests verify stable DOM identity, identical character feedback (including Unicode and extra input), and retained native fields; live regions retain their prior behavior. This remains insufficient to certify physical iOS Safari or Android Chrome keyboard performance or screen-reader usability.
+
 ## Mobile typing responsiveness: geometry and unchanged-score work — November 22, 2026
 
 Compact Speed Lab typing now updates cursor highlight without synchronous forced-layout reads in the native input event; its geometry-driven scrolling is coalesced to animation frames. Lyric Lab's periodic status renderer avoids DOM writes for text that did not change, reducing unnecessary style and assistive-technology updates. Tests cover immediate caret correctness and deferred scroll positioning alongside score integrity. These are Chromium-emulated checks only, not physical iOS Safari / Android Chrome latency measurements. Real-device confirmation remains open.
