@@ -32,6 +32,30 @@ export function createSpeedController({ state, onRender, playSound }) {
   let flow=null;
   let focusFrame=null;
   let focusWordSignature=null;
+  // Time-only ticks must not re-score a full passage or re-render the caret.
+  // Invalidate on text edits (including middle edits, IME commits, Back Word)
+  // and on every newly created session. Timer math still uses live elapsed time.
+  let scoreSession=null, scoreText=null, scoreSnapshot=null;
+  function liveScore(session) {
+    if (scoreSession!==session || scoreText!==session.typed) {
+      const scored=scoreSpeedRun(session.reference,session.typed,60,session.keystrokes);
+      let correctDigits=0, rawDigits=0;
+      if(session.pack==='numpad'){
+        for(let i=0;i<session.typed.length;i++){
+          const ch=session.typed[i];
+          if(ch>='0'&&ch<='9'){
+            rawDigits++;
+            if(ch===session.reference[i])correctDigits++;
+          }
+        }
+      }
+      scoreSnapshot={correct:scored.correct,characters:scored.characters,
+        accuracy:scored.accuracy,correctDigits,rawDigits};
+      scoreSession=session;
+      scoreText=session.typed;
+    }
+    return scoreSnapshot;
+  }
 
   function cancelPendingFocus() {
     // An earlier Speed Lab launch must not steal focus from the next button
@@ -161,21 +185,30 @@ export function createSpeedController({ state, onRender, playSound }) {
     const session=state.speed;
     if (!session || session.status==='complete') return;
     const seconds=elapsed();
-    const metrics=scoreSpeedRun(session.reference,session.typed,Math.max(1,seconds),session.keystrokes);
+    const contentChanged=scoreSession!==session || scoreText!==session.typed;
+    const metrics=liveScore(session);
     // Mount the passage once; only letter classes and vertical scroll update.
     const mobile=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
-    if (!flow || flow.windowed !== mobile) {
+    const flowChanged=!flow || flow.windowed!==mobile;
+    if(flowChanged){
       flow?.dispose?.();
       flow=createSpeedFlow(node('speed-letters'),session.reference,{windowed:mobile});
     }
-    // Guidance also updates the flow; do it once per paint rather than
-    // issuing the same window/caret update twice.
-    updateCaretGuidance();
-    text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
+    // A quarter-second timer tick changes only the clock and speed numbers.
+    // Caret, spoken cues and progress repaint only after edits, selection
+    // events, or a responsive renderer change; keyboard focus stays mounted.
+    if(contentChanged || flowChanged)updateCaretGuidance();
+    if(contentChanged)text('speed-progress',session.pack==='numpad'?
+      `${metrics.rawDigits} digits typed`:`${metrics.characters} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));
-    text('speed-wpm',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.split('').filter((ch,i)=>ch>='0'&&ch<='9'&&ch===session.reference[i]).length/Math.max(1,seconds)*60):metrics.wpm) : 0));
+    const duration=Math.max(1,seconds);
+    text('speed-wpm',String(seconds ? (session.pack==='numpad'?
+      Math.round(metrics.correctDigits/duration*60):
+      Math.round(metrics.correct/5/(duration/60))) : 0));
     text('speed-accuracy',`${metrics.accuracy}%`);
-    text('speed-raw',String(seconds ? (session.pack==='numpad'?Math.round(session.typed.replace(/[^0-9]/g,'').length/Math.max(1,seconds)*60):metrics.rawWpm) : 0));
+    text('speed-raw',String(seconds ? (session.pack==='numpad'?
+      Math.round(metrics.rawDigits/duration*60):
+      Math.round(metrics.characters/5/(duration/60))) : 0));
     // Both the thumb action and desktop control track the same live state.
     // A paused or not-yet-started run cannot be paused again.
     document.querySelectorAll('[data-action="speed-pause"]').forEach(button=>{
