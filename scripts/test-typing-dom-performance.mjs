@@ -87,6 +87,10 @@ try{
   await openHome();
   await page.locator('[data-action="lyric-open"]').first().click();
   await page.locator('[data-action="lyric-demo"]').click();
+  // Like a real player, explicitly start the track before attempting input.
+  // The disabled field in the paused song preview is deliberate behavior.
+  await page.locator('#lyric-toggle').click();
+  await page.waitForFunction(()=>!document.getElementById('lyric-input')?.disabled);
   const lyric=page.locator('#lyric-input');
   await lyric.waitFor();
   const nodes=await page.evaluate(()=>{
