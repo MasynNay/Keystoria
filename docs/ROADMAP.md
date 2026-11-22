@@ -1,3 +1,11 @@
+## Speed Lab clock-only tick optimization — November 22, 2026
+
+**Pending CI and physical-device verification.** Speed Lab's 250ms timer previously re-ran full-passage character scoring and refreshed the visual/spoken caret guidance even when the typing text was unchanged. This adds avoidable main-thread work as a passage grows, particularly while a software keyboard is open.
+
+The controller now caches correct-character and numpad-digit counts for the current session/text. New edits, deletions, corrections and IME commits invalidate the snapshot; timer-only ticks recalculate time-dependent WPM/CPM from those counts without re-scanning typed text. The passage, native textarea, next-key cues, score labels, pause policy, input help and finished scoring remain unchanged. Selection-only changes still use their existing direct guidance handler.
+
+A new Playwright regression checks native selection access during idle timer ticks, live time/speed updates, edits that change accuracy, and caret preservation across phone and desktop test contexts. This is a deterministic Chromium correctness regression, **not proof of better physical-phone latency**. Keep [real-phone lag issue #82](https://github.com/MasynNay/Keystoria/issues/82) open until an affected device is retested.
+
 ## Compact phone rendering budget — November 22, 2026
 
 **Pending release and physical-device verification.** The full-screen `.grain` overlay draws SVG fractal noise using `feTurbulence` above the entire page. Its fixed filtered layer can add GPU/compositor work while mobile users scroll and type. The new stylesheet omits only this low-opacity texture on touch-sized screens, preserving themes, controls, lessons, score feedback, and the original desktop design (including narrow desktop zoom).
