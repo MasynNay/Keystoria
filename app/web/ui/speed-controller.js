@@ -4,7 +4,7 @@
  * Story missions can continue to evolve independently of personal training.
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
-import { createSpeedFlow } from './speed-flow.js?v=0.41.0';
+import { createSpeedFlow } from './speed-flow.js?v=0.41.1';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord } from './mobile-typing.js?v=0.43.0';
 
 const node = id => document.getElementById(id);
@@ -50,6 +50,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     const enteringFromAnotherMode=!state.speed;
     cancelPendingFocus();
     clearTimer();
+    flow?.dispose?.();
     flow=null;
     focusWordSignature=null;
     const selectedPack=PACKS[pack] ? pack : 'everyday';
@@ -100,6 +101,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   function close() {
     cancelPendingFocus();
     clearTimer();
+    flow?.dispose?.();
     flow=null;
     focusWordSignature=null;
     state.speed=null;
@@ -162,9 +164,12 @@ export function createSpeedController({ state, onRender, playSound }) {
     const metrics=scoreSpeedRun(session.reference,session.typed,Math.max(1,seconds),session.keystrokes);
     // Mount the passage once; only letter classes and vertical scroll update.
     const mobile=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
-    if (!flow || flow.windowed !== mobile)
+    if (!flow || flow.windowed !== mobile) {
+      flow?.dispose?.();
       flow=createSpeedFlow(node('speed-letters'),session.reference,{windowed:mobile});
-    flow?.update(session.typed,node('speed-input')?.selectionStart);
+    }
+    // Guidance also updates the flow; do it once per paint rather than
+    // issuing the same window/caret update twice.
     updateCaretGuidance();
     text('speed-progress',session.pack==='numpad'?`${session.typed.replace(/\s/g,'').length} digits typed`:`${session.typed.length} characters typed`);
     text('speed-time',String(Math.max(0,Math.ceil(session.seconds-seconds))));

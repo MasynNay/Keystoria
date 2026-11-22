@@ -33,6 +33,42 @@ try{
   assert.equal(await page.locator('.mobile-speed-cue').isVisible(),compact,
    'cue visibility and render-window mode must agree at '+width+'x'+height);
 
+  // A phone's native input event must not synchronously measure layout.
+  // Three edits in one task may repaint letters immediately, but scroll
+  // geometry should be read once in a following frame, not 3 times mid-input.
+  if(compact){
+   const probe=await page.evaluate(async()=>{
+    const field=document.getElementById('speed-input');
+    const letters=document.getElementById('speed-letters');
+    const reference=letters.dataset.fullReference;
+    const original=Element.prototype.getBoundingClientRect;
+    let inInput=false,synchronousReads=0,deferredReads=0;
+    Element.prototype.getBoundingClientRect=function(...args){
+     if(this===letters||this.parentElement===letters){
+      if(inInput)synchronousReads++;else deferredReads++;
+     }
+     return original.apply(this,args);
+    };
+    try{
+     for(const count of [34,52,79]){
+      field.value=reference.slice(0,count);
+      field.setSelectionRange(count,count);
+      inInput=true;
+      field.dispatchEvent(new Event('input',{bubbles:true}));
+      inInput=false;
+     }
+     const typed=field.value;
+     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+     return {synchronousReads,deferredReads,typed};
+    }finally{Element.prototype.getBoundingClientRect=original;}
+   });
+   assert.equal(probe.synchronousReads,0,
+    'compact typing must not synchronously flush layout for each native input');
+   assert.ok(probe.deferredReads>=2&&probe.deferredReads<=4,
+    'coalesced caret scrolling should measure layout only once or twice per frame');
+   assert.equal(probe.typed,reference.slice(0,79),'native input remains correct');
+  }
+
   // A single input event after a substantial typing burst still positions the
   // cursor correctly; the reference never shortens as the visual window moves.
   await input.fill(reference.slice(0,330));

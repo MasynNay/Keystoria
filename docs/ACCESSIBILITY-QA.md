@@ -1,3 +1,7 @@
+## Mobile typing responsiveness: geometry and unchanged-score work — November 22, 2026
+
+Compact Speed Lab typing now updates cursor highlight without synchronous forced-layout reads in the native input event; its geometry-driven scrolling is coalesced to animation frames. Lyric Lab's periodic status renderer avoids DOM writes for text that did not change, reducing unnecessary style and assistive-technology updates. Tests cover immediate caret correctness and deferred scroll positioning alongside score integrity. These are Chromium-emulated checks only, not physical iOS Safari / Android Chrome latency measurements. Real-device confirmation remains open.
+
 ## Academy reset focus and privacy — November 22, 2026
 
 The new conditional **Clear Unfinished Course Progress** button uses a native confirmation prompt; cancelling keeps saved steps and focusable controls, while confirming removes only local resumable checkpoints. Because its activating button disappears, the Academy heading receives programmatic focus (visible outline), avoiding loss of keyboard context. The existing completed-course badges remain intact. Playwright covers 390px touch, touch landscape, 320px desktop reflow and 1440px desktop; it does not replace real VoiceOver, TalkBack, NVDA, iPhone Safari or Android Chrome verification.

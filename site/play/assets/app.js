@@ -2,10 +2,10 @@ import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeComma
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.1";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.1";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.1";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.47.0";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.47.1";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.1";
 import { readSpeedHistory } from "./ui/speed-engine.js";
-import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.52.0";
+import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.52.1";
 import { paintTypingFeedback } from "./ui/typing-feedback.js";
 import { sound, toggleSound, isSoundOn } from "./sound.js";
 import { MISSIONS } from "./ui/missions.js";
