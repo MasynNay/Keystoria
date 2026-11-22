@@ -180,6 +180,22 @@ export function setupMobileTyping(root) {
  const isMobile=()=>window.matchMedia(MOBILE_TYPING_MEDIA).matches;
  let active=null,queued=false,blurToken=0;
  const viewport=window.visualViewport;
+ // Safari can emit visualViewport.scroll repeatedly while a player manually
+ // moves the page. Unlike keyboard resize, that must not snap the page back
+ // to the focused typing field or force a layout read each frame.
+ let lastViewportWidth=viewport?.width, lastViewportHeight=viewport?.height;
+ function recordViewportSize(){
+   lastViewportWidth=viewport?.width;
+   lastViewportHeight=viewport?.height;
+ }
+ function onViewportScroll(){
+   // Some browsers signal a keyboard geometry change with scroll but without
+   // resize; correct those changes while ignoring ordinary pan/scroll events.
+   const width=viewport?.width, height=viewport?.height;
+   if(!Number.isFinite(width)||!Number.isFinite(height))return;
+   if(Math.abs(width-lastViewportWidth)>1||Math.abs(height-lastViewportHeight)>1)
+     onResize();
+ }
  function position() {
    queued=false;
    if(!active||!active.isConnected||document.activeElement!==active||document.hidden||!isMobile())return;
@@ -214,6 +230,7 @@ export function setupMobileTyping(root) {
    },180);
  }
  function onResize(){
+   recordViewportSize();
    // A physical phone may cross the 760px breakpoint while rotating. Returning
    // to portrait does not fire focusin again if the native input stayed focused.
    // Reconcile with the actual focused element on every viewport change.
@@ -245,7 +262,7 @@ export function setupMobileTyping(root) {
  root.addEventListener('focusin',focus);
  root.addEventListener('focusout',blur);
  viewport?.addEventListener('resize',onResize);
- viewport?.addEventListener('scroll',onResize);
+ viewport?.addEventListener('scroll',onViewportScroll);
  window.addEventListener('resize',onResize);
  return ()=>{
    document.removeEventListener('visibilitychange',onReturn);
@@ -253,7 +270,7 @@ export function setupMobileTyping(root) {
    root.removeEventListener('focusin',focus);
    root.removeEventListener('focusout',blur);
    viewport?.removeEventListener('resize',onResize);
-   viewport?.removeEventListener('scroll',onResize);
+   viewport?.removeEventListener('scroll',onViewportScroll);
    window.removeEventListener('resize',onResize);
    document.body.classList.remove('mobile-typing-active');
  };
