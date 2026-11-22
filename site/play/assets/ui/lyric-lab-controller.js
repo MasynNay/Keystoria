@@ -3,9 +3,9 @@
  * This is a separate mode: it never touches mission server state.
  */
 import { safe, ico } from './helpers.js';
-import { renderLyricWordFeedback } from './lyric-word-feedback.js';
+import { renderLyricWordFeedback } from './lyric-word-feedback.js?v=0.52.0';
 import { MOBILE_TYPING_MEDIA } from './mobile-typing.js?v=0.29.0';
-import { FEATURED_SONGS, cleanWord, sameWord, parseLRC, currentLineAt, expectedWordsAt, scoreRun, searchTimedLyrics, featuredFor, parseYouTubeVideoId, youtubeSearchUrl, PLAYBACK_RATES, nextPlaybackRate, coverStyle, lineHasForeignScript, calibratedOffset, resolveLocalVideoMatch } from './lyric-lab-core.js';
+import { FEATURED_SONGS, cleanWord, sameWord, parseLRC, currentLineAt, expectedWordsAt, scoreRun, searchTimedLyrics, featuredFor, parseYouTubeVideoId, youtubeSearchUrl, PLAYBACK_RATES, nextPlaybackRate, coverStyle, lineHasForeignScript, calibratedOffset, resolveLocalVideoMatch } from './lyric-lab-core.js?v=0.52.0';
 
 const $ = id => document.getElementById(id);
 const fmt = s => `${String(Math.floor(Math.max(0,s)/60)).padStart(2,'0')}:${String(Math.floor(Math.max(0,s)%60)).padStart(2,'0')}`;

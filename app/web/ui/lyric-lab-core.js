@@ -106,10 +106,13 @@ export function calibratedOffset(lineStart,videoTime){
 // Lyric Lab's relaxed mode scores letters and digits, not punctuation.
 // Apostrophes, parentheses, hyphens, quotation marks, and other symbols stay
 // visible in the original lyric, but are never required to type.
-// Keep letters, numbers and script-forming marks from every alphabet.
-// Existing relaxed Latin accent folding still applies; NFC recomposes
-// Hangul and IME sequences before comparing the visible word and typed text.
-export const cleanWord = input => String(input ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}\p{M}]/gu,'').normalize('NFC');
+// Relax optional accents only on Latin letters. Removing U+0300–036F from
+// every alphabet would collapse distinct Cyrillic (ё/e, й/и) and Greek
+// letters into the same score, even for correctly entered native IME text.
+// Retain other scripts' marks, and recompose for Hangul and display matching.
+export const cleanWord = input => String(input ?? '').normalize('NFD')
+  .replace(/(\p{Script=Latin})[\u0300-\u036f]+/gu,'$1')
+  .toLowerCase().replace(/[^\p{L}\p{N}\p{M}]/gu,'').normalize('NFC');
 export const sameWord = (a,b) => cleanWord(a) === cleanWord(b) && cleanWord(b).length > 0;
 export function parseLRC(lrc, duration=0) {
   const input=String(lrc || '').slice(0,100000);

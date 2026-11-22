@@ -137,3 +137,31 @@ test('Unicode lyric typing guidance advances by grapheme, not code point', () =>
   'one highlighted next character covers the entire vowel-mark cluster');
  assert.equal(renderLyricWordFeedback('你好','你',{strict:true}).nextKey,'好');
 });
+
+test('relaxed Latin accents never erase meaningful marks from other alphabets',()=>{
+ const pairs=[
+  ['ёж','еж'],
+  ['йога','иога'],
+  ['ёлка','елка'],
+  ['όχι','οχι'],
+  ['μάτι','ματι'],
+ ];
+ for(const [original,confusable] of pairs){
+  assert.notEqual(cleanWord(original),cleanWord(confusable),
+    original+' and '+confusable+' must remain different words');
+  assert.equal(sameWord(original,confusable),false,
+    'a visibly different script-specific letter must not earn credit');
+  assert.ok(renderLyricWordFeedback(original,confusable).errors>0,
+    'the live typing prompt must flag the same mismatch as scoring');
+  assert.equal(renderLyricWordFeedback(original,original).errors,0,
+    'correctly typed non-Latin text should not show a false error');
+ }
+ assert.equal(cleanWord('ЙОГА'),'йога','case folding still applies');
+ assert.equal(cleanWord('е\u0308ж'),'ёж','decomposed Cyrillic vowels retain their mark');
+ assert.equal(cleanWord('и\u0306ога'),'йога','decomposed Cyrillic breve recomposes');
+ assert.equal(cleanWord('Café'),'cafe','Latin accents remain optional');
+ assert.equal(cleanWord('cafe\u0301'),'cafe','decomposed Latin accent remains optional');
+ assert.equal(sameWord('CAFÉ','cafe'),true);
+ assert.equal(sameWord('안녕','안녕'),true,'composed Korean IME text stays valid');
+ assert.equal(sameWord('नमस्ते','नमस्ते'),true,'Indic combining marks remain valid');
+});
