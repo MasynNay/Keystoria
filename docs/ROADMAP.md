@@ -1,3 +1,7 @@
+## Field Academy resume checkpoints — November 21, 2026
+
+**New local-only feature under release verification:** Each of the three Field Academy courses can resume at its last completed command step after navigating away or reloading the page. The current randomized command order, step index, Check/Next status, and mistake tally are saved in a small versioned browser-local checkpoint. Draft commands and private keystrokes are **never** saved. Course cards distinguish **CONTINUE COURSE** from **OPEN TERMINAL**, and a completed course clears its checkpoint while retaining the existing completed badge. Reshuffling resets just that course's saved order. Invalid or stale checkpoints fail closed to a fresh course; storage errors must not interrupt typing. Node and Chromium phone/touch-landscape/reflow/desktop checks cover reload, focus, privacy, completion and schema safety. Real iOS/Android and assistive-technology validation remains open.
+
 # Keystoria development roadmap
 
 **Last reviewed:** November 18, 2026  

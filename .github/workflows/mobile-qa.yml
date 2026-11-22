@@ -7,6 +7,7 @@ on:
       - 'app/web/**'
       - 'site/play/**'
       - 'app/tests/test_mobile_typing.mjs'
+      - 'app/tests/test_academy_checkpoint.mjs'
       - 'scripts/test-mobile-typing.mjs'
       - 'scripts/test-dialog-keyboard.mjs'
       - 'scripts/test-mobile-viewport-recovery.mjs'
@@ -29,6 +30,7 @@ on:
       - 'app/web/**'
       - 'site/play/**'
       - 'app/tests/test_mobile_typing.mjs'
+      - 'app/tests/test_academy_checkpoint.mjs'
       - 'scripts/test-mobile-typing.mjs'
       - 'scripts/test-dialog-keyboard.mjs'
       - 'scripts/test-mobile-viewport-recovery.mjs'
@@ -67,7 +69,8 @@ jobs:
           node --check site/play/assets/ui/lyric-lab-controller.js
           node --check app/web/ui/training-view.js
           node --check site/play/assets/ui/training-view.js
-          node --test app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_numpad.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_history_restore.mjs
+          node --test app/tests/test_academy_checkpoint.mjs app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_numpad.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_history_restore.mjs
+          diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
