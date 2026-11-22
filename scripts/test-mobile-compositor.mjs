@@ -40,7 +40,10 @@ try{
   const field=page.locator('#lesson-input');
   await field.focus();
   const active=await page.locator('body').evaluate(el=>el.classList.contains('mobile-typing-active'));
-  assert.equal(active,touch,'keyboard-focused body class only in compact touch layouts');
+  // The responsive keyboard layout also activates for a zoom-narrowed mouse
+  // desktop (320px), but the compositor reduction must remain touch-only.
+  const compact=width<=760||(height<=520&&touch);
+  assert.equal(active,compact,'keyboard layout follows compact width, compositor still requires touch');
   const cue=await page.locator('#lesson-target-text .type-char.current').first().evaluate(el=>({
    animation:getComputedStyle(el).animationName,
    transition:getComputedStyle(el).transitionDuration,
