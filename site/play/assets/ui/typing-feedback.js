@@ -54,58 +54,70 @@ export function paintTypingFeedback(element, expected, typed, options = {}) {
   const result=compareTyping(expected, typed, options);
   const source=String(expected ?? '');
   const input=Array.from(String(typed ?? ''));
-  const caseSensitive=options.caseSensitive!==false;
+  const sensitive=options.caseSensitive!==false;
   let entry=paintedPrompts.get(element);
-  if (!entry || entry.source!==source || entry.caseSensitive!==caseSensitive
+  if (!entry || entry.source!==source || entry.sensitive!==sensitive
       || element.firstElementChild!==entry.firstChild) {
-    // New command, a changed scoring mode, or an externally replaced view:
-    // rebuild exactly once using the existing HTML/Unicode escaping rules.
-    element.innerHTML=renderTypingFeedback(expected, typed, options);
     const target=Array.from(source);
-    const children=Array.from(element.children);
+    let children=Array.from(element.children);
+    // Academy and story templates already have correctly rendered spans on
+    // their first frame. Adopt those nodes instead of rebuilding them on the
+    // very first native keyboard event (the most noticeable phone input lag).
+    const reusable=children.length>=target.length &&
+      target.every((character,i)=>children[i]?.tagName==='SPAN'
+        && children[i].classList.contains('type-char')
+        && !children[i].classList.contains('extra')
+        && children[i].textContent===character) &&
+      children.slice(target.length).every(node=>
+        node.classList.contains('extra')||node.classList.contains('type-end-caret'));
+    if(!reusable){
+      // Only an actual new reference or externally replaced markup needs a
+      // fresh mount. Keep renderTypingFeedback as the source of truth.
+      element.innerHTML=renderTypingFeedback(expected, typed, options);
+      children=Array.from(element.children);
+    }
     entry={
-      source,caseSensitive,target,
+      source,sensitive,target,
       characters:children.slice(0,target.length),
       extras:children.slice(target.length).filter(node=>node.classList.contains('extra')),
       endCaret:children.find(node=>node.classList.contains('type-end-caret'))||null,
       firstChild:element.firstElementChild,
     };
     paintedPrompts.set(element,entry);
-  } else {
-    const {target,characters,extras}=entry;
-    for(let i=0;i<target.length;i++){
-      const status=i>=input.length?'pending'
-        : (caseSensitive ? target[i]===input[i] : target[i].toLowerCase()===input[i].toLowerCase())
-          ? 'correct':'incorrect';
-      const className='type-char '+status+(i===input.length?' current':'');
-      if(characters[i].className!==className)characters[i].className=className;
-    }
-    const extraCount=Math.max(0,input.length-target.length);
-    while(extras.length>extraCount)extras.pop().remove();
-    while(extras.length<extraCount){
-      const extra=element.ownerDocument.createElement('span');
-      extra.className='type-char extra';
-      if(entry.endCaret)entry.endCaret.before(extra);
-      else element.append(extra);
-      extras.push(extra);
-    }
-    for(let i=0;i<extras.length;i++){
-      const value=input[target.length+i];
-      if(extras[i].textContent!==value)extras[i].textContent=value;
-    }
-    if(input.length>=target.length){
-      if(!entry.endCaret){
-        entry.endCaret=element.ownerDocument.createElement('span');
-        entry.endCaret.className='type-end-caret';
-        entry.endCaret.setAttribute('aria-hidden','true');
-        element.append(entry.endCaret);
-      }
-    }else if(entry.endCaret){
-      entry.endCaret.remove();
-      entry.endCaret=null;
-    }
-    entry.firstChild=element.firstElementChild;
   }
+  const {target,characters,extras}=entry;
+  for(let i=0;i<target.length;i++){
+    const status=i>=input.length?'pending'
+      : (sensitive ? target[i]===input[i] : target[i].toLowerCase()===input[i].toLowerCase())
+        ? 'correct':'incorrect';
+    const className='type-char '+status+(i===input.length?' current':'');
+    if(characters[i].className!==className)characters[i].className=className;
+  }
+  const extraCount=Math.max(0,input.length-target.length);
+  while(extras.length>extraCount)extras.pop().remove();
+  while(extras.length<extraCount){
+    const extra=element.ownerDocument.createElement('span');
+    extra.className='type-char extra';
+    if(entry.endCaret)entry.endCaret.before(extra);
+    else element.append(extra);
+    extras.push(extra);
+  }
+  for(let i=0;i<extras.length;i++){
+    const value=input[target.length+i];
+    if(extras[i].textContent!==value)extras[i].textContent=value;
+  }
+  if(input.length>=target.length){
+    if(!entry.endCaret){
+      entry.endCaret=element.ownerDocument.createElement('span');
+      entry.endCaret.className='type-end-caret';
+      entry.endCaret.setAttribute('aria-hidden','true');
+      element.append(entry.endCaret);
+    }
+  }else if(entry.endCaret){
+    entry.endCaret.remove();
+    entry.endCaret=null;
+  }
+  entry.firstChild=element.firstElementChild;
   const accuracy=String(result.percent),errors=String(result.incorrect);
   if(element.dataset.accuracy!==accuracy)element.dataset.accuracy=accuracy;
   if(element.dataset.errors!==errors)element.dataset.errors=errors;
