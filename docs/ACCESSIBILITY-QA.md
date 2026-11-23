@@ -1,3 +1,7 @@
+## Lyric Lab idle scheduling and completion cleanup — November 22, 2026
+
+Lyric Lab now polls at 1000ms before a local/demo track plays and during offline pause, instead of doing repeated 180ms work. Active playback and ready YouTube iframes retain 180ms lyric synchronization (including seeking via the native iframe while paused). Completed results shut the ticker down; Play Again reinstates one idle ticker. The original native input and the completed-song heading/focus, score, skip and retry behavior are unchanged. Browser tests cover phone and desktop timing transitions, paused seek, results and cleanup; VoiceOver/TalkBack physical-device QA and the open mobile lag report #82 remain separate requirements.
+
 ## Lyric Lab composited timing meter — November 22, 2026
 
 The live lyric-line progress meter now advances with a left-origin CSS transform rather than repainting its layout width roughly five times a second. It retains the existing color gradient and timing, disables transitions for `prefers-reduced-motion: reduce`, and respects the disabled-animation state during phone typing. The native range slider only writes when its 0.5-second displayed position changes and remains user-controlled while focused. Browser regression checks mobile and desktop playback, pause, range scrub, progress, and reduced-motion behavior; human keyboard and screen-reader verification on physical devices remains required.

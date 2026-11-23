@@ -71,6 +71,7 @@ jobs:
           node scripts/test-academy-focus.mjs
           node scripts/test-lyric-completion.mjs
           node scripts/test-lyric-tick-compositor.mjs
+          node scripts/test-lyric-idle-scheduler.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-idle-ticks.mjs
