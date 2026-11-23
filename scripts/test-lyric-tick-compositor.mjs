@@ -71,6 +71,9 @@ try{
     const fill=document.getElementById('lyric-live-fill');
     return fill&&Number(fill.style.transform.match(/scaleX\(([^)]+)\)/)?.[1])>0.12;
    });
+   // A new scale target is written before the 120ms CSS transition finishes.
+   // Sample after it settles rather than testing the intermediate first frame.
+   await page.waitForTimeout(145);
    const running=await fill.evaluate(el=>({
     transform:el.style.transform,width:el.style.width,
     parentWidth:el.parentElement.clientWidth,boxWidth:el.offsetWidth,
@@ -80,7 +83,7 @@ try{
    assert.ok(Math.abs(running.boxWidth-running.parentWidth)<=2,
     'the progress bar retains stable layout width during playback');
    assert.ok(running.visibleWidth>0&&running.visibleWidth<running.parentWidth,
-    'the compositor transform still displays progressive fill');
+    'composited fill should show a partial line, observed: '+JSON.stringify(running));
 
    const playingWrites=await inputWrites(page,1100);
    assert.ok(playingWrites<=4,
