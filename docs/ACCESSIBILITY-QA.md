@@ -1,3 +1,7 @@
+## Speed Lab repeated native selection events — November 22, 2026
+
+A new mobile/desktop browser gate checks that repeated `select` and `selectionchange` notifications after the same edit do not reprocess the visible or screen-reader typing cues. The optimization still responds when a player explicitly moves the caret earlier in a passage, changes Word Focus, corrects an earlier typo, or switches exercises, and reuses the controller's existing accuracy result instead of scoring twice. Real VoiceOver/TalkBack/native keyboard verification remains a separate human QA requirement under issue #82.
+
 ## Unobstructed on-device recording — November 22, 2026
 
 The optional mobile performance check now stays in a compact, labelled Stop badge during capture rather than expanding above gameplay. Its full report and Copy/Close actions appear only after capture finishes. Starting the check restores focus to an available native practice input on the current screen, excluding disabled/paused fields. Browser checks cover 320px and 390px emulated touch layouts, focus return, recorder bounds, and report expansion. Actual mobile screen-reader focus announcements and software keyboard behavior must still be verified on hardware.
