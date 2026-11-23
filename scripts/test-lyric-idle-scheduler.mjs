@@ -35,6 +35,30 @@ try {
       if(record.id===id)record.cleared=true;
      return clear.call(this,id);
     };
+    // Stub the official player API's timing/state contract. No external
+    // video is streamed, and no copyrighted song is played in this test.
+    window.YT={
+     PlayerState:{PLAYING:1,PAUSED:2,ENDED:0},
+     Player:class {
+      constructor(_id,options){
+       this.options=options;this.position=0;this.rate=1;
+       window.__fakeYTPlayer=this;
+       queueMicrotask(()=>{
+        options.events.onReady();
+        window.__fakeYTReady=true;
+       });
+      }
+      getCurrentTime(){return this.position;}
+      getDuration(){return 68;}
+      getAvailablePlaybackRates(){return [1];}
+      setPlaybackRate(value){this.rate=value;}
+      getPlaybackRate(){return this.rate;}
+      seekTo(t){this.position=t;}
+      playVideo(){this.options.events.onStateChange({data:1});}
+      pauseVideo(){this.options.events.onStateChange({data:2});}
+      destroy(){}
+     }
+    };
    });
    const intervals=()=>page.evaluate(()=>
     window.__lyricTickRecords.filter(record=>!record.cleared)
@@ -107,6 +131,28 @@ try {
     'replayed track can start at the full timing cadence');
    await page.locator('[data-action="lyric-back"]').click();
    assert.deepEqual(await intervals(),[],'exit removes all lyric tickers');
+
+   // A ready iframe must retain fast polling even when paused, because its
+   // native YouTube seek controls may move independently of Keystoria.
+   await page.route('https://lrclib.net/api/search**',route=>route.fulfill({
+    status:200,contentType:'application/json',
+    body:JSON.stringify([{
+     id:200,trackName:'Never Gonna Give You Up',artistName:'Rick Astley',
+     duration:68,syncedLyrics:
+      '[00:00.00] One test line here\\n[00:04.00] Another test line\\n[00:08.00] Final test lyric',
+    }]),
+   }));
+   await page.locator('[data-action="lyric-featured"][data-index="0"]').click();
+   await page.waitForFunction(()=>window.__fakeYTReady===true);
+   assert.deepEqual((await intervals()).map(v=>v.delay),[180],
+    'ready YouTube iframe retains 180ms polling for external native seeking');
+   await page.evaluate(()=>{window.__fakeYTPlayer.position=17;});
+   await page.waitForFunction(()=>
+    document.getElementById('lyric-clock')?.textContent?.startsWith('00:17'));
+   assert.equal(await page.locator('#lyric-clock').textContent(),'00:17 / 01:08',
+    'paused iframe manual seeks remain synchronized without playing video');
+   await page.locator('[data-action="lyric-back"]').click();
+   assert.deepEqual(await intervals(),[],'iframe exit clears lyric ticker');
   } finally { await context.close(); }
  }
  assert.deepEqual(errors,[],'Lyric Lab must not throw when clocks change cadence');
