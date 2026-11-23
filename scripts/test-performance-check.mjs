@@ -6,7 +6,7 @@ import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const errors=[];
 try{
- for(const item of [{width:390,touch:true},{width:1440,touch:false}]){
+ for(const item of [{width:320,touch:true},{width:390,touch:true},{width:1440,touch:false}]){
   const context=await browser.newContext({
    viewport:{width:item.width,height:844},isMobile:item.touch,hasTouch:item.touch
   });
@@ -36,13 +36,32 @@ try{
    await check.waitFor();
    const report=check.locator('.perf-check-report');
    assert.equal(await report.isVisible(),false,'report hidden during recording');
-   await input.focus();
+   assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+    'starting check returns keyboard focus to the editable practice field');
+   const geometry=await page.evaluate(()=>{
+     const badge=document.getElementById('keystoria-perf-check');
+     const field=document.getElementById('speed-input');
+     const a=badge.getBoundingClientRect(),b=field.getBoundingClientRect();
+     const overlap=a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+     return {compact:badge.classList.contains('is-recording'),
+       width:a.width,height:a.height,overlap,
+       x:a.right,y:a.top,screenWidth:innerWidth};
+   });
+   assert.equal(geometry.compact,true,'running check uses compact mode');
+   assert.ok(geometry.width<=220 && geometry.height<=90,
+     'badge must remain small at '+item.width+'px: '+JSON.stringify(geometry));
+   assert.ok(geometry.x<=geometry.screenWidth+1 && geometry.y>=0,
+     'badge stays within the visible viewport');
+   assert.equal(geometry.overlap,false,'badge must not cover Speed Lab input');
+
    await input.fill('NEVER_SHARE_TYPED_TEXT');
    await page.waitForTimeout(400);
    const value=await input.inputValue();
    assert.equal(value,'NEVER_SHARE_TYPED_TEXT');
    await check.locator('[data-perf-action="stop"]').click();
    assert.equal(await report.isVisible(),true,'results visible after user stops');
+   assert.equal(await check.evaluate(el=>el.classList.contains('is-recording')),false,
+     'the full report expands only after the check stops');
    const output=await report.inputValue();
    assert.match(output,/Practice input events: [1-9]/);
    assert.match(output,/Speed Lab: [1-9]/);
@@ -63,6 +82,8 @@ try{
    await nav.click();
    await start.click();
    assert.equal(await page.locator('#keystoria-perf-check').count(),1);
+   assert.equal(await input.evaluate(el=>document.activeElement===el),true,
+     'restarting the diagnostic also restores practice focus');
    await page.locator('[data-perf-action="stop"]').click();
    await page.locator('[data-perf-action="close"]').click();
   }finally{await context.close();}
