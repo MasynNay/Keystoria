@@ -8,6 +8,23 @@
  color:var(--theme-text,var(--text,#fff));box-shadow:0 8px 24px #0008;
  font:12px/1.5 var(--mono,monospace);overflow-wrap:anywhere
 }
+/* The running badge occupies one small corner, not the player's phone
+ * keyboard, prompt, or most of the 320px viewport. The full report only
+ * expands after Stop/Completion, when the capture has ended. */
+.keystoria-perf-check.is-recording {
+ top:calc(6px + env(safe-area-inset-top));
+ right:calc(6px + env(safe-area-inset-right));
+ width:max-content;max-width:min(220px,calc(100vw - 12px));
+ max-height:none;padding:5px 7px;border-radius:9px;
+ display:flex;align-items:center;gap:6px
+}
+.keystoria-perf-check.is-recording>strong{display:none}
+.keystoria-perf-check.is-recording .perf-check-message{
+ margin:0;font-size:9px;line-height:1.35;font-weight:700;max-width:125px
+}
+.keystoria-perf-check.is-recording button[data-perf-action="stop"]{
+ margin:0;padding:5px 7px;font-size:10px;white-space:nowrap
+}
 .keystoria-perf-check>strong{display:block;margin-bottom:6px;letter-spacing:.04em}
 .keystoria-perf-check p{margin:0 0 8px}
 .keystoria-perf-check button {
