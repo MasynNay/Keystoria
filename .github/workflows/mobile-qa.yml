@@ -17,6 +17,7 @@ on:
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
+      - 'scripts/test-speed-caret-bursts.mjs'
       - 'scripts/test-performance-check.mjs'
       - 'app/tests/test_performance_check.mjs'
       - 'scripts/test-typing-dom-performance.mjs'
@@ -45,6 +46,7 @@ on:
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
+      - 'scripts/test-speed-caret-bursts.mjs'
       - 'scripts/test-performance-check.mjs'
       - 'app/tests/test_performance_check.mjs'
       - 'scripts/test-typing-dom-performance.mjs'
@@ -111,6 +113,7 @@ jobs:
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-idle-ticks.mjs
+          node scripts/test-speed-caret-bursts.mjs
           node scripts/test-performance-check.mjs
           node scripts/test-typing-dom-performance.mjs
           node scripts/test-speed-interruption.mjs
