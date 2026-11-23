@@ -498,7 +498,19 @@ app.addEventListener("click",event=>{
   case "reel-prev":moveStoryReel(state.room,-1);break;
   case "reel-next":moveStoryReel(state.room,1);break;
   case "settings":showModal("settings");break;
-  case "perf-start":if(performanceCheck.start())dismissModal();break;
+  case "perf-start":{
+    if(!performanceCheck.start())break;
+    dismissModal();
+    // Starting a check should not waste the capture by leaving keyboard focus
+    // on the Settings button. Return directly to an editable practice field.
+    // No input is focused on the home screen, or when a session is paused.
+    const field=["speed-input","lyric-input","lesson-input","task-input"]
+      .map(id=>document.getElementById(id))
+      .find(el=>el?.isConnected && !el.disabled && !el.readOnly
+        && el.getClientRects().length>0);
+    field?.focus({preventScroll:true});
+    break;
+  }
   case "theme-select": {
     const id = item.dataset.themeId;
     if (!THEME_IDS.includes(id)) break;
