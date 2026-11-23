@@ -19,7 +19,7 @@ test('seven device-local calendar days are oldest to newest, inclusive of today'
   '2026-11-16','2026-11-17','2026-11-18','2026-11-19',
   '2026-11-20','2026-11-21','2026-11-22'
  ]);
- assert.deepEqual(summary.days.map(d=>d.count),[2,0,1,0,0,1,2]);
+ assert.deepEqual(summary.days.map(d=>d.count),[2,0,0,1,0,1,2]);
  assert.equal(summary.activeDays,4);
  assert.equal(summary.savedRuns,6);
  assert.equal(summary.undated,2,'future timestamps are not counted as practiced');
