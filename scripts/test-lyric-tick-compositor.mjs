@@ -51,7 +51,7 @@ try{
     return {transform:el.style.transform,transition:style.transitionProperty,
      parentWidth:parent.clientWidth,boxWidth:el.offsetWidth};
    });
-   assert.match(initial.transform,/^scaleX\\(0(?:\\.0+)?\\)$/);
+   assert.match(initial.transform,/^scaleX\(0(?:\.0+)?\)$/);
    assert.ok(initial.parentWidth>50,'the meter has a real visible track');
    assert.ok(Math.abs(initial.boxWidth-initial.parentWidth)<=2,
     'the fill keeps a full layout box and scales the image only');
@@ -69,7 +69,7 @@ try{
    await page.locator('[data-action="lyric-toggle"]').click();
    await page.waitForFunction(()=>{
     const fill=document.getElementById('lyric-live-fill');
-    return fill&&Number(fill.style.transform.match(/scaleX\\(([^)]+)\\)/)?.[1])>0.12;
+    return fill&&Number(fill.style.transform.match(/scaleX\(([^)]+)\)/)?.[1])>0.12;
    });
    const running=await fill.evaluate(el=>({
     transform:el.style.transform,width:el.style.width,
@@ -99,7 +99,7 @@ try{
    const afterSeek=await fill.evaluate(el=>({
     transform:el.style.transform,width:el.style.width,
    }));
-   assert.match(afterSeek.transform,/^scaleX\\(0\\.5\\d*\\)$/);
+   assert.match(afterSeek.transform,/^scaleX\(0\.5\d*\)$/);
    assert.equal(afterSeek.width,'');
    assert.equal((await page.locator('#lyric-clock').textContent()).slice(0,5),'00:02',
     'seeking still updates the real lyric clock immediately');
