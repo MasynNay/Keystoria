@@ -4,7 +4,7 @@
  * Story missions can continue to evolve independently of personal training.
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
-import { createSpeedFlow } from './speed-flow.js?v=0.41.1';
+import { createSpeedFlow } from './speed-flow.js?v=0.41.2';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord } from './mobile-typing.js?v=0.43.0';
 
 const node = id => document.getElementById(id);
