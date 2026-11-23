@@ -78,12 +78,22 @@ try{
     transform:el.style.transform,width:el.style.width,
     parentWidth:el.parentElement.clientWidth,boxWidth:el.offsetWidth,
     visibleWidth:el.getBoundingClientRect().width,
+    // Mobile typing deliberately hides the entire Now Singing panel to
+    // preserve native keyboard space. A hidden bar has no geometry even
+    // though its synchronized progress state continues to advance.
+    mobileKeyboardHidden:document.body.classList.contains('mobile-typing-active') &&
+      getComputedStyle(el.closest('.lyric-now-singing')).display==='none',
    }));
    assert.equal(running.width,'','playing never animates layout width');
    assert.ok(Math.abs(running.boxWidth-running.parentWidth)<=2,
     'the progress bar retains stable layout width during playback');
-   assert.ok(running.visibleWidth>0&&running.visibleWidth<running.parentWidth,
-    'composited fill should show a partial line, observed: '+JSON.stringify(running));
+   if(running.mobileKeyboardHidden){
+    assert.equal(running.visibleWidth,0,
+     'hidden mobile Now Singing panel does not occupy keyboard space');
+   }else{
+    assert.ok(running.visibleWidth>0&&running.visibleWidth<running.parentWidth,
+     'visible composited fill should show a partial line: '+JSON.stringify(running));
+   }
 
    const playingWrites=await inputWrites(page,1100);
    assert.ok(playingWrites<=4,
