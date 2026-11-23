@@ -87,6 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
       pages: write
       id-token: write
     environment:
@@ -128,9 +129,34 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static portfolio
+        id: pages_artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: site
+      # GitHub occasionally finalizes an upload before the Actions list API
+      # indexes it. deploy-pages reads the list immediately and can see zero
+      # artifacts even though upload-pages-artifact has succeeded (#88).
+      # Check the exact artifact ID from this attempt, not a stale retry.
+      - name: Wait for indexed Pages artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_ARTIFACT_ID: ${{ steps.pages_artifact.outputs.artifact_id }}
+        run: |
+          test -n "$PAGES_ARTIFACT_ID"
+          for attempt in $(seq 1 20); do
+            artifacts="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" --jq '.artifacts[] | "\(.id):\(.name)"' 2>/dev/null || true)"
+            if printf '%s\n' "$artifacts" | grep -Fxq "${PAGES_ARTIFACT_ID}:github-pages"; then
+              echo "Pages artifact ${PAGES_ARTIFACT_ID} is indexed (attempt ${attempt})."
+              # Give deploy-pages' independent metadata request a small
+              # propagation window after the first successful index read.
+              sleep 5
+              exit 0
+            fi
+            echo "Artifact not indexed yet (check ${attempt}/20)."
+            sleep 3
+          done
+          echo "::error::Uploaded Pages artifact ${PAGES_ARTIFACT_ID} not indexed after 20 checks."
+          exit 1
       - name: Publish GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
