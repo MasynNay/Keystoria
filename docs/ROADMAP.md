@@ -1,3 +1,11 @@
+## Lyric Lab private recent performances — November 23, 2026
+
+**Release validation pending.** Lyric Lab already saves up to 40 completed song scores in the browser-local `panic.lyric.history` key. The library now gives this existing data a practical use: an accessible, responsive **Recent Performances** list showing the five latest valid completions with song, artist, local date, WPM, accuracy, points and skipped words. An empty state tells first-time players where results will appear. No new localStorage keys or network calls, accounts, tracking, lyrics, typed text, or video URLs are added to the display.
+
+The reader tolerates disabled/corrupt storage and malformed legacy records. Only valid bounded numeric metrics are shown; track and artist text are length-capped and HTML-escaped so stored names cannot become executable markup. The original 40-result retention, score calculation, original demo, official media playback, and existing modes stay unchanged. The local app and GitHub Pages edition have the same presentation and responsive CSS. The new read-only panel runs only when browsing the Lyric Lab song library; it adds no typing-time scheduling.
+
+Pure tests cover valid ordering, limits, corrupt/blocked storage, dangerous metadata and malformed metrics. Playwright checks song completion, return-to-library history, persistence across reload, escaped HTML, and phone/narrow-desktop rendering without horizontal scrolling. The Mobile QA and Pages release gates run these checks. Real iOS/Android performance remains unverified; [issue #82](https://github.com/MasynNay/Keystoria/issues/82) remains open.
+
 ## Practice Compass: private seven-day activity — November 22, 2026
 
 **Release checks pending.** Practice Compass now displays seven device-local calendar days of **saved Speed Lab activity**, across categories, durations, assisted, exact and Numpad modes. It counts completed records only and does **not compare** their speeds, accuracy or modes. Each day shows a small accessible bar and saved-run count, with a summary of active days and saved runs. The display uses only timestamps already in the local 25-result Speed Lab history; it creates no new storage keys, accounts, network calls, streak obligations or notifications.

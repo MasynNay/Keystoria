@@ -1,3 +1,9 @@
+## Lyric Lab saved performances: read-only progress — November 23, 2026
+
+The Lyric Lab library now renders the last five completed scores as a named section with a semantic ordered list. Each row has visible song, artist, local date (with a machine-readable `time datetime`), WPM, accuracy, points and skipped count. This does not change focus order, form behavior, input identity, scores or playback. It has an empty state for first-time users, no motion or background timers, and no required interactions.
+
+Test mobile portrait (390px), compact desktop (320px) and wide desktop. Validate that finishing and leaving a demo reveals the saved result, reload persists it, dangerous stored names are shown as text rather than markup, and the page does not overflow horizontally. Browser automation checks DOM semantics, data safety and layout; real screen-reader and physical-device verification are still outstanding.
+
 ## Practice Compass: seven-day activity and chart accessibility — November 22, 2026
 
 The new seven-day local Speed Lab activity display uses a named section and an ordered seven-day list. Each day has an explicit accessible name including the weekday, date and number of saved runs; bar heights are purely decorative and cannot replace text values. The chart never receives keyboard focus, animates, or rewrites an active practice field. Existing goal buttons, status live region, export and clear controls preserve their DOM identity when activity changes.
