@@ -15,6 +15,7 @@ on:
       - 'scripts/test-academy-focus.mjs'
       - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-lyric-tick-compositor.mjs'
+      - 'scripts/test-lyric-idle-scheduler.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
@@ -45,6 +46,7 @@ on:
       - 'scripts/test-academy-focus.mjs'
       - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-lyric-tick-compositor.mjs'
+      - 'scripts/test-lyric-idle-scheduler.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
@@ -114,6 +116,7 @@ jobs:
           node scripts/test-academy-focus.mjs
           node scripts/test-lyric-completion.mjs
           node scripts/test-lyric-tick-compositor.mjs
+          node scripts/test-lyric-idle-scheduler.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-idle-ticks.mjs
