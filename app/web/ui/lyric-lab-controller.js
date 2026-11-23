@@ -4,6 +4,7 @@
  */
 import { safe, ico } from './helpers.js';
 import { renderLyricWordFeedback } from './lyric-word-feedback.js?v=0.52.0';
+import { readRecentLyricResults } from './lyric-history.js?v=0.1.0';
 import { MOBILE_TYPING_MEDIA } from './mobile-typing.js?v=0.29.0';
 import { FEATURED_SONGS, cleanWord, sameWord, parseLRC, currentLineAt, expectedWordsAt, scoreRun, searchTimedLyrics, featuredFor, parseYouTubeVideoId, youtubeSearchUrl, PLAYBACK_RATES, nextPlaybackRate, coverStyle, lineHasForeignScript, calibratedOffset, resolveLocalVideoMatch } from './lyric-lab-core.js?v=0.52.0';
 
@@ -58,13 +59,26 @@ export function createLyricLabController({state,onRender}){
  const saveOffset=()=>{if(selected)try{localStorage.setItem(offsetKey(selected),String(offset));}catch{}};
  const artStyle=track=>safe(coverStyle(track));
  const record=(str)=>`<div class="lyric-browse-notice" role="status">${safe(str)}</div>`;
+ const historyPanel=()=>{
+  const recent=readRecentLyricResults();
+  return `<section class="lyric-recent" aria-labelledby="lyric-recent-title">
+   <div class="lyric-section-head"><h2 id="lyric-recent-title">RECENT PERFORMANCES</h2>
+   <p>Completed songs saved on this device only. Up to 40 records are kept; these are the newest five.</p></div>
+   ${recent.length?`<ol class="lyric-recent-list">${recent.map(run=>
+     `<li><div class="lyric-recent-track"><strong>${safe(run.title)}</strong>
+     <span>${safe(run.artist)} · <time datetime="${safe(run.date)}">${safe(new Date(run.date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}))}</time></span></div>
+     <div class="lyric-recent-score"><strong>${run.wpm} <small>WPM</small></strong>
+     <span>${run.accuracy}% accuracy · ${run.points} points · ${run.skipped} skipped</span></div></li>`
+   ).join('')}</ol>`:'<p class="lyric-recent-empty">Finish a song to see your recent performances here. Nothing is uploaded.</p>'}
+  </section>`;
+ };
  function template(header){
   if(phase==='browse')return `${header({inGame:true})}<main class="lyric-shell shell"><div class="lyric-titlebar"><button class="text-button" data-action="lyric-home">← EXIT TO MENU</button><span>// PRACTICE MODE · NO UPLOADS</span></div><section class="lyric-intro"><div class="lyric-disc" aria-hidden="true"><div></div></div><div><span class="lyric-kicker">KEYSTORIA // LYRIC LAB</span><h1>TYPE TO <em>THE BEAT.</em></h1><p>Choose a featured video or search for timed lyrics. When you select a song, we automatically try to connect a matching YouTube recording. Type along at your own speed. No MP3s, lyric files, or accounts required for players.</p></div></section>
   <form id="lyric-search-form" class="lyric-search"><label for="lyric-search-input">FIND A SONG OR ARTIST</label><div><input id="lyric-search-input" name="query" value="${safe(query)}" placeholder="Search thousands of songs with timed lyrics…" autocomplete="off" maxlength="110" required/><button type="submit" class="btn btn-primary" ${searching?'disabled':''}>${searching?'SEARCHING…':'SEARCH LYRICS'}</button></div></form>
   ${notice?record(notice):''}${searching?'<div class="lyric-loading">Finding synced lyrics…</div>':''}
   ${results.length?`<section class="lyric-results"><h2>SEARCH RESULTS <span>${results.length} TIMED TRACKS</span></h2><div class="lyric-results-grid">${results.map((track,i)=>`<button class="lyric-song-result" data-action="lyric-result" data-index="${i}"><span class="lyric-result-art" aria-hidden="true" style="${artStyle(track)}"></span><span class="lyric-result-info"><strong>${safe(track.trackName)}</strong><span>${safe(track.artistName)}</span><small>${(track.videoId||savedVideoId(track))?'◉ VIDEO READY':'◎ AUTO-MATCH VIDEO ON SELECT'} · ${fmt(track.duration)}</small></span></button>`).join('')}</div></section>`:''}
   <section class="lyric-featured"><div class="lyric-section-head"><h2>FEATURED MUSIC VIDEOS</h2><p>These tracks have an identified YouTube video. Timed lyrics are retrieved when you select one, not bundled with this app.</p></div><div class="lyric-album-grid">${FEATURED_SONGS.map((song,i)=>`<button data-action="lyric-featured" data-index="${i}" class="lyric-album lyric-has-art" style="--lyric-album:${song.color}"><span class="lyric-album-art" aria-hidden="true" style="${artStyle(song)}"></span><span class="lyric-album-icon">${ico('play',26)}</span><strong>${safe(song.title)}</strong><small>${safe(song.artist)}</small></button>`).join('')}</div></section>
-  <section class="lyric-demo-strip"><div><strong>NO INTERNET? TEST THE GAMEPLAY.</strong><p>Try our original timed-lyrics demo with a built-in electronic beat. The lyrics and tune are made for Keystoria.</p></div><button class="btn btn-outline" data-action="lyric-demo">PLAY ORIGINAL DEMO</button></section><p class="lyric-legal">Music videos are played in the official YouTube embedded player. Lyrics are requested from LRCLIB only when you select a track. Video availability, captions and timing can differ. Attribution does not establish copyright permission for commercial distribution.</p></main>`;
+  <section class="lyric-demo-strip"><div><strong>NO INTERNET? TEST THE GAMEPLAY.</strong><p>Try our original timed-lyrics demo with a built-in electronic beat. The lyrics and tune are made for Keystoria.</p></div><button class="btn btn-outline" data-action="lyric-demo">PLAY ORIGINAL DEMO</button></section>${historyPanel()}<p class="lyric-legal">Music videos are played in the official YouTube embedded player. Lyrics are requested from LRCLIB only when you select a track. Video availability, captions and timing can differ. Attribution does not establish copyright permission for commercial distribution.</p></main>`;
   const stats=scoreRun({correct,attempts,skipped,characters:chars,elapsed,bestStreak});
   const song=selected||originalDemo;
   return `${header({inGame:true})}<main class="lyric-shell shell"><div class="lyric-titlebar"><button class="text-button" data-action="lyric-back">← ALL SONGS</button><span>// ${song.demo?'ORIGINAL PRACTICE TRACK':song.videoId?'YOUTUBE + SYNCED LYRICS':'SYNCED LYRICS · CONNECT VIDEO'}</span></div><div class="lyric-song-heading"><div class="lyric-song-identity"><span class="lyric-track-cover" aria-hidden="true" style="${artStyle(song)}"></span><div><span class="lyric-kicker">NOW PLAYING // LYRIC LAB</span><h1>${safe(song.trackName)}</h1><p>${safe(song.artistName)}</p></div></div><button class="btn btn-outline" data-action="lyric-retry">↻ RESTART</button></div>
