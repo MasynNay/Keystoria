@@ -46,7 +46,7 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
   /** Follow the textarea selection, even when correcting previously typed words.
    * Caret-only changes never recompute accuracy or rewrite character classes.
    */
-  function update(typed, selectionStart = undefined) {
+  function update(typed, selectionStart = undefined, scoredAccuracy = undefined) {
     if (disposed) return;
     const value = String(typed);
     const cursor = Number.isFinite(selectionStart)
@@ -77,9 +77,17 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
           : value[k] === reference[k] ? 'type-char correct' : 'type-char incorrect';
       }
       if (contentChanged) {
-        let correct = 0;
-        for (let k = 0; k < value.length; k++) if (value[k] === reference[k]) correct++;
-        container.dataset.accuracy = value.length ? String(Math.round(correct / value.length * 100)) : '100';
+        // The Speed controller supplies an accuracy snapshot already computed
+        // for the same text edit. Direct renderer users retain the original
+        // local calculation when they do not supply it.
+        let accuracy = scoredAccuracy;
+        if (!Number.isInteger(accuracy) || accuracy < 0 || accuracy > 100) {
+          let correct = 0;
+          for (let k = 0; k < value.length; k++) if (value[k] === reference[k]) correct++;
+          accuracy = value.length ? Math.round(correct / value.length * 100) : 100;
+        }
+        const display = String(accuracy);
+        if (container.dataset.accuracy !== display) container.dataset.accuracy = display;
       }
     }
 
