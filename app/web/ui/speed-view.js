@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, practiceMode } from './speed-insights.js?v=0.48.1';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode } from './speed-insights.js?v=0.48.2';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -28,7 +28,10 @@ export function speedHistoryPanel() {
 
 export function speedInsightsPanel(session) {
   const goal = readAccuracyGoal();
-  const pulse = summarizeSpeedPractice(readSpeedHistory(),session,goal);
+  const savedRuns = readSpeedHistory();
+  const pulse = summarizeSpeedPractice(savedRuns,session,goal);
+  const activity = summarizeSpeedActivity(savedRuns);
+  const tallest = Math.max(1,...activity.days.map(day=>day.count));
   const friendlyMode = displayPracticeMode(session);
   const target = pulse.nextTarget;
   const nextLabel = target.kind === 'start' ? 'Complete your first timed run'
@@ -49,6 +52,16 @@ export function speedInsightsPanel(session) {
       <div><small>BEST IN LAST 5 · ${pulse.metric}</small><strong>${pulse.best ?? '—'}</strong></div>
       <div><small>RECENT AVERAGE ACCURACY</small><strong>${pulse.averageAccuracy == null?'—':pulse.averageAccuracy+'%'}</strong></div>
     </div>
+    <section class="speed-week-activity" aria-label="Last seven days of saved Speed Lab practice" data-active-days="${activity.activeDays}" data-saved-runs="${activity.savedRuns}">
+      <div class="speed-week-heading"><strong>LAST 7 DAYS · PRACTICE ACTIVITY</strong><span>${activity.activeDays} active ${activity.activeDays===1?'day':'days'} · ${activity.savedRuns} saved ${activity.savedRuns===1?'run':'runs'}</span></div>
+      <ol aria-label="Locally saved Speed Lab sessions, oldest day first">
+        ${activity.days.map(day=>`<li aria-label="${day.label} ${day.dateLabel}: ${day.count} saved ${day.count===1?'run':'runs'}" data-date="${day.key}" data-runs="${day.count}">
+          <div class="speed-week-track" aria-hidden="true"><span style="height:${day.count?Math.max(14,Math.round(day.count/tallest*100)):0}%"></span></div>
+          <small>${day.label}</small><span class="speed-week-count">${day.count||'·'}</span>
+        </li>`).join('')}
+      </ol>
+      <p>Count of locally saved runs, across all Speed Lab categories and input modes. This is activity, not a speed comparison.${activity.undated?' '+activity.undated+' older or invalid-date '+(activity.undated===1?'record is':'records are')+' not shown.':''} Only the newest 25 saved results are available; the display may omit earlier practice.</p>
+    </section>
     <div class="speed-insight-goals"><span>ACCURACY GOAL</span><div class="speed-insight-buttons" role="group" aria-label="Accuracy goal">
       ${ACCURACY_GOALS.map(value=>`<button type="button" data-action="speed-goal" data-goal="${value}" aria-pressed="${value===goal}">${value}%</button>`).join('')}
     </div></div>

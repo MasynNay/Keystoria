@@ -29,6 +29,7 @@ on:
       - 'scripts/test-speed-insights-browser.mjs'
       - 'scripts/test-speed-history-restore.mjs'
       - 'app/tests/test_speed_insights.mjs'
+      - 'app/tests/test_speed_activity.mjs'
       - 'app/tests/test_speed_history_restore.mjs'
       - 'scripts/test-numpad-browser.mjs'
   pull_request:
@@ -60,6 +61,7 @@ on:
       - 'scripts/test-speed-insights-browser.mjs'
       - 'scripts/test-speed-history-restore.mjs'
       - 'app/tests/test_speed_insights.mjs'
+      - 'app/tests/test_speed_activity.mjs'
       - 'app/tests/test_speed_history_restore.mjs'
       - 'scripts/test-numpad-browser.mjs'
   workflow_dispatch:
@@ -87,7 +89,7 @@ jobs:
           node --check site/play/assets/ui/lyric-lab-controller.js
           node --check app/web/ui/training-view.js
           node --check site/play/assets/ui/training-view.js
-          node --test app/tests/test_academy_checkpoint.mjs app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_numpad.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_history_restore.mjs
+          node --test app/tests/test_academy_checkpoint.mjs app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_numpad.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_activity.mjs app/tests/test_speed_history_restore.mjs
           diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
           diff app/web/ui/typing-feedback.js site/play/assets/ui/typing-feedback.js

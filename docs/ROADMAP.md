@@ -1,3 +1,11 @@
+## Practice Compass: private seven-day activity — November 22, 2026
+
+**Release checks pending.** Practice Compass now displays seven device-local calendar days of **saved Speed Lab activity**, across categories, durations, assisted, exact and Numpad modes. It counts completed records only and does **not compare** their speeds, accuracy or modes. Each day shows a small accessible bar and saved-run count, with a summary of active days and saved runs. The display uses only timestamps already in the local 25-result Speed Lab history; it creates no new storage keys, accounts, network calls, streak obligations or notifications.
+
+The view makes its limits explicit: it cannot reconstruct older sessions beyond the newest 25 stored results, unsaved/interrupted runs, or legacy records without timestamps; invalid or future timestamps are not counted. Days are assigned using the viewer's device-local calendar, including across month and daylight-saving boundaries. Clearing or restoring Speed Lab results refreshes the chart in place without replacing the native typing field or moving focus from accuracy-goal controls. Both local and public browser editions have matching code and responsive styling.
+
+Pure Node tests cover calendar windows, future dates, legacy timestamps, cap and mixed modes; the existing Playwright Speed Lab browser gate covers a first saved result, multi-day data, accessible seven-bar DOM, mobile widths, and clearing. The real-phone lag investigation [#82](https://github.com/MasynNay/Keystoria/issues/82) remains open and is not considered resolved by a progress feature.
+
 ## Lyric Lab idle timer lifecycle — November 22, 2026
 
 **Release validation pending; affected physical phone still unverified.** Lyric Lab previously kept its 180ms lyric/scores/UI ticker running continuously after selecting a song, including while waiting to start, during silent or built-in demo pause, and on the completed results screen. This wasted idle JavaScript work on phones. The controller now uses **1000ms idle polling** before offline playback and while paused without a ready video, switches immediately to the original **180ms cadence** during playback, and **removes the interval completely** when a song finishes or Lyric Lab is exited. Replay restores a single idle timer before playback begins.

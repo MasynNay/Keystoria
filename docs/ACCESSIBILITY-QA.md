@@ -1,3 +1,9 @@
+## Practice Compass: seven-day activity and chart accessibility — November 22, 2026
+
+The new seven-day local Speed Lab activity display uses a named section and an ordered seven-day list. Each day has an explicit accessible name including the weekday, date and number of saved runs; bar heights are purely decorative and cannot replace text values. The chart never receives keyboard focus, animates, or rewrites an active practice field. Existing goal buttons, status live region, export and clear controls preserve their DOM identity when activity changes.
+
+Test on mobile widths for seven equal columns without horizontal overflow. Verify one completed saved run increases today's count, all modes count as activity without misleading speed comparisons, older or undated records are described accurately, clearing history resets the bars, and VoiceOver/TalkBack can read each day's text. Browser automation covers markup and focus; physical screen-reader QA remains a manual requirement.
+
 ## Lyric Lab idle scheduling and completion cleanup — November 22, 2026
 
 Lyric Lab now polls at 1000ms before a local/demo track plays and during offline pause, instead of doing repeated 180ms work. Active playback and ready YouTube iframes retain 180ms lyric synchronization (including seeking via the native iframe while paused). Completed results shut the ticker down; Play Again reinstates one idle ticker. The original native input and the completed-song heading/focus, score, skip and retry behavior are unchanged. Browser tests cover phone and desktop timing transitions, paused seek, results and cleanup; VoiceOver/TalkBack physical-device QA and the open mobile lag report #82 remain separate requirements.

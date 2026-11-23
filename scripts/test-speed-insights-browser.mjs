@@ -18,6 +18,11 @@ try {
   const insight=page.locator('#speed-practice-insights');
   const input=page.locator('#speed-input');
   assert.equal(await insight.getAttribute('data-matches'),'0','new visitors have no comparable progress yet');
+  const week=insight.locator('.speed-week-activity');
+  assert.equal(await week.getAttribute('data-active-days'),'0');
+  assert.equal(await week.getAttribute('data-saved-runs'),'0');
+  assert.equal(await week.locator('li').count(),7,'activity always contains seven local days');
+  assert.match(await week.innerText(),/newest 25 saved results/i);
   assert.match(await insight.innerText(),/Finish a run/);
   assert.match(await insight.locator('.speed-insight-next strong').innerText(),/Complete your first timed run/,
    'new players get a useful first-run suggestion without inventing a prior score');
@@ -50,6 +55,9 @@ try {
   await input.fill(reference);
   await page.locator('#speed-results-heading').waitFor();
   assert.equal(await insight.getAttribute('data-matches'),'1','saved run appears as a comparable insight');
+  assert.equal(await week.getAttribute('data-active-days'),'1','a finished run counts once today');
+  assert.equal(await week.getAttribute('data-saved-runs'),'1');
+  assert.equal(await week.locator('li').last().getAttribute('data-runs'),'1');
   assert.match(await insight.innerText(),/RECENT AVERAGE ACCURACY/);
   assert.match(await insight.locator('.speed-insight-qualified').innerText(),/BEST AT 90%/);
   assert.match(await insight.locator('.speed-insight-qualified strong').innerText(),/\d+ WPM/,
@@ -72,11 +80,26 @@ try {
       {pack:'everyday',seconds:30,practiceMode:mode,wpm:10,accuracy:99},
       {pack:'everyday',seconds:30,practiceMode:mode,wpm:88,accuracy:96},
       {pack:'numpad',seconds:30,practiceMode:'standard-exact',wpm:900,cpm:900,accuracy:100},
-    ]));
+    ].map((run,i)=>{
+      const today=new Date();
+      const offset=[0,0,1,3,6,8,6][i];
+      // Today may be before noon in CI. A future noon timestamp must
+      // correctly be ignored by the app, so use the actual current time.
+      const date=offset===0?today:new Date(today.getFullYear(),today.getMonth(),
+       today.getDate()-offset,12);
+      return {...run,at:date.toISOString()};
+    })));
     window.__speedInputNode=document.getElementById('speed-input');
   },mobile?'mobile-assisted':'standard-exact');
   await page.locator('[data-action="speed-goal"][data-goal="95"]').click();
   assert.equal(await insight.getAttribute('data-matches'),'5');
+  assert.equal(await week.getAttribute('data-active-days'),'4',
+    'all saved Speed Lab modes count toward device-local activity');
+  assert.equal(await week.getAttribute('data-saved-runs'),'6',
+    'the dated run from eight days ago is outside the rolling seven days');
+  assert.deepEqual(await week.locator('li').evaluateAll(items=>
+    items.map(item=>Number(item.dataset.runs))),[2,0,0,1,0,1,2]);
+  assert.match(await week.innerText(),/not a speed comparison/i);
   assert.deepEqual((await insight.locator('.speed-insight-bar-label').allTextContents()).map(x=>x.trim()),[
     '10 WPM','20 WPM','30 WPM','40 WPM','50 WPM'
   ]);
@@ -131,6 +154,11 @@ try {
   page.once('dialog',dialog=>dialog.accept());
   await page.locator('[data-action="speed-clear"]').click();
   assert.equal(await insight.getAttribute('data-matches'),'0');
+  assert.equal(await week.getAttribute('data-active-days'),'0',
+    'clearing saved records removes activity in place');
+  assert.equal(await week.getAttribute('data-saved-runs'),'0');
+  assert.deepEqual(await week.locator('li').evaluateAll(items=>
+    items.map(item=>Number(item.dataset.runs))),Array(7).fill(0));
   assert.match(await insight.locator('.speed-insight-qualified').innerText(),/No matching saved run reached this goal/);
   assert.match(await insight.locator('.speed-insight-next strong').innerText(),/Complete your first timed run/,
    'clearing local records resets the next-session suggestion');

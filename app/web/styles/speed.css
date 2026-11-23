@@ -182,3 +182,18 @@
  .speed-pause-banner p{flex-basis:auto}
  .speed-pause-banner button{width:100%}
 }
+
+
+/* Rolling seven-day activity is deliberately a lightweight chart: no JS
+ * animation, touch targets, or layout measurements on keystrokes. */
+.speed-week-activity{min-width:0;margin:16px 0;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--text)}
+.speed-week-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:5px 12px;margin-bottom:12px}
+.speed-week-heading strong{font:700 11px/1.5 var(--mono)}
+.speed-week-heading>span{font:12px/1.5 var(--body)}
+.speed-week-activity ol{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;list-style:none;padding:0;margin:0}
+.speed-week-activity li{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font:10px/1.4 var(--mono)}
+.speed-week-track{display:flex;align-items:end;width:100%;height:48px;border:1px solid var(--line);border-radius:4px 4px 0 0;background:var(--panel);overflow:hidden}
+.speed-week-track>span{display:block;width:100%;background:var(--accent)}
+.speed-week-count{font-weight:800;color:var(--accent)}
+.speed-week-activity p{font:11px/1.6 var(--body);color:var(--text);opacity:.85;margin:12px 0 0}
+@media(max-width:380px){.speed-week-activity{padding:10px}.speed-week-activity ol{gap:4px}.speed-week-activity li{font-size:9px}}

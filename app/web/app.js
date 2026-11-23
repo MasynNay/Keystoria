@@ -1,9 +1,9 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.1";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.1";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.1";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.2";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.47.2";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.1";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.2";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.52.4";
 import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.0";
@@ -257,11 +257,18 @@ function refreshSpeedInsights() {
     const next=host.firstElementChild;
     if(next){
       pulse.dataset.matches=next.dataset.matches;
-      for(const selector of [".speed-insight-scope",".speed-insight-stats",".speed-insight-qualified",".speed-insight-next"]){
+      for(const selector of [".speed-insight-scope",".speed-insight-stats",".speed-insight-qualified",".speed-insight-next",".speed-week-activity"]){
         const current=pulse.querySelector(selector);
         const updated=next.querySelector(selector);
-        if(current&&updated&&current.innerHTML!==updated.innerHTML)
-          current.innerHTML=updated.innerHTML;
+        if(current&&updated){
+          if(current.innerHTML!==updated.innerHTML)current.innerHTML=updated.innerHTML;
+          // The activity container retains its identity while restoring,
+          // clearing or saving runs; only its bounded seven-day snapshot moves.
+          if(selector===".speed-week-activity"){
+            current.dataset.activeDays=updated.dataset.activeDays;
+            current.dataset.savedRuns=updated.dataset.savedRuns;
+          }
+        }
       }
       const previousTrail=pulse.querySelector(".speed-insight-trail");
       const nextTrail=next.querySelector(".speed-insight-trail");
