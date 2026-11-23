@@ -237,7 +237,15 @@ export function createLyricLabController({state,onRender}){
    const el=$(id),next=String(value);
    if(el && el.textContent!==next)el.textContent=next;
   }
-  if($('lyric-seek-slider') && document.activeElement!==$('lyric-seek-slider'))$('lyric-seek-slider').value=String(Math.min(selected.duration,Math.max(0,time)));
+  // The range input has a 0.5-second step. Writing an unrounded floating
+  // point value on every 180ms video tick needlessly dirties the native
+  // slider, especially on a phone with a software keyboard open.
+  const slider=$('lyric-seek-slider');
+  if(slider && document.activeElement!==slider){
+   const position=Math.round(Math.min(selected.duration,Math.max(0,time))*2)/2;
+   const next=String(position);
+   if(slider.value!==next)slider.value=next;
+  }
   renderLyrics();
  }
  let lastHtmlKey='';
@@ -252,7 +260,15 @@ export function createLyricLabController({state,onRender}){
     ? (field.dataset.imeCommitted||"") : (field?.value||"");
   const key=`${index}|${audioLine}|${typeLine}|${phase}|${wrong}|${offset}|${strict}|${typed}|${active}`;
   const live=$('lyric-live-text'),liveTime=$('lyric-live-time'),liveFill=$('lyric-live-fill');
-  if(liveFill){const l=chart.lines[audioLine];const ratio=l&&lyricTime>=chart.lines[0].time?Math.max(0,Math.min(1,(lyricTime-l.time)/Math.max(.5,l.end-l.time))):0;const width=(ratio*100).toFixed(2)+'%';if(liveFill.style.width!==width)liveFill.style.width=width;}
+  if(liveFill){
+   const l=chart.lines[audioLine];
+   const ratio=l&&lyricTime>=chart.lines[0].time
+    ?Math.max(0,Math.min(1,(lyricTime-l.time)/Math.max(.5,l.end-l.time))):0;
+   // Progress used to animate width every tick, forcing bar layout.
+   // Scale the fixed-size fill instead; the browser can composite it.
+   const transform='scaleX('+ratio.toFixed(4)+')';
+   if(liveFill.style.transform!==transform)liveFill.style.transform=transform;
+  }
   if(liveTime && liveTime.textContent!==fmt(time))liveTime.textContent=fmt(time);
   if(key===lastHtmlKey)return;lastHtmlKey=key;
   if(live){const label=lyricTime<chart.lines[0].time?`Instrumental intro · first lyric at ${fmt(chart.lines[0].time-offset)}`:chart.lines[audioLine]?.text||'Waiting for first lyric…';if(live.textContent!==label)live.textContent=label;}

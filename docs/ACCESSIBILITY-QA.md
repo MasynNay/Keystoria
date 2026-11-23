@@ -1,3 +1,7 @@
+## Lyric Lab composited timing meter — November 22, 2026
+
+The live lyric-line progress meter now advances with a left-origin CSS transform rather than repainting its layout width roughly five times a second. It retains the existing color gradient and timing, disables transitions for `prefers-reduced-motion: reduce`, and respects the disabled-animation state during phone typing. The native range slider only writes when its 0.5-second displayed position changes and remains user-controlled while focused. Browser regression checks mobile and desktop playback, pause, range scrub, progress, and reduced-motion behavior; human keyboard and screen-reader verification on physical devices remains required.
+
 ## Speed Lab repeated native selection events — November 22, 2026
 
 A new mobile/desktop browser gate checks that repeated `select` and `selectionchange` notifications after the same edit do not reprocess the visible or screen-reader typing cues. The optimization still responds when a player explicitly moves the caret earlier in a passage, changes Word Focus, corrects an earlier typo, or switches exercises, and reuses the controller's existing accuracy result instead of scoring twice. Real VoiceOver/TalkBack/native keyboard verification remains a separate human QA requirement under issue #82.

@@ -39,6 +39,7 @@ jobs:
           diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/styles.css site/play/assets/styles.css
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
+          diff app/web/styles/v020.css site/play/assets/styles/v020.css
           diff app/web/styles/performance-check.css site/play/assets/styles/performance-check.css
           diff app/web/ui/performance-check.js site/play/assets/ui/performance-check.js
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
@@ -69,6 +70,7 @@ jobs:
           node scripts/test-session-recovery-browser.mjs
           node scripts/test-academy-focus.mjs
           node scripts/test-lyric-completion.mjs
+          node scripts/test-lyric-tick-compositor.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-idle-ticks.mjs
@@ -119,6 +121,7 @@ jobs:
           diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/styles.css site/play/assets/styles.css
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
+          diff app/web/styles/v020.css site/play/assets/styles/v020.css
           diff app/web/styles/performance-check.css site/play/assets/styles/performance-check.css
           diff app/web/ui/performance-check.js site/play/assets/ui/performance-check.js
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
