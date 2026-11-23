@@ -82,8 +82,11 @@ try {
       {pack:'numpad',seconds:30,practiceMode:'standard-exact',wpm:900,cpm:900,accuracy:100},
     ].map((run,i)=>{
       const today=new Date();
-      const date=new Date(today.getFullYear(),today.getMonth(),
-       today.getDate()-[0,0,1,3,6,8,6][i],12);
+      const offset=[0,0,1,3,6,8,6][i];
+      // Today may be before noon in CI. A future noon timestamp must
+      // correctly be ignored by the app, so use the actual current time.
+      const date=offset===0?today:new Date(today.getFullYear(),today.getMonth(),
+       today.getDate()-offset,12);
       return {...run,at:date.toISOString()};
     })));
     window.__speedInputNode=document.getElementById('speed-input');
