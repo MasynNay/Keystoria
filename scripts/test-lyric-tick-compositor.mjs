@@ -40,7 +40,9 @@ try{
    await page.locator('[data-action="lyric-demo"]').click();
    const fill=page.locator('#lyric-live-fill');
    const slider=page.locator('#lyric-seek-slider');
-   await fill.waitFor();
+   // At time zero scaleX(0) has a zero visual bounding box, which Playwright
+   // correctly calls hidden. Assert DOM attachment, not nonzero visual fill.
+   await fill.waitFor({state:'attached'});
    assert.equal(await fill.evaluate(el=>el.style.width),'',
     'the live meter must no longer use a layout-invalidating inline width');
    const initial=await fill.evaluate(el=>{
