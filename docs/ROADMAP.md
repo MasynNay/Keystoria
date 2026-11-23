@@ -1,3 +1,9 @@
+## Phone check does not obstruct typing — November 22, 2026
+
+**Release verification pending:** The optional 10-second on-device responsiveness check introduced in PR #87 originally displayed a wide panel across the phone while recording and returned keyboard focus to the Settings button when started. The running UI is now limited to a compact, fixed-position Stop badge (maximum 220px wide / minimal height); it expands into the full selectable report only after capture ends. Launching the check from Speed Lab, Lyric Lab, or Field Academy returns focus to the existing editable native practice field without replacing it. Paused or disabled inputs are not focused.
+
+Playwright now checks the compact badge's bounds, lack of overlap with Speed Lab's textarea, native keyboard focus, ordinary scoring, Stop-to-report transition and restart at 320px, 390px and wide desktop. Real iOS Safari/Android Chrome keyboard behavior and frame latency still require physical device verification under #82. This changes the diagnostic only; no gameplay modes, personal scores or records are changed.
+
 ## Optional on-device phone responsiveness check — November 22, 2026
 
 **Under release verification; physical phone diagnosis remains open.** Instead of inferring the cause of reported lag from desktop Chromium emulation, Keystoria now offers an explicit **START 10-SECOND CHECK** button in Settings. A small temporary panel stays above the existing practice screen while the player types or scrolls, recording only frame scheduling gaps, input-event counts for Keystoria typing controls, approximate input-to-next-animation-frame delay, and Long Task API data when supported. The original typing inputs, modes, themes, scores, playback and storage are unchanged.
