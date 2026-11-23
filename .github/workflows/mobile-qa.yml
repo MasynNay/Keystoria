@@ -14,6 +14,7 @@ on:
       - 'scripts/test-mobile-compositor.mjs'
       - 'scripts/test-academy-focus.mjs'
       - 'scripts/test-lyric-completion.mjs'
+      - 'scripts/test-lyric-tick-compositor.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
@@ -43,6 +44,7 @@ on:
       - 'scripts/test-mobile-compositor.mjs'
       - 'scripts/test-academy-focus.mjs'
       - 'scripts/test-lyric-completion.mjs'
+      - 'scripts/test-lyric-tick-compositor.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
@@ -88,6 +90,7 @@ jobs:
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
           diff app/web/ui/typing-feedback.js site/play/assets/ui/typing-feedback.js
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
+          diff app/web/styles/v020.css site/play/assets/styles/v020.css
           diff app/web/styles/performance-check.css site/play/assets/styles/performance-check.css
           diff app/web/ui/performance-check.js site/play/assets/ui/performance-check.js
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
@@ -110,6 +113,7 @@ jobs:
           node scripts/test-mobile-compositor.mjs
           node scripts/test-academy-focus.mjs
           node scripts/test-lyric-completion.mjs
+          node scripts/test-lyric-tick-compositor.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-idle-ticks.mjs
