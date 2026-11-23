@@ -16,6 +16,7 @@ node scripts/test-release-negative.mjs
 node scripts/test-vocabulary-browser.mjs
 node scripts/test-lyric-recovery.mjs
 node scripts/test-lyric-tick-compositor.mjs
+node scripts/test-lyric-idle-scheduler.mjs
 node scripts/test-dialog-keyboard.mjs
 node scripts/test-navigation-accessibility.mjs
 # Keep modal isolation in the local browser QA sequence.
