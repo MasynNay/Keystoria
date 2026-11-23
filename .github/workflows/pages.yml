@@ -35,7 +35,7 @@ jobs:
           node --test app/tests/test_performance_check.mjs
           node --check app/web/ui/session-recovery.js
           node --test app/tests/test_session_recovery.mjs
-          node --test app/tests/test_academy_checkpoint.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs app/tests/test_lyric_provider.mjs app/tests/test_video_match.mjs app/tests/test_theme_contrast.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_activity.mjs app/tests/test_speed_history_restore.mjs
+          node --test app/tests/test_academy_checkpoint.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_lyric_history.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs app/tests/test_lyric_provider.mjs app/tests/test_video_match.mjs app/tests/test_theme_contrast.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_activity.mjs app/tests/test_speed_history_restore.mjs
           diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/styles.css site/play/assets/styles.css
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
@@ -43,6 +43,8 @@ jobs:
           diff app/web/styles/performance-check.css site/play/assets/styles/performance-check.css
           diff app/web/ui/performance-check.js site/play/assets/ui/performance-check.js
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
+          diff app/web/ui/lyric-history.js site/play/assets/ui/lyric-history.js
+          diff app/web/styles/v018.css site/play/assets/styles/v018.css
           diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
           diff app/web/ui/speed-flow.js site/play/assets/ui/speed-flow.js
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
@@ -72,6 +74,7 @@ jobs:
           node scripts/test-lyric-completion.mjs
           node scripts/test-lyric-tick-compositor.mjs
           node scripts/test-lyric-idle-scheduler.mjs
+          node scripts/test-lyric-history-browser.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-idle-ticks.mjs
@@ -126,6 +129,8 @@ jobs:
           diff app/web/styles/performance-check.css site/play/assets/styles/performance-check.css
           diff app/web/ui/performance-check.js site/play/assets/ui/performance-check.js
           diff app/web/ui/lyric-lab-core.js site/play/assets/ui/lyric-lab-core.js
+          diff app/web/ui/lyric-history.js site/play/assets/ui/lyric-history.js
+          diff app/web/styles/v018.css site/play/assets/styles/v018.css
           test -f site/styles.css
           test -f site/.nojekyll
           test -f site/assets/keystoria-mark.svg
