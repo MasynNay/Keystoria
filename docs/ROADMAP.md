@@ -1,3 +1,11 @@
+## Lyric Lab composited progress and native seek budget — November 22, 2026
+
+**Pending release validation and real-phone verification.** Lyric Lab used to update the `width` of its live audio-line progress fill every 180ms, potentially forcing a layout/paint cycle alongside active native keyboard input. The progress fill now keeps a full-size layout box and animates `transform: scaleX(...)` with left origin, allowing the browser to composite the fill without changing its layout dimensions. Existing gradient, animations on desktop, reduced-motion opt-out and `mobile-typing-active` no-transition override remain intact.
+
+The native half-second-step seek slider also avoids redundant `.value` writes. Time is rounded to the existing 0.5-second step; only a changed step updates the input, and a focused range control is never overridden while the player is scrubbing. Playback timing, synchronization, score calculation, pause, retry, and finished-song behavior are unchanged.
+
+The new local-demo-only Playwright check exercises 390px touch and 1440px desktop (including reduced motion), verifying a stable progress layout box while the visible compositor fill advances, no repeated writes on paused ticks, bounded slider changes during playback, and manual seek/clock synchronization. It runs in Mobile Typing and the gated Pages release suite. A browser regression is **not proof that the reported physical-phone lag is fixed**; retain issue [#82](https://github.com/MasynNay/Keystoria/issues/82) until device measurements are reviewed.
+
 ## Speed Lab native selection-event deduplication — November 22, 2026
 
 **Release verification pending, physical-device lag still open.** On some phones one keyboard edit causes `input`, `select`, and `selectionchange` in quick succession. Speed Lab now caches its last fully rendered guidance signature (session, native field, passage renderer, typed content, caret and Word Focus state). Repeated events for an unchanged signature no longer repeat visual cue, spoken target, or Word Focus computation; actual edits, earlier caret moves, new sessions, renderer changes, and Word Focus toggles still invalidate guidance. The native text field is never replaced.
