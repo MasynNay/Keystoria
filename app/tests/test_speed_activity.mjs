@@ -8,7 +8,7 @@ const record=at=>({pack:'everyday',seconds:30,wpm:40,accuracy:96,at});
 
 test('seven device-local calendar days are oldest to newest, inclusive of today',()=>{
  const rows=[
-  record(onDay(0)),record(onDay(0,19)),record(onDay(1)),
+  record(onDay(0)),record(onDay(0,16)),record(onDay(1)),
   record(onDay(3)),record(onDay(6)),record(onDay(7)),
   record(onDay(-1)),record(onDay(0,23)),
   {pack:'numpad',seconds:30,wpm:12,cpm:60,at:onDay(6)},
