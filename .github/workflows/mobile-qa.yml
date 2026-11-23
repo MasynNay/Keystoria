@@ -17,6 +17,8 @@ on:
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
+      - 'scripts/test-performance-check.mjs'
+      - 'app/tests/test_performance_check.mjs'
       - 'scripts/test-typing-dom-performance.mjs'
       - 'scripts/test-speed-interruption.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
@@ -43,6 +45,8 @@ on:
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
+      - 'scripts/test-performance-check.mjs'
+      - 'app/tests/test_performance_check.mjs'
       - 'scripts/test-typing-dom-performance.mjs'
       - 'scripts/test-speed-interruption.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
@@ -68,6 +72,8 @@ jobs:
         run: |
           node --check scripts/test-speed-history-restore.mjs
           node --check app/web/app.js
+          node --check app/web/ui/performance-check.js
+          node --test app/tests/test_performance_check.mjs
           node --check site/play/assets/app.js
           node --check app/web/ui/mobile-typing.js
           node --check site/play/assets/ui/mobile-typing.js
@@ -80,6 +86,8 @@ jobs:
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
           diff app/web/ui/typing-feedback.js site/play/assets/ui/typing-feedback.js
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
+          diff app/web/styles/performance-check.css site/play/assets/styles/performance-check.css
+          diff app/web/ui/performance-check.js site/play/assets/ui/performance-check.js
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
           diff app/web/ui/speed-insights.js site/play/assets/ui/speed-insights.js
           diff app/web/ui/speed-flow.js site/play/assets/ui/speed-flow.js
@@ -103,6 +111,7 @@ jobs:
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-idle-ticks.mjs
+          node scripts/test-performance-check.mjs
           node scripts/test-typing-dom-performance.mjs
           node scripts/test-speed-interruption.mjs
           node scripts/test-speed-keyboard-assist.mjs

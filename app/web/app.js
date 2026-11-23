@@ -20,11 +20,13 @@ import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
 import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.49.1";
+import { createPerformanceCheck } from "./ui/performance-check.js?v=0.1.0";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
 const app = $("#app");
 setupMobileTyping(app);
+const performanceCheck=createPerformanceCheck();
 const params = new URLSearchParams(location.search);
 const savedName = localStorage.getItem("panic.callsign") || "";
 const state = {
@@ -496,6 +498,7 @@ app.addEventListener("click",event=>{
   case "reel-prev":moveStoryReel(state.room,-1);break;
   case "reel-next":moveStoryReel(state.room,1);break;
   case "settings":showModal("settings");break;
+  case "perf-start":if(performanceCheck.start())dismissModal();break;
   case "theme-select": {
     const id = item.dataset.themeId;
     if (!THEME_IDS.includes(id)) break;

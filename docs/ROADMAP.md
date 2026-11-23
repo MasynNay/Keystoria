@@ -1,3 +1,11 @@
+## Optional on-device phone responsiveness check — November 22, 2026
+
+**Under release verification; physical phone diagnosis remains open.** Instead of inferring the cause of reported lag from desktop Chromium emulation, Keystoria now offers an explicit **START 10-SECOND CHECK** button in Settings. A small temporary panel stays above the existing practice screen while the player types or scrolls, recording only frame scheduling gaps, input-event counts for Keystoria typing controls, approximate input-to-next-animation-frame delay, and Long Task API data when supported. The original typing inputs, modes, themes, scores, playback and storage are unchanged.
+
+The report is visible only on the player's device. It is never automatically uploaded or persisted. Typed text, song URLs, scores and personal records are never read; a shareable report includes browser user agent and viewport size, with both disclosed next to the opt-in control. Copy requires an additional explicit click; when clipboard access is blocked, the on-screen text remains selectable. Closing discards the report. Timeouts, manual stop and background/page-exit cleanup disconnect observers and event handlers. Results are *diagnostic proxies*, not a claim of measured end-to-end responsiveness or a production performance fix.
+
+Node and Playwright tests cover missing browser Long Task support, percentile calculations, privacy, explicit opt-in, stable native textareas, phone/desktop capture, stop/restart and report close. **Still required:** Use this new check on the actual affected phone; note whether delay is on the home screen, typing, scrolling or video, and record the device/browser. Keep [mobile lag issue #82](https://github.com/MasynNay/Keystoria/issues/82) open until measured phone behavior is understood and addressed.
+
 ## Speed Lab clock-only tick optimization — November 22, 2026
 
 **Pending CI and physical-device verification.** Speed Lab's 250ms timer previously re-ran full-passage character scoring and refreshed the visual/spoken caret guidance even when the typing text was unchanged. This adds avoidable main-thread work as a passage grows, particularly while a software keyboard is open.
