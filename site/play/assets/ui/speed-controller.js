@@ -32,6 +32,10 @@ export function createSpeedController({ state, onRender, playSound }) {
   let flow=null;
   let focusFrame=null;
   let focusWordSignature=null;
+  // Mobile browsers often deliver select + selectionchange after one input.
+  // Skip duplicate guidance only when session, field, renderer, text, caret,
+  // and Word Focus presentation are genuinely unchanged.
+  let lastGuidance=null;
   // Time-only ticks must not re-score a full passage or re-render the caret.
   // Invalidate on text edits (including middle edits, IME commits, Back Word)
   // and on every newly created session. Timer math still uses live elapsed time.
@@ -77,6 +81,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     flow?.dispose?.();
     flow=null;
     focusWordSignature=null;
+    lastGuidance=null;
     const selectedPack=PACKS[pack] ? pack : 'everyday';
     const compact=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
     // Browser zoom can shrink a mouse desktop to 320 CSS pixels. Keep the
@@ -128,6 +133,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     flow?.dispose?.();
     flow=null;
     focusWordSignature=null;
+    lastGuidance=null;
     state.speed=null;
     onRender();
   }
@@ -147,7 +153,14 @@ export function createSpeedController({ state, onRender, playSound }) {
     const field=node('speed-input');
     if(!session || session.status==='complete' || !field || !field.isConnected)return;
     const caret=Number.isInteger(field.selectionStart)?field.selectionStart:session.typed.length;
-    flow?.update(session.typed,caret);
+    const previous=lastGuidance;
+    if(previous?.session===session && previous.field===field
+       && previous.flow===flow && previous.typed===session.typed
+       && previous.caret===caret && previous.wordFocus===session.focusPractice)return;
+    // The controller already scores the same input for the live accuracy
+    // label. Supply that exact value to the passage renderer instead of
+    // rescanning the entire typed prefix for its data-accuracy attribute.
+    flow?.update(session.typed,caret,liveScore(session).accuracy);
     const cue=nextSpeedCue(session.reference,session.typed,38,caret);
     text('speed-mobile-first',cue.next===' ' ? '␣' : cue.next);
     text('speed-mobile-rest',cue.rest.replace(/ /g,'·'));
@@ -179,6 +192,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     // Only change this live region if the whole word/group changed.
     text('speed-screenreader-target',
       speedSpokenTarget(session.reference,session.typed,session.pack==='numpad',caret));
+    lastGuidance={session,field,flow,typed:session.typed,caret,wordFocus:session.focusPractice};
   }
 
   function paint() {
