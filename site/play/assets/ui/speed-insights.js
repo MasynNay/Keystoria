@@ -101,6 +101,47 @@ export function summarizeSpeedPractice(history, session, goal = 95) {
   };
 }
 
+
+/** Device-local, rolling seven-calendar-day activity for saved Speed Lab runs.
+ * This is a modest practice indicator, NOT a streak or lifetime count:
+ * only the most recent 25 saved results exist; interrupted/unsaved runs
+ * and older entries without a timestamp cannot be reconstructed.
+ * All input modes count as sessions without mixing their speed metrics.
+ */
+export function summarizeSpeedActivity(history, now = new Date()) {
+  const today=now instanceof Date?new Date(now.getTime()):new Date(NaN);
+  const validNow=Number.isFinite(today.getTime())?today:new Date();
+  const rows=Array.isArray(history)?history.slice(0,25):[];
+  const days=Array.from({length:7},(_,i)=>{
+    const day=new Date(validNow.getFullYear(),validNow.getMonth(),validNow.getDate()-(6-i),12);
+    const key=`${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
+    return {key,label:['SUN','MON','TUE','WED','THU','FRI','SAT'][day.getDay()],
+      dateLabel:`${day.getMonth()+1}/${day.getDate()}`,count:0};
+  });
+  const byDay=new Map(days.map(day=>[day.key,day]));
+  let undated=0;
+  for(const run of rows){
+    if(!run||typeof run.at!=='string'){
+      undated++;continue;
+    }
+    const time=Date.parse(run.at);
+    if(!Number.isFinite(time)||time>validNow.getTime()){
+      undated++;continue;
+    }
+    const date=new Date(time);
+    const key=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const day=byDay.get(key);
+    if(day)day.count++;
+  }
+  return {
+    days,
+    activeDays:days.filter(day=>day.count>0).length,
+    savedRuns:days.reduce((sum,day)=>sum+day.count,0),
+    undated,
+    capped:rows.length===25,
+  };
+}
+
 export function exportSpeedResults(history = readSpeedHistory(), now = new Date()) {
   return {
     format:'keystoria.speed.history',
