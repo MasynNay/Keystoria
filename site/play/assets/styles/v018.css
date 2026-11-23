@@ -90,3 +90,20 @@ body.reduced-motion .lyric-disc,body.reduced-motion .lyric-original-visual>span{
 @keyframes lyric-next-letter-flash{50%{color:#fff4a0;background:rgba(253,193,69,.18);box-shadow:inset 0 -3px 0 #ffe284;}}
 @media(prefers-reduced-motion:reduce){.lyric-current-line.typing-feedback .lyric-live-word .type-char.current{animation:none;}}
 body.reduced-motion .lyric-current-line.typing-feedback .lyric-live-word .type-char.current{animation:none;}
+
+
+/* Small, accessible snapshot of existing on-device Lyric Lab history.
+   Its text is primary; no motion, timers or external imagery are introduced. */
+.lyric-recent{margin:26px 0 8px;min-width:0}
+.lyric-recent h2{font:900 clamp(20px,2.3vw,28px) var(--display);letter-spacing:.03em;color:var(--text)}
+.lyric-recent-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0;list-style:none;margin:0}
+.lyric-recent-list li{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:15px 17px;color:var(--text)}
+.lyric-recent-track{min-width:0;flex:1 1 150px;overflow-wrap:anywhere}
+.lyric-recent-track strong{display:block;font:800 16px/1.3 var(--display)}
+.lyric-recent-track span{display:block;margin-top:5px;font:12px/1.55 var(--body)}
+.lyric-recent-score{flex:1 1 155px;min-width:0}
+.lyric-recent-score strong{display:block;color:var(--accent);font:900 25px/1.1 var(--display)}
+.lyric-recent-score strong small{font:700 11px var(--mono)}
+.lyric-recent-score span{display:block;margin-top:5px;font:11px/1.55 var(--body)}
+.lyric-recent-empty{padding:16px;border:1px solid var(--line);border-radius:9px;color:var(--text);background:var(--panel-2);font:13px/1.6 var(--body)}
+@media(max-width:690px){.lyric-recent-list{grid-template-columns:1fr}.lyric-recent-list li{padding:12px 14px}}
