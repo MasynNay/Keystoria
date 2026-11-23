@@ -1,3 +1,7 @@
+## Unobstructed on-device recording — November 22, 2026
+
+The optional mobile performance check now stays in a compact, labelled Stop badge during capture rather than expanding above gameplay. Its full report and Copy/Close actions appear only after capture finishes. Starting the check restores focus to an available native practice input on the current screen, excluding disabled/paused fields. Browser checks cover 320px and 390px emulated touch layouts, focus return, recorder bounds, and report expansion. Actual mobile screen-reader focus announcements and software keyboard behavior must still be verified on hardware.
+
 ## Opt-in phone responsiveness check — November 22, 2026
 
 Settings now exposes a keyboard-accessible 10-second local responsiveness check for reported mobile lag. The status panel is a separate labelled region with a polite status message, a manual Stop button, a read-only selectable report, Copy, and Close. It does not modify active typing inputs or persist typed content. It does collect browser signature and viewport dimensions only for the player to review/share explicitly. Browsers lacking Long Task API support label the metric as unavailable rather than zero. Its frame and input-to-next-frame samples are diagnostic approximations and not a measured INP score. Browser unit/Playwright checks cover the UI; focus, VoiceOver/TalkBack, overlay obstruction under a physical software keyboard and user comprehension still require human device QA.
