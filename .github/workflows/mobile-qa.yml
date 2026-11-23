@@ -16,6 +16,8 @@ on:
       - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-lyric-tick-compositor.mjs'
       - 'scripts/test-lyric-idle-scheduler.mjs'
+      - 'scripts/test-lyric-history-browser.mjs'
+      - 'app/tests/test_lyric_history.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
@@ -48,6 +50,8 @@ on:
       - 'scripts/test-lyric-completion.mjs'
       - 'scripts/test-lyric-tick-compositor.mjs'
       - 'scripts/test-lyric-idle-scheduler.mjs'
+      - 'scripts/test-lyric-history-browser.mjs'
+      - 'app/tests/test_lyric_history.mjs'
       - 'scripts/test-practice-composition.mjs'
       - 'scripts/test-speed-mobile-performance.mjs'
       - 'scripts/test-speed-idle-ticks.mjs'
@@ -89,10 +93,12 @@ jobs:
           node --check site/play/assets/ui/lyric-lab-controller.js
           node --check app/web/ui/training-view.js
           node --check site/play/assets/ui/training-view.js
-          node --test app/tests/test_academy_checkpoint.mjs app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_numpad.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_activity.mjs app/tests/test_speed_history_restore.mjs
+          node --test app/tests/test_academy_checkpoint.mjs app/tests/test_mobile_typing.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_lyric_history.mjs app/tests/test_numpad.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_activity.mjs app/tests/test_speed_history_restore.mjs
           diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/ui/mobile-typing.js site/play/assets/ui/mobile-typing.js
           diff app/web/ui/typing-feedback.js site/play/assets/ui/typing-feedback.js
+          diff app/web/ui/lyric-history.js site/play/assets/ui/lyric-history.js
+          diff app/web/styles/v018.css site/play/assets/styles/v018.css
           diff app/web/styles/mobile-typing.css site/play/assets/styles/mobile-typing.css
           diff app/web/styles/v020.css site/play/assets/styles/v020.css
           diff app/web/styles/performance-check.css site/play/assets/styles/performance-check.css
@@ -119,6 +125,7 @@ jobs:
           node scripts/test-lyric-completion.mjs
           node scripts/test-lyric-tick-compositor.mjs
           node scripts/test-lyric-idle-scheduler.mjs
+          node scripts/test-lyric-history-browser.mjs
           node scripts/test-practice-composition.mjs
           node scripts/test-speed-mobile-performance.mjs
           node scripts/test-speed-idle-ticks.mjs
