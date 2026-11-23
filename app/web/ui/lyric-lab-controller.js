@@ -47,7 +47,7 @@ function youtubeApi(){
 export function createLyricLabController({state,onRender}){
  let phase='browse',query='',results=[],selected=null,chart=null,fetchController=null,request=0;
  let player=null,playerReady=false,videoPlaying=false,lagPaused=false,active=false,videoError='';
- let ticker=null,elapsed=0,time=0,offset=0,assist=false,strict=false;
+ let ticker=null,tickerDelay=null,elapsed=0,time=0,offset=0,assist=false,strict=false;
  let index=0,correct=0,attempts=0,skipped=0,chars=0,streak=0,bestStreak=0,wrong=false,notice='',searching=false;
  let loopIndex=null,practice=false,savedResult=false,lastClock=0,playbackRate=1,playerGeneration=0;
  const save = ()=>{try{localStorage.setItem('panic.lyric.assist',String(assist));localStorage.setItem('panic.lyric.strict',String(strict));localStorage.setItem('panic.lyric.speed',String(playbackRate));}catch{}};
@@ -73,7 +73,7 @@ export function createLyricLabController({state,onRender}){
  }
  function rerender(){onRender();}
  const setStatus=s=>{const el=$('lyric-video-status');if(el)el.textContent=s;};
- function teardown(){request++;playerGeneration++;loopIndex=null;practice=false;lastClock=0;fetchController?.abort();fetchController=null;searching=false;clearInterval(ticker);ticker=null;stopBeat();active=false;videoPlaying=false;lagPaused=false;playerReady=false;try{player?.destroy();}catch{}player=null;}
+ function teardown(){request++;playerGeneration++;loopIndex=null;practice=false;lastClock=0;fetchController?.abort();fetchController=null;searching=false;clearInterval(ticker);ticker=null;tickerDelay=null;stopBeat();active=false;videoPlaying=false;lagPaused=false;playerReady=false;try{player?.destroy();}catch{}player=null;}
  function open(){teardown();phase='browse';state.lyric=true;state.modal=null;state.layout='';rerender();}
  function close(){teardown();phase='browse';state.lyric=false;state.modal='welcome';state.layout='';rerender();}
  function back(){teardown();phase='browse';state.layout='';rerender();}
@@ -126,9 +126,22 @@ export function createLyricLabController({state,onRender}){
   teardown();selected={...track,videoId:track.videoId||savedVideoId(track)};chart=parseLRC(track.syncedLyrics,track.duration);if(chart.words.length<3){phase='browse';notice='That lyric record does not contain enough timed words.';rerender();return;}
   phase='song';index=0;attempts=0;skipped=0;correct=0;chars=0;streak=0;bestStreak=0;elapsed=0;time=0;offset=storedOffset(selected);wrong=false;videoError='';active=false;practice=false;savedResult=false;lastClock=0;lastHtmlKey='';state.layout='';rerender();
  }
+ /** Paused local/demo practice has no moving clock. Throttle that idle
+  * polling; keep the original 180ms cadence whenever playback is active
+  * or a YouTube iframe is ready (its own seek controls can move while paused).
+  * After completion there is no lyric work to perform at all.
+  */
+ function syncTicker(){
+  const delay=phase==='song'&&selected&&chart
+   ?(active||videoPlaying||playerReady?180:1000):null;
+  if(ticker!==null&&tickerDelay===delay)return;
+  if(ticker!==null)clearInterval(ticker);
+  ticker=null;tickerDelay=delay;
+  if(delay!==null)ticker=setInterval(tick,delay);
+ }
  function mount(){
   if(phase==='browse')return;
-  lastHtmlKey='';updateUI();clearInterval(ticker);ticker=setInterval(tick,180);
+  lastHtmlKey='';updateUI();syncTicker();
   mountPlayer();
  }
  /** Player lifecycle is independent of lyric state, so connecting a video never
@@ -144,7 +157,7 @@ export function createLyricLabController({state,onRender}){
     playerVars:{playsinline:1,controls:1,rel:0,origin:location.origin},
     events:{onReady:()=>{
       if(generation!==playerGeneration)return;
-      playerReady=true;applyPlaybackRate(playbackRate);
+      playerReady=true;syncTicker();applyPlaybackRate(playbackRate);
       const videoDuration=Number(player?.getDuration?.())||0;
       const slider=$('lyric-seek-slider');if(slider&&videoDuration>0)slider.max=String(Math.round(videoDuration));
       if(videoDuration>0 && selected?.duration && Math.abs(videoDuration-selected.duration)>8){
@@ -156,6 +169,7 @@ export function createLyricLabController({state,onRender}){
       if(videoPlaying){active=true;lastClock=performance.now();if($('lyric-input'))$('lyric-input').disabled=false;}
       else if(event.data===YT.PlayerState.PAUSED)active=false;
       if(event.data===YT.PlayerState.ENDED)finish();
+      syncTicker();
       if(!lagPaused&&$('lyric-toggle'))$('lyric-toggle').textContent=videoPlaying?'Ⅱ PAUSE':'▶ START';
      },onPlaybackRateChange:event=>{
       if(generation!==playerGeneration)return;
@@ -203,7 +217,7 @@ export function createLyricLabController({state,onRender}){
   const frame=$('lyric-player-frame');if(frame)frame.innerHTML='<div id="lyric-video-slot" class="lyric-video-slot"><span>Preparing YouTube…</span></div>';
   const details=$('lyric-video-form')?.closest('details');if(details){details.open=false;const summary=details.querySelector('summary');if(summary)summary.textContent='CHANGE YOUTUBE VIDEO';}
   setStatus('Connecting your YouTube video. Press START when it is ready.');
-  lastHtmlKey='';updateUI();mountPlayer();
+  lastHtmlKey='';syncTicker();updateUI();mountPlayer();
  }
  function tick(){
   if(phase!=='song'||!selected||!chart)return;
@@ -347,6 +361,7 @@ export function createLyricLabController({state,onRender}){
   if(frame)frame.innerHTML='<div class="lyric-no-video"><span>♫</span><strong>SILENT PRACTICE</strong><small>Progress is preserved. Press START to continue.</small></div>';
   if($('lyric-toggle'))$('lyric-toggle').textContent='▶ START';
   setStatus('Video disconnected. Press START to continue timed lyrics without music.');
+  syncTicker();
   lastHtmlKey='';updateUI();
  }
  function toggle(){if(phase==='done')return;
@@ -355,6 +370,7 @@ export function createLyricLabController({state,onRender}){
    try{if(videoPlaying){player.pauseVideo();active=false;}else{player.playVideo();active=true;}}catch{setStatus('Use the YouTube player controls to play.');}
   }else{if(active){active=false;stopBeat();setStatus('Paused. Press START to continue.');}else{active=true;lastClock=performance.now();startBeat();setStatus(selected?.demo?'Original electronic beat playing. Type each word in rhythm.':'Timed-lyrics practice running without a video.');}if($('lyric-toggle'))$('lyric-toggle').textContent=active?'Ⅱ PAUSE':'▶ START';}
   if(active && $('lyric-input'))$('lyric-input').disabled=false;
+  syncTicker();
   lastHtmlKey='';renderLyrics();
   $('lyric-input')?.focus({preventScroll:true});
  }
@@ -405,7 +421,7 @@ export function createLyricLabController({state,onRender}){
   for(const element of document.querySelectorAll('[data-action="lyric-mobile-submit"],[data-action="lyric-skip"],[data-action="lyric-mobile-toggle"],[data-action="lyric-toggle"]'))
    element.disabled=finished;
  }
- function finish(){if(phase==='done')return;phase='done';active=false;videoPlaying=false;stopBeat();try{player?.pauseVideo();}catch{}
+ function finish(){if(phase==='done')return;phase='done';active=false;videoPlaying=false;stopBeat();syncTicker();try{player?.pauseVideo();}catch{}
   const result=scoreRun({correct,attempts,skipped,characters:chars,elapsed,bestStreak});
   if(!savedResult && selected && !practice){
     savedResult=true;try{const old=JSON.parse(localStorage.getItem('panic.lyric.history')||'[]');
@@ -425,7 +441,7 @@ export function createLyricLabController({state,onRender}){
   $('lyric-finish-heading')?.focus({preventScroll:true});
  }
  function retry(){if(!selected)return;
-  updateFinishedState(false);index=0;correct=0;attempts=0;skipped=0;chars=0;elapsed=0;streak=0;bestStreak=0;wrong=false;lagPaused=false;time=0;active=false;practice=false;loopIndex=null;savedResult=false;phase='song';lastHtmlKey='';
+  updateFinishedState(false);index=0;correct=0;attempts=0;skipped=0;chars=0;elapsed=0;streak=0;bestStreak=0;wrong=false;lagPaused=false;time=0;active=false;practice=false;loopIndex=null;savedResult=false;phase='song';lastHtmlKey='';syncTicker();
   if(playerReady)try{player.pauseVideo();player.seekTo(0,true);}catch{}
   stopBeat();const el=$('lyric-input');if(el){el.disabled=false;el.value='';el.classList.remove('lyric-error');el.focus({preventScroll:true});}
   if($('lyric-stage-heading'))$('lyric-stage-heading').textContent='TYPE THE HIGHLIGHTED WORD';
@@ -435,7 +451,7 @@ export function createLyricLabController({state,onRender}){
  function seek(seconds,wordIndex=null){const maximum=Number(playerReady?player?.getDuration?.():0)||selected?.duration||999;const t=Math.max(0,Math.min(maximum,Number(seconds)||0));time=t;
   if(wordIndex!=null)index=Math.max(0,Math.min(chart.words.length,wordIndex));else index=chart.lines[currentLineAt(chart.lines,Math.max(0,time+offset))]?.startWord||0;
   lagPaused=false;wrong=false;lastHtmlKey='';const input=$('lyric-input');if(input){input.value='';input.classList.remove('lyric-error');}if(playerReady)try{player.seekTo(t,true);}catch{}
-  if(phase==='done'){phase='song';if($('lyric-input'))$('lyric-input').disabled=false;updateFinishedState(false);}
+  if(phase==='done'){phase='song';if($('lyric-input'))$('lyric-input').disabled=false;updateFinishedState(false);syncTicker();}
   updateUI();
  }
  function loopLine(){if(!selected||!chart)return;
