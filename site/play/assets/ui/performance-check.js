@@ -54,13 +54,13 @@ export function createPerformanceCheck({durationMs=10000}={}) {
   function showPanel() {
     panel?.remove();
     panel=document.createElement('section');
-    panel.className='keystoria-perf-check';
+    panel.className='keystoria-perf-check is-recording';
     panel.id='keystoria-perf-check';
     panel.setAttribute('role','region');
     panel.setAttribute('aria-label','On-device responsiveness check');
     panel.innerHTML='<strong>PHONE PERFORMANCE CHECK</strong>'+
-      '<p class="perf-check-message" role="status" aria-live="polite">Recording locally for 10 seconds. Type or scroll normally.</p>'+
-      '<button type="button" data-perf-action="stop">STOP & SHOW RESULTS</button>'+
+      '<p class="perf-check-message" role="status" aria-live="polite">CHECK RUNNING · TYPE OR SCROLL</p>'+
+      '<button type="button" data-perf-action="stop">STOP CHECK</button>'+
       '<textarea class="perf-check-report" readonly hidden aria-label="Local performance report" spellcheck="false"></textarea>'+
       '<button type="button" data-perf-action="copy" hidden>COPY REPORT</button>'+
       '<button type="button" data-perf-action="close" hidden>CLOSE</button>';
@@ -120,6 +120,9 @@ export function createPerformanceCheck({durationMs=10000}={}) {
       dpr:window.devicePixelRatio||1,userAgent:navigator.userAgent||''
     };
     report=makePerformanceReport(stats,context);
+    // Return to the full-size report UI only once recording is finished.
+    // The running badge stays tiny so it cannot cover the practice prompt.
+    panel?.classList.remove('is-recording');
     const field=$('.perf-check-report');
     if(field){field.value=report;field.hidden=false;}
     const message=$('.perf-check-message');
