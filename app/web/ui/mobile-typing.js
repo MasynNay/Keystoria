@@ -84,6 +84,7 @@ export function speedFocusWord(reference, typed, cursor=undefined) {
  * the node tree, then update the existing classes in place.
  */
 const mountedFocusWords=new WeakMap();
+const mountedFocusIdentities=new WeakMap();
 export function paintSpeedFocusWord(element,focus){
  if(!element)return;
  const characters=Array.isArray(focus?.characters)?focus.characters:[];
@@ -95,14 +96,17 @@ export function paintSpeedFocusWord(element,focus){
      element.replaceChildren(done);
    }
    mountedFocusWords.delete(element);
+   mountedFocusIdentities.delete(element);
    return;
  }
+ const identity=String(focus?.start??'')+'|'+String(focus?.word??'');
+ const sameWord=mountedFocusIdentities.get(element)===identity;
  let nodes=mountedFocusWords.get(element);
  const intact=nodes &&
    element.childNodes.length===nodes.length &&
    nodes.every((node,i)=>node.parentElement===element
      &&element.children[i]===node&&node.classList.contains('speed-focus-char'));
- const shared=intact &&
+ const shared=intact && sameWord &&
    nodes.slice(0,Math.min(nodes.length,characters.length))
      .every((node,i)=>node.textContent===String(characters[i].letter));
  if(shared){
@@ -135,6 +139,7 @@ export function paintSpeedFocusWord(element,focus){
    }
    mountedFocusWords.set(element,nodes);
  }
+ mountedFocusIdentities.set(element,identity);
  for(let i=0;i<characters.length;i++){
    const ch=characters[i];
    const className='speed-focus-char '+ch.state+(ch.current?' current':'');
