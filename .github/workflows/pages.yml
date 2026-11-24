@@ -29,6 +29,7 @@ jobs:
         run: |
           node --check scripts/test-release-browser.mjs
           node --check scripts/test-speed-history-restore.mjs
+          node scripts/test-speed-incremental-score.mjs
           node --check site/play/assets/app.js
           node --check app/web/app.js
           node --check site/play/assets/ui/performance-check.js

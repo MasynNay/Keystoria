@@ -127,6 +127,11 @@ try {
      await page.waitForFunction(expected=>
       document.querySelector('#speed-focus-word')?.textContent===expected,
       words[focusIndex]);
+     // Drain selectionchange events posted by the browser's edit/selection
+     // queue before checking identity: queued events from a test setup fill()
+     // should not be mistaken for a later real single-character keypress.
+     await page.evaluate(()=>new Promise(resolve=>
+      requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     };
     await field.fill(reference.slice(0,wordStart+1));
     await settleCaret(wordStart+1);
@@ -134,7 +139,10 @@ try {
      window.__speedWordFirstChar=document.querySelector('#speed-focus-word .speed-focus-char');
      window.__speedNativeField=document.getElementById('speed-input');
     });
-    await field.fill(reference.slice(0,wordStart+2));
+    // A native keypress inserts at the existing caret. Calling fill() for
+    // every key replaces the entire textarea selection, introducing transient
+    // select-all events that real sequential phone typing does not produce.
+    await field.press(reference[wordStart+1]);
     await settleCaret(wordStart+2);
     const stable=await page.evaluate(()=>({
      character:document.querySelector('#speed-focus-word .speed-focus-char')===window.__speedWordFirstChar,

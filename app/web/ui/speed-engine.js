@@ -100,6 +100,49 @@ export function scoreSpeedRun(reference, typed, seconds, keystrokes = 0) {
   };
 }
 
+/**
+ * Reuse correct-character totals across adjacent live edits.
+ *
+ * Ordinary end-of-input typing/backspace scans only the changed suffix.
+ * Editing an earlier word recomputes from the first mismatch onward, so
+ * inserting, pasting, correcting and deleting in the middle retain the exact
+ * scoreSpeedRun semantics (UTF-16 code-unit positions, case-sensitive).
+ * No text is stored outside this short-lived Speed Lab session.
+ */
+export function createIncrementalSpeedScorer(reference,{numpad=false}={}) {
+  const source=String(reference??'');
+  let previous='',correct=0,rawDigits=0,correctDigits=0;
+  function addCharacter(text,index,sign){
+    const ch=text[index];
+    if(ch===source[index])correct+=sign;
+    if(numpad && ch>='0' && ch<='9'){
+      rawDigits+=sign;
+      if(ch===source[index])correctDigits+=sign;
+    }
+  }
+  function update(text){
+    const value=String(text??'');
+    if(value!==previous){
+      let unchanged=0;
+      if(value.startsWith(previous))unchanged=previous.length;
+      else if(previous.startsWith(value))unchanged=value.length;
+      else{
+        const limit=Math.min(previous.length,value.length);
+        while(unchanged<limit && previous[unchanged]===value[unchanged])unchanged++;
+      }
+      for(let i=unchanged;i<previous.length;i++)addCharacter(previous,i,-1);
+      for(let i=unchanged;i<value.length;i++)addCharacter(value,i,1);
+      previous=value;
+    }
+    return {
+      correct,characters:value.length,
+      accuracy:value.length?Math.round(correct/value.length*100):100,
+      correctDigits,rawDigits,
+    };
+  }
+  return {update};
+}
+
 const KEY = 'panic.speed.results.v1';
 export function readSpeedHistory(storage = localStorage) {
   try {
