@@ -98,11 +98,24 @@ export function paintSpeedFocusWord(element,focus){
    return;
  }
  let nodes=mountedFocusWords.get(element);
- const valid=nodes?.length===characters.length &&
+ const intact=nodes &&
    element.childNodes.length===nodes.length &&
    nodes.every((node,i)=>node.parentElement===element
-     &&element.children[i]===node&&node.textContent===String(characters[i].letter));
- if(!valid){
+     &&element.children[i]===node&&node.classList.contains('speed-focus-char'));
+ const shared=intact &&
+   nodes.slice(0,Math.min(nodes.length,characters.length))
+     .every((node,i)=>node.textContent===String(characters[i].letter));
+ if(shared){
+   // At the end of a word, the visible pending Space becomes an extra span.
+   // Grow or shrink only that suffix; never detach the completed letters.
+   while(nodes.length>characters.length)nodes.pop().remove();
+   while(nodes.length<characters.length){
+     const span=element.ownerDocument.createElement('span');
+     span.textContent=characters[nodes.length].letter;
+     element.append(span);
+     nodes.push(span);
+   }
+ }else{
    const existing=Array.from(element.children);
    const adopt=existing.length===characters.length &&
      element.childNodes.length===existing.length &&
