@@ -267,14 +267,36 @@ function setTextIfDifferent(element,value){
   else element.textContent=value;
 }
 
+// Each mounted cinematic SVG has its own short-lived progress state. This
+// WeakMap does not persist drafts or outlive its detached scene element.
+const cinematicPrefixCache=new WeakMap();
+function correctPrefixCount(target,typed,previous){
+  let count=0;
+  if(previous?.target===target){
+    if(typed.startsWith(previous.typed)){
+      // Appending after an earlier error cannot advance the correct prefix.
+      // Otherwise only inspect the newly appended code units.
+      count=previous.count;
+      if(count<previous.typed.length)return count;
+    }else if(previous.typed.startsWith(typed)){
+      // Backspace only shortens the previously correct prefix.
+      return Math.min(previous.count,typed.length);
+    }
+  }
+  // Earlier selection edits, paste, composition commits, and changed
+  // objectives fall back to the original full correct-prefix calculation.
+  while(count<typed.length && count<target.length &&
+    typed[count].toLowerCase()===target[count].toLowerCase())count++;
+  return count;
+}
+
 export function setCinematicTypingProgress(room, typed) {
   const target=room?.target?.text||'';
   const field=document.getElementById('shot-completion-fill');
   if(!field)return;
-  // A typo cannot advance the actuator until the correct prefix resumes.
-  let count=0;
-  while(count<typed.length && count<target.length &&
-    typed[count].toLowerCase()===target[count].toLowerCase())count++;
+  const value=String(typed??'');
+  const count=correctPrefixCount(target,value,cinematicPrefixCache.get(field));
+  cinematicPrefixCache.set(field,{target,typed:value,count});
   const fraction=target?count/target.length:0;
   const width=String(Math.round(270*fraction));
   if(field.getAttribute('width')!==width)field.setAttribute('width',width);
