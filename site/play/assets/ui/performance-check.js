@@ -215,6 +215,8 @@ export function createPerformanceCheck({durationMs=10000}={}) {
         PerformanceObserver.supportedEntryTypes?.includes('longtask')){
       try{
         observer=new PerformanceObserver(list=>{
+          // A callback already queued before disconnect may arrive after stop.
+          if(!recording||!stats)return;
           for(const task of list.getEntries()){
             stats.longTasks++;
             stats.maxLongTask=Math.max(stats.maxLongTask,task.duration);
