@@ -1,3 +1,9 @@
+## Native phone input synchronous layout guard — November 24, 2026
+
+**Under CI review.** Speed Lab, Field Academy and Lyric Lab now share a regression that instruments native DOM geometry getters **only during real Chromium `input` events**. This catches forced browser layout reads performed synchronously alongside a software keyboard, including `getBoundingClientRect`, `getClientRects`, `offsetWidth`/`offsetHeight` and `clientWidth`/`clientHeight`. The test uses true Chromium `keyboard.type` events on portrait touch, short-landscape touch, and wide desktop viewports. It also asserts every native input event is delivered, typed text survives, and editable focus/DOM identity are retained in all three practice modes.
+
+The phone-specific budget is zero synchronous geometry reads for each mode; wide Speed Lab desktop intentionally uses an immediate full-passage caret measurement and does not use the phone-only zero-read requirement. This check is integrated into both Pages release and Mobile Typing CI. It provides an actionable browser regression guard, **not** a physical iOS/Android frame-time or certified latency benchmark. Keep [mobile issue #82](https://github.com/MasynNay/Keystoria/issues/82) open for actual affected-phone measurements.
+
 ## Story cinematic progression DOM idempotence — November 23, 2026
 
 **Under CI review.** Each native Story-mode input event previously set SVG completion width, rewrote the decoded clue, reassigned both CSS animation variables and the phase attribute, and replaced the live status text node, even when a wrong character left correct-prefix progress unchanged. That unnecessary DOM/accessibility work occurred alongside the software keyboard and could be repeated many times during corrections.
