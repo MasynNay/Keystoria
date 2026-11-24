@@ -79,11 +79,9 @@ try{
   // One appended key near the middle of the 700-word passage must mutate
   // only the immediately affected characters, not repaint all 330 already
   // rendered ones. This is true with either compact or desktop rendering.
-  const appending=await page.evaluate(()=>{
+  const appending=await page.evaluate(full=>{
    const field=document.getElementById('speed-input');
    const element=document.getElementById('speed-letters');
-   const before=field.value;
-   const full=element.dataset.fullReference||'';
    const mutations=new MutationObserver(()=>{});
    mutations.observe(element,{attributes:true,attributeFilter:['class'],subtree:true});
    try{
@@ -93,7 +91,7 @@ try{
     const changed=mutations.takeRecords().filter(item=>item.target.classList?.contains('type-char')).length;
     return {changed,value:field.value,accuracy:element.dataset.accuracy};
    }finally{mutations.disconnect();}
-  });
+  },reference);
   assert.equal(appending.value,reference.slice(0,331));
   assert.equal(appending.accuracy,'100');
   assert.ok(appending.changed<=8,
