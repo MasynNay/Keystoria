@@ -163,6 +163,9 @@ export function createPerformanceCheck({durationMs=10000}={}) {
       dpr:window.devicePixelRatio||1,userAgent:navigator.userAgent||''
     };
     report=makePerformanceReport(stats,context);
+    // The report is a standalone string. Release raw timing samples immediately
+    // rather than retaining them in an inactive check until the next session.
+    stats=null;
     // Return to the full-size report UI only once recording is finished.
     // The running badge stays tiny so it cannot cover the practice prompt.
     panel?.classList.remove('is-recording');
@@ -194,7 +197,8 @@ export function createPerformanceCheck({durationMs=10000}={}) {
 
   function close() {
     if(recording)finish('Stopped by player');
-    panel?.remove();panel=null;report='';
+    panel?.remove();panel=null;report='';stats=null;
+    pendingModes.clear();pendingInputAt=null;pendingScrollAt=null;lastFrame=null;
   }
 
   function start() {
