@@ -170,7 +170,10 @@ export function createSpeedController({ state, onRender, playSound }) {
       const target=node('speed-focus-word');
       if(target){
         const focus=speedFocusWord(session.reference,session.typed,caret);
-        const signature=JSON.stringify(focus.characters);
+        // Two separate occurrences of the same word may produce identical
+        // character classes. Include the reference position so moving between
+        // them cannot skip the painter and reuse the old word's nodes.
+        const signature=JSON.stringify([focus.start,focus.word,focus.characters]);
         if(signature!==focusWordSignature){
           paintSpeedFocusWord(target,focus);
           focusWordSignature=signature;
