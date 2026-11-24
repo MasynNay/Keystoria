@@ -14,13 +14,13 @@ import { setCinematicTypingProgress } from "./ui/cinematic-cuts.js";
 import { moveStoryReel } from "./ui/story-reel.js";
 import { deploymentDisplay } from "./ui/deployment.js";
 import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";
-import { createViews } from "./ui/views.js";
+import { createViews } from "./ui/views.js?v=0.2.0";
 import { describeSessionRecovery } from "./ui/session-recovery.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
 import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.50.0";
-import { createPerformanceCheck } from "./ui/performance-check.js?v=0.1.1";
+import { createPerformanceCheck } from "./ui/performance-check.js?v=0.2.0";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);
