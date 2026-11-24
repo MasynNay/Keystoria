@@ -76,7 +76,7 @@ try{
    assert.match(output,/Speed Lab: [1-9]/);
    assert.match(output,/Browser:/);
    assert.match(output,/Input-to-next-frame/);
-   assert.match(output,/Scroll events \\(including scripted\\): [1-9]/);
+   assert.match(output,/Scroll events \(including scripted\): [1-9]/);
    assert.match(output,/Scroll-to-next-frame samples: [1-9]/);
    assert.match(output,/Scroll-to-next-frame p95: [0-9]+ ms/);
    assert.match(output,/Visual viewport resize events: /);
