@@ -67,7 +67,15 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
     if (contentChanged || rebuilt) {
       let first = rebuilt || previous === null ? start : 0;
       if (!rebuilt && previous !== null) {
-        while (first < old.length && first < value.length && old[first] === value[first]) first++;
+        // Common native typing/paste and Backspace change only a suffix.
+        // startsWith runs in the JS engine instead of scanning thousands of
+        // already-correct characters through an interpreted per-key loop.
+        // Middle edits still compare until the first actual changed position.
+        if (value.startsWith(old)) first = old.length;
+        else if (old.startsWith(value)) first = value.length;
+        else {
+          while (first < old.length && first < value.length && old[first] === value[first]) first++;
+        }
         first = Math.max(start, first);
       }
       const last = Math.min(end, Math.max(old.length, value.length));

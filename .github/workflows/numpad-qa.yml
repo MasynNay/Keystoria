@@ -37,6 +37,7 @@ jobs:
           node --check app/web/ui/speed-controller.js
           node --check app/web/ui/speed-view.js
           node --test app/tests/test_numpad.mjs
+          node scripts/test-speed-incremental-score.mjs
           diff app/web/ui/speed-engine.js site/play/assets/ui/speed-engine.js
           diff app/web/ui/speed-controller.js site/play/assets/ui/speed-controller.js
           diff app/web/styles/speed.css site/play/assets/styles/speed.css
