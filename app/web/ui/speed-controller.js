@@ -3,7 +3,7 @@
  * This controller owns its one timer and never reaches the multiplayer socket.
  * Story missions can continue to evolve independently of personal training.
  */
-import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
+import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.2';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.0';
 
@@ -39,23 +39,16 @@ export function createSpeedController({ state, onRender, playSound }) {
   // Time-only ticks must not re-score a full passage or re-render the caret.
   // Invalidate on text edits (including middle edits, IME commits, Back Word)
   // and on every newly created session. Timer math still uses live elapsed time.
-  let scoreSession=null, scoreText=null, scoreSnapshot=null;
+  let scoreSession=null, scoreText=null, scoreSnapshot=null, incrementalScorer=null;
   function liveScore(session) {
-    if (scoreSession!==session || scoreText!==session.typed) {
-      const scored=scoreSpeedRun(session.reference,session.typed,60,session.keystrokes);
-      let correctDigits=0, rawDigits=0;
-      if(session.pack==='numpad'){
-        for(let i=0;i<session.typed.length;i++){
-          const ch=session.typed[i];
-          if(ch>='0'&&ch<='9'){
-            rawDigits++;
-            if(ch===session.reference[i])correctDigits++;
-          }
-        }
-      }
-      scoreSnapshot={correct:scored.correct,characters:scored.characters,
-        accuracy:scored.accuracy,correctDigits,rawDigits};
+    if (scoreSession!==session){
+      // Do not share live-score state across newly generated passages.
+      incrementalScorer=createIncrementalSpeedScorer(session.reference,{numpad:session.pack==='numpad'});
       scoreSession=session;
+      scoreText=null;
+    }
+    if (scoreText!==session.typed) {
+      scoreSnapshot=incrementalScorer.update(session.typed);
       scoreText=session.typed;
     }
     return scoreSnapshot;
