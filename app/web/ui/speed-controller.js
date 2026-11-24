@@ -3,7 +3,7 @@
  * This controller owns its one timer and never reaches the multiplayer socket.
  * Story missions can continue to evolve independently of personal training.
  */
-import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js';
+import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.0';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.3';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.0';
 
