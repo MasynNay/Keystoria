@@ -40,6 +40,9 @@ export function createSpeedController({ state, onRender, playSound }) {
   // Invalidate on text edits (including middle edits, IME commits, Back Word)
   // and on every newly created session. Timer math still uses live elapsed time.
   let scoreSession=null, scoreText=null, scoreSnapshot=null, incrementalScorer=null;
+  function releaseLiveScore(){
+    scoreSession=null;scoreText=null;scoreSnapshot=null;incrementalScorer=null;
+  }
   function liveScore(session) {
     if (scoreSession!==session){
       // Do not share live-score state across newly generated passages.
@@ -73,6 +76,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     clearTimer();
     flow?.dispose?.();
     flow=null;
+    releaseLiveScore();
     focusWordSignature=null;
     lastGuidance=null;
     const selectedPack=PACKS[pack] ? pack : 'everyday';
@@ -125,6 +129,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     clearTimer();
     flow?.dispose?.();
     flow=null;
+    releaseLiveScore();
     focusWordSignature=null;
     lastGuidance=null;
     state.speed=null;
@@ -292,6 +297,9 @@ export function createSpeedController({ state, onRender, playSound }) {
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.
     if(!session.interrupted)saveSpeedResult(session.result);
+    // The session has a final immutable score; discard the live scorer and
+    // its transient previous-text copy before showing the result screen.
+    releaseLiveScore();
     playSound('success');
     onRender();
     requestAnimationFrame(()=>node('speed-results-heading')?.focus({preventScroll:true}));
