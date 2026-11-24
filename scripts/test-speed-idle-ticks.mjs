@@ -48,6 +48,13 @@ try{
         const original=Object.getOwnPropertyDescriptor(proto,'selectionStart');
         if(!original?.configurable||!original.get)throw new Error('Cannot instrument selectionStart');
         let reads=0;
+        const pauseButtons=[...document.querySelectorAll('[data-action="speed-pause"]')];
+        if(pauseButtons.length<2)throw new Error('Both pause controls must exist');
+        let disabledMutations=0;
+        const mutations=new MutationObserver(records=>{
+          disabledMutations+=records.filter(record=>record.attributeName==='disabled').length;
+        });
+        for(const button of pauseButtons)mutations.observe(button,{attributes:true,attributeFilter:['disabled']});
         Object.defineProperty(proto,'selectionStart',{
           configurable:true,enumerable:original.enumerable,
           get(){if(this===field)reads++;return original.get.call(this);},
@@ -55,17 +62,25 @@ try{
         });
         try{
           await new Promise(resolve=>setTimeout(resolve,1450));
+          mutations.takeRecords().forEach(record=>{
+            if(record.attributeName==='disabled')disabledMutations++;
+          });
           return {
-            reads,remaining:Number(document.getElementById('speed-time').textContent),
+            reads,disabledMutations,pauseEnabled:pauseButtons.every(button=>!button.disabled),
+            remaining:Number(document.getElementById('speed-time').textContent),
             speed:Number(document.getElementById('speed-wpm').textContent),
             accuracy:document.getElementById('speed-accuracy').textContent,
             focused:document.activeElement===field,
           };
         }finally{
+          mutations.disconnect();
           Object.defineProperty(proto,'selectionStart',original);
         }
       });
       assert.equal(idle.reads,0,'unchanged timer ticks must not re-read the typing selection');
+      assert.equal(idle.disabledMutations,0,
+        'running 250ms timer ticks must not rewrite unchanged pause disabled attributes');
+      assert.equal(idle.pauseEnabled,true,'pause controls remain usable throughout a running session');
       assert.ok(idle.remaining<30,'wall-clock display continues to tick');
       assert.ok(idle.speed>0 && idle.speed<initialSpeed,
         'speed must still decrease with elapsed time even when the text is unchanged');
