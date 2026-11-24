@@ -80,8 +80,11 @@ try{
     document.body.append(target);
     let first=null;
     for(const value of item.steps){
-     const output=paintLyricWordFeedback(target,item.word,value,{strict:item.strict});
      const reference=renderLyricWordFeedback(item.word,value,{strict:item.strict});
+     // Alternate the standalone fallback and the controller's precomputed
+     // path. Both must retain original DOM and pure rendered semantics.
+     const output=paintLyricWordFeedback(target,item.word,value,
+      {strict:item.strict,...(checked%2?{precomputed:reference}:{})});
      const expected=document.createElement('div');expected.innerHTML=reference.html;
      if(target.innerHTML!==expected.innerHTML)
       throw Error('Lyric markup mismatch for '+JSON.stringify({item,value,actual:target.innerHTML,expected:expected.innerHTML}));
