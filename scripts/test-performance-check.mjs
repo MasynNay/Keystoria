@@ -55,6 +55,15 @@ try{
    assert.equal(geometry.overlap,false,'badge must not cover Speed Lab input');
 
    await input.fill('NEVER_SHARE_TYPED_TEXT');
+   // The opt-in report distinguishes scroll scheduling and keyboard-driven
+   // viewport changes from typed-input latency. Dispatching only generic
+   // scroll/resize events deliberately reveals no coordinates or content.
+   const viewportSupported=await page.evaluate(()=>{
+     window.dispatchEvent(new Event('scroll'));
+     window.dispatchEvent(new Event('scroll'));
+     if(window.visualViewport)window.visualViewport.dispatchEvent(new Event('resize'));
+     return !!window.visualViewport;
+   });
    await page.waitForTimeout(400);
    const value=await input.inputValue();
    assert.equal(value,'NEVER_SHARE_TYPED_TEXT');
@@ -67,10 +76,19 @@ try{
    assert.match(output,/Speed Lab: [1-9]/);
    assert.match(output,/Browser:/);
    assert.match(output,/Input-to-next-frame/);
+   assert.match(output,/Scroll events \\(including scripted\\): [1-9]/);
+   assert.match(output,/Scroll-to-next-frame samples: [1-9]/);
+   assert.match(output,/Scroll-to-next-frame p95: [0-9]+ ms/);
+   assert.match(output,/Visual viewport resize events: /);
+   assert.match(output,viewportSupported
+     ? /Visual viewport resize events: [1-9]/
+     : /Visual viewport resize events: Not exposed by this browser/);
    assert.match(output,/Slow frame gaps/);
    assert.match(output,/collected locally after an explicit click/);
    assert.ok(!output.includes('NEVER_SHARE_TYPED_TEXT'),
     'the report must never contain the actual text entered by the player');
+   assert.ok(!/scroll position|scroll target|pointer coordinates/i.test(output),
+    'the report must not include scroll positions or event targets');
    assert.equal(await input.evaluate(el=>el===window.__savedNativeField),true,
     'instrumentation never detaches or replaces the native input');
    assert.equal(await check.locator('[data-perf-action="copy"]').isVisible(),true);
