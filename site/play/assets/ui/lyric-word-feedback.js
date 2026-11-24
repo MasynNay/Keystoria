@@ -48,8 +48,10 @@ export function renderLyricWordFeedback(word, typed = '', { strict = false } = {
 // States stay identical to the pure renderer; only changed classes, next-key
 // markers, overtyping nodes, and the final caret update per character.
 const paintedLyricWords=new WeakMap();
-export function paintLyricWordFeedback(element,word,typed='',{strict=false}={}){
- const feedback=renderLyricWordFeedback(word,typed,{strict});
+// Optional precomputed output is shared by both Lyric Lab word views.
+// The controller computes scoring and next-key guidance once per edit.
+export function paintLyricWordFeedback(element,word,typed='',{strict=false,precomputed=null}={}){
+ const feedback=precomputed??renderLyricWordFeedback(word,typed,{strict});
  if(!element)return feedback;
  const source=String(word??'');
  const characters=graphemes(source);
