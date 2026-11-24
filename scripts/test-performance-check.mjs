@@ -26,7 +26,7 @@ try{
    await nav.click();
    const start=page.locator('[data-action="perf-start"]');
    await start.waitFor();
-   assert.match(await start.locator('xpath=..').textContent(),/No typed words, scores or media details/);
+   assert.match(await start.locator('xpath=..').textContent(),/No typed words, scroll positions, scores or media details/);
    assert.equal(await page.locator('#keystoria-perf-check').count(),0,
     'no background diagnostic before the user explicitly starts it');
    await start.click();
