@@ -22,6 +22,12 @@ export function makePerformanceReport(stats,context) {
   const fps=stats.frameMsTotal>0?round(stats.frameIntervals*1000/stats.frameMsTotal):null;
   const delays=stats.inputFrameDelays||[];
   const scrollDelays=stats.scrollFrameDelays||[];
+  const perMode=Object.keys(stats.modes||{}).map(mode=>{
+    const samples=stats.modeFrameDelays?.[mode]||[];
+    const p95=samples.length?round(percentile(samples,.95))+' ms':'Not measured';
+    const maximum=samples.length?round(Math.max(...samples))+' ms':'Not measured';
+    return 'Input-to-next-frame by mode — '+mode+': '+samples.length+' samples; p95 '+p95+'; maximum '+maximum;
+  });
   const modes=Object.entries(stats.modes||{}).map(([name,count])=>name+': '+count).join(', ')||'No practice input detected';
   const lines=[
     'Keystoria — on-device responsiveness check',
@@ -38,6 +44,7 @@ export function makePerformanceReport(stats,context) {
     'Input-to-next-frame samples: '+delays.length,
     'Input-to-next-frame p95: '+(delays.length?round(percentile(delays,.95))+' ms':'Not measured'),
     'Input-to-next-frame maximum: '+(delays.length?round(Math.max(...delays))+' ms':'Not measured'),
+    ...perMode,
     'Scroll events (including scripted): '+(stats.scrollEvents||0),
     'Scroll-to-next-frame samples: '+scrollDelays.length,
     'Scroll-to-next-frame p95: '+(scrollDelays.length?round(percentile(scrollDelays,.95))+' ms':'Not measured'),
@@ -54,6 +61,9 @@ export function makePerformanceReport(stats,context) {
 export function createPerformanceCheck({durationMs=10000}={}) {
   let panel=null,recording=false,timeout=null,frame=null,observer=null;
   let startedAt=0,lastFrame=null,pendingInputAt=null,pendingScrollAt=null,stats=null,report='';
+  // At most one pending timestamp per named practice mode per animation frame.
+  // Never retain a field value, event target, or individual keystroke history.
+  const pendingModes=new Map();
   const now=()=>performance.now();
   const $=selector=>panel?.querySelector(selector);
 
@@ -84,7 +94,9 @@ export function createPerformanceCheck({durationMs=10000}={}) {
     const mode=PRACTICE_FIELDS[event.target.id];
     stats.inputEvents++;
     stats.modes[mode]=(stats.modes[mode]||0)+1;
-    if(pendingInputAt===null)pendingInputAt=now();
+    const at=now();
+    if(pendingInputAt===null)pendingInputAt=at;
+    if(!pendingModes.has(mode))pendingModes.set(mode,at);
     // The actual typed value is intentionally never read.
   }
 
@@ -115,6 +127,11 @@ export function createPerformanceCheck({durationMs=10000}={}) {
         stats.inputFrameDelays.push(Math.max(0,time-pendingInputAt));
       pendingInputAt=null;
     }
+    for(const [mode,at] of pendingModes){
+      const samples=stats.modeFrameDelays[mode]??(stats.modeFrameDelays[mode]=[]);
+      if(samples.length<1200)samples.push(Math.max(0,time-at));
+    }
+    pendingModes.clear();
     if(pendingScrollAt!==null){
       if(stats.scrollFrameDelays.length<1200)
         stats.scrollFrameDelays.push(Math.max(0,time-pendingScrollAt));
@@ -134,6 +151,7 @@ export function createPerformanceCheck({durationMs=10000}={}) {
     clearTimeout(timeout);timeout=null;
     if(frame!==null)cancelAnimationFrame(frame);
     frame=null;
+    pendingModes.clear();pendingInputAt=null;pendingScrollAt=null;
     observer?.disconnect();observer=null;
     document.removeEventListener('input',handleInput,true);
     window.removeEventListener('scroll',handleScroll,true);
@@ -145,6 +163,9 @@ export function createPerformanceCheck({durationMs=10000}={}) {
       dpr:window.devicePixelRatio||1,userAgent:navigator.userAgent||''
     };
     report=makePerformanceReport(stats,context);
+    // The report is a standalone string. Release raw timing samples immediately
+    // rather than retaining them in an inactive check until the next session.
+    stats=null;
     // Return to the full-size report UI only once recording is finished.
     // The running badge stays tiny so it cannot cover the practice prompt.
     panel?.classList.remove('is-recording');
@@ -176,15 +197,17 @@ export function createPerformanceCheck({durationMs=10000}={}) {
 
   function close() {
     if(recording)finish('Stopped by player');
-    panel?.remove();panel=null;report='';
+    panel?.remove();panel=null;report='';stats=null;
+    pendingModes.clear();pendingInputAt=null;pendingScrollAt=null;lastFrame=null;
   }
 
   function start() {
     if(recording)return false;
     close();
     recording=true;startedAt=now();lastFrame=null;pendingInputAt=null;pendingScrollAt=null;
+    pendingModes.clear();
     stats={frameIntervals:0,frameMsTotal:0,slowFrames:0,maxFrameGap:0,
-      inputEvents:0,inputFrameDelays:[],scrollEvents:0,scrollFrameDelays:[],
+      inputEvents:0,inputFrameDelays:[],modeFrameDelays:{},scrollEvents:0,scrollFrameDelays:[],
       visualViewportAvailable:!!window.visualViewport,visualViewportResizes:0,
       modes:{},longTasksSupported:false,longTasks:0,maxLongTask:0};
     showPanel();
@@ -192,6 +215,8 @@ export function createPerformanceCheck({durationMs=10000}={}) {
         PerformanceObserver.supportedEntryTypes?.includes('longtask')){
       try{
         observer=new PerformanceObserver(list=>{
+          // A callback already queued before disconnect may arrive after stop.
+          if(!recording||!stats)return;
           for(const task of list.getEntries()){
             stats.longTasks++;
             stats.maxLongTask=Math.max(stats.maxLongTask,task.duration);

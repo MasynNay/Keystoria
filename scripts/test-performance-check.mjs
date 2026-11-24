@@ -1,10 +1,25 @@
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
+import {makePerformanceReport} from '../site/play/assets/ui/performance-check.js';
 
 // User-activated instrumentation only. Chromium emulation cannot substitute
 // for a real iPhone or Android performance reading.
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const errors=[];
+
+// Pure report semantics are deterministic even with no measured frame for a
+// mode. An input event count must never masquerade as measured latency.
+const reportFixture=makePerformanceReport({
+ frameIntervals:0,frameMsTotal:0,slowFrames:0,maxFrameGap:0,
+ inputEvents:4,inputFrameDelays:[9,14],
+ modes:{'Speed Lab':3,'Lyric Lab':1},
+ modeFrameDelays:{'Speed Lab':[9,14],'Lyric Lab':[]},
+ scrollEvents:0,scrollFrameDelays:[],visualViewportAvailable:false,
+ longTasksSupported:false,
+},{elapsedMs:10000,reason:'Completed',width:390,height:844,dpr:2,userAgent:'Test browser'});
+assert.match(reportFixture,/Input-to-next-frame by mode — Speed Lab: 2 samples; p95 14 ms; maximum 14 ms/);
+assert.match(reportFixture,/Input-to-next-frame by mode — Lyric Lab: 0 samples; p95 Not measured; maximum Not measured/);
+assert.ok(!reportFixture.includes('undefined'),'missing optional diagnostic stats never leak into report');
 try{
  for(const item of [{width:320,touch:true},{width:390,touch:true},{width:1440,touch:false}]){
   const context=await browser.newContext({
@@ -55,6 +70,15 @@ try{
    assert.equal(geometry.overlap,false,'badge must not cover Speed Lab input');
 
    await input.fill('NEVER_SHARE_TYPED_TEXT');
+   // Simulate a second practice mode in the same opt-in interval. We only
+   // dispatch input events; no field text or game score should be sampled.
+   await page.evaluate(()=>{
+    const alternate=document.createElement('textarea');
+    alternate.id='lyric-input';
+    document.body.append(alternate);
+    alternate.dispatchEvent(new Event('input',{bubbles:true}));
+    alternate.remove();
+   });
    // The opt-in report distinguishes scroll scheduling and keyboard-driven
    // viewport changes from typed-input latency. Dispatching only generic
    // scroll/resize events deliberately reveals no coordinates or content.
@@ -74,6 +98,9 @@ try{
    const output=await report.inputValue();
    assert.match(output,/Practice input events: [1-9]/);
    assert.match(output,/Speed Lab: [1-9]/);
+   assert.match(output,/Lyric Lab: [1-9]/);
+   assert.match(output,/Input-to-next-frame by mode — Speed Lab: [1-9][0-9]* samples; p95 [0-9]+ ms; maximum [0-9]+ ms/);
+   assert.match(output,/Input-to-next-frame by mode — Lyric Lab: [1-9][0-9]* samples; p95 [0-9]+ ms; maximum [0-9]+ ms/);
    assert.match(output,/Browser:/);
    assert.match(output,/Input-to-next-frame/);
    assert.match(output,/Scroll events \(including scripted\): [1-9]/);
@@ -103,6 +130,11 @@ try{
    assert.equal(await input.evaluate(el=>document.activeElement===el),true,
      'restarting the diagnostic also restores practice focus');
    await page.locator('[data-perf-action="stop"]').click();
+   const restarted=await page.locator('.perf-check-report').inputValue();
+   assert.match(restarted,/Mode input counts: No practice input detected/,
+    'restarting resets per-mode event counts and samples');
+   assert.ok(!restarted.includes('Input-to-next-frame by mode —'),
+    'raw per-mode timings must not survive into a new report');
    await page.locator('[data-perf-action="close"]').click();
   }finally{await context.close();}
  }
