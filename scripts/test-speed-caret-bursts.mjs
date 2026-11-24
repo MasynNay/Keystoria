@@ -147,10 +147,43 @@ try {
     assert.equal(await page.evaluate(()=>
      document.querySelector('#speed-focus-word .speed-focus-char')===window.__speedWordFirstChar),false,
      'advancing to the next word mounts the new target');
+    // Two occurrences of the same word can have byte-for-byte identical
+    // glyph classes but different reference positions. Updating the controller
+    // must repaint rather than incorrectly retaining the preceding occurrence.
+    // A long Everyday stream provides repeated practice words without
+    // hardcoding or altering a randomized user's passage.
+    const seen=new Map();
+    let repeats=null,pos=0;
+    for(const word of words){
+     if(word.length>=3 && seen.has(word)){repeats={word,first:seen.get(word),second:pos};break;}
+     if(!seen.has(word))seen.set(word,pos);
+     pos+=word.length+1;
+    }
+    assert.ok(repeats,'long Everyday stream includes a repeated word');
+    await field.fill(reference.slice(0,repeats.first));
+    await field.evaluate((el,at)=>{
+     el.setSelectionRange(at,at);
+     el.dispatchEvent(new Event('select',{bubbles:true}));
+    },repeats.first);
+    assert.equal(await page.locator('#speed-focus-word').textContent(),repeats.word,
+     'first occurrence is the pending target');
+    const firstRepeatedNode=await page.evaluate(()=>
+     (window.__speedRepeatedWordNode=document.querySelector('#speed-focus-word .speed-focus-char'),true));
+    assert.equal(firstRepeatedNode,true);
+    await field.fill(reference.slice(0,repeats.second));
+    await field.evaluate((el,at)=>{
+     el.setSelectionRange(at,at);
+     el.dispatchEvent(new Event('select',{bubbles:true}));
+    },repeats.second);
+    assert.equal(await page.locator('#speed-focus-word').textContent(),repeats.word,
+     'second occurrence has the identical visible word');
+    assert.equal(await page.evaluate(()=>
+     document.querySelector('#speed-focus-word .speed-focus-char')===window.__speedRepeatedWordNode),false,
+     'distinct repeated words must not reuse the same character elements');
     await toggle.click();
     assert.equal(await toggle.getAttribute('aria-pressed'),'false');
-    assert.equal(await field.inputValue(),editedWordTransition,
-     'Word Focus toggle preserves the text actually edited during the test');
+    assert.equal(await field.inputValue(),reference.slice(0,repeats.second),
+     'Word Focus toggle preserves the most recently edited passage');
    }
   }finally{await ctx.close();}
  }
