@@ -78,6 +78,75 @@ export function speedFocusWord(reference, typed, cursor=undefined) {
  return {word,characters,start};
 }
 
+/** Preserve the small Word Focus prompt across native input events. A phone
+ * keyboard should never force a new set of character elements for each key.
+ * Rebuild only when its visible letters change or another component replaces
+ * the node tree, then update the existing classes in place.
+ */
+const mountedFocusWords=new WeakMap();
+const mountedFocusIdentities=new WeakMap();
+export function paintSpeedFocusWord(element,focus){
+ if(!element)return;
+ const characters=Array.isArray(focus?.characters)?focus.characters:[];
+ if(!characters.length){
+   const only=element.firstElementChild;
+   if(element.childNodes.length!==1||only?.tagName!=='SPAN'||only.textContent!=='COMPLETE'){
+     const done=element.ownerDocument.createElement('span');
+     done.textContent='COMPLETE';
+     element.replaceChildren(done);
+   }
+   mountedFocusWords.delete(element);
+   mountedFocusIdentities.delete(element);
+   return;
+ }
+ const identity=String(focus?.start??'')+'|'+String(focus?.word??'');
+ const sameWord=mountedFocusIdentities.get(element)===identity;
+ let nodes=mountedFocusWords.get(element);
+ const intact=nodes &&
+   element.childNodes.length===nodes.length &&
+   nodes.every((node,i)=>node.parentElement===element
+     &&element.children[i]===node&&node.classList.contains('speed-focus-char'));
+ const shared=intact && sameWord &&
+   nodes.slice(0,Math.min(nodes.length,characters.length))
+     .every((node,i)=>node.textContent===String(characters[i].letter));
+ if(shared){
+   // At the end of a word, the visible pending Space becomes an extra span.
+   // Grow or shrink only that suffix; never detach the completed letters.
+   while(nodes.length>characters.length)nodes.pop().remove();
+   while(nodes.length<characters.length){
+     const span=element.ownerDocument.createElement('span');
+     span.textContent=characters[nodes.length].letter;
+     element.append(span);
+     nodes.push(span);
+   }
+ }else{
+   const existing=Array.from(element.children);
+   const adopt=(sameWord||!nodes) && existing.length===characters.length &&
+     element.childNodes.length===existing.length &&
+     characters.every((ch,i)=>existing[i].tagName==='SPAN'
+       &&existing[i].classList.contains('speed-focus-char')
+       &&existing[i].textContent===String(ch.letter));
+   if(adopt)nodes=existing;
+   else{
+     const fragment=element.ownerDocument.createDocumentFragment();
+     nodes=characters.map(ch=>{
+       const span=element.ownerDocument.createElement('span');
+       span.textContent=ch.letter;
+       fragment.append(span);
+       return span;
+     });
+     element.replaceChildren(fragment);
+   }
+   mountedFocusWords.set(element,nodes);
+ }
+ mountedFocusIdentities.set(element,identity);
+ for(let i=0;i<characters.length;i++){
+   const ch=characters[i];
+   const className='speed-focus-char '+ch.state+(ch.current?' current':'');
+   if(nodes[i].className!==className)nodes[i].className=className;
+ }
+}
+
 /** Range to delete when a phone player taps Back Word. Mirrors text-editing
  * keyboard shortcuts, but never deletes text after the caret or changes a
  * pre-existing selection. Removing a middle word also avoids double spaces.

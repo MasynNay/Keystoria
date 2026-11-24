@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, saveSpeedResult } from './speed-engine.js';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.2';
-import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord } from './mobile-typing.js?v=0.43.0';
+import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.0';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
@@ -172,19 +172,7 @@ export function createSpeedController({ state, onRender, playSound }) {
         const focus=speedFocusWord(session.reference,session.typed,caret);
         const signature=JSON.stringify(focus.characters);
         if(signature!==focusWordSignature){
-          const fragment=document.createDocumentFragment();
-          if(!focus.characters.length){
-            const complete=document.createElement('span');
-            complete.textContent='COMPLETE';
-            fragment.append(complete);
-          }
-          for(const ch of focus.characters){
-            const span=document.createElement('span');
-            span.className='speed-focus-char '+ch.state+(ch.current?' current':'');
-            span.textContent=ch.letter;
-            fragment.append(span);
-          }
-          target.replaceChildren(fragment);
+          paintSpeedFocusWord(target,focus);
           focusWordSignature=signature;
         }
       }
