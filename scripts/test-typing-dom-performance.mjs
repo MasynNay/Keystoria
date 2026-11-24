@@ -24,7 +24,7 @@ try{
   // character renderer through mistakes, edits, Unicode and overtyping.
   const validation=await page.evaluate(async()=>{
    const {paintTypingFeedback,renderTypingFeedback,compareTyping}=
-     await import('./assets/ui/typing-feedback.js?v=0.2.0');
+     await import('./assets/ui/typing-feedback.js?v=0.2.1');
    const box=document.createElement('div');
    document.body.append(box);
    const reference='Ab <c> 👩‍💻';
@@ -60,6 +60,106 @@ try{
   assert.equal(validation.markupMatches,12);
   assert.equal(validation.stableNodes,11);
 
+  // Shared Story/Academy feedback must not walk or update the entire prompt
+  // on each native keystroke. Verify pure output parity across long appends,
+  // deletions, early corrections, case-insensitive input and overtyping.
+  const incremental=await page.evaluate(async()=>{
+   const {paintTypingFeedback,renderTypingFeedback,compareTyping}=
+     await import('./assets/ui/typing-feedback.js?v=0.2.1');
+   const box=document.createElement('div');
+   document.body.append(box);
+   const reference=('Signal Ω <&> 👩‍💻 ').repeat(24);
+   const steps=['',...Array.from({length:210},(_,i)=>reference.slice(0,i+1)),
+     reference.slice(0,150),reference.slice(0,175),
+     'x'+reference.slice(1,190),reference.slice(0,190),
+     reference.slice(0,30)+'X'+reference.slice(31,190),
+     reference.slice(0,190),reference+'EXTRA',
+     reference.slice(0,reference.length-1),reference,''];
+   let renders=0,stable=0,firstNode=null,smallEditMutations=null;
+   for(const typed of steps){
+    let observed=null,mutationObserver=null;
+    if(typed===reference.slice(0,151)){
+     mutationObserver=new MutationObserver(()=>{});
+     mutationObserver.observe(box,{subtree:true,attributes:true,attributeFilter:['class']});
+    }
+    const score=paintTypingFeedback(box,reference,typed);
+    if(mutationObserver){
+     observed=mutationObserver.takeRecords().length;
+     mutationObserver.disconnect();
+     smallEditMutations=observed;
+    }
+    const pure=document.createElement('div');
+    pure.innerHTML=renderTypingFeedback(reference,typed);
+    if(box.innerHTML!==pure.innerHTML)
+     throw new Error('Shared incremental DOM mismatch after '+typed.length+' code units');
+    if(JSON.stringify(score)!==JSON.stringify(compareTyping(reference,typed)))
+     throw new Error('Shared incremental scoring mismatch after '+typed.length+' code units');
+    const current=box.firstElementChild;
+    if(firstNode && firstNode!==current)
+     throw new Error('Shared feedback remounted its character tree after a normal edit');
+    if(firstNode)stable++;
+    firstNode=current;
+    renders++;
+   }
+   const insensitive=document.createElement('div');
+   const mixed='Äbc Σ';
+   for(const typed of ['','ä','äB','äBc','äBc ','äBc σ','ÄbX','Äbc Σ']){
+    const score=paintTypingFeedback(insensitive,mixed,typed,{caseSensitive:false});
+    const pure=document.createElement('div');
+    pure.innerHTML=renderTypingFeedback(mixed,typed,{caseSensitive:false});
+    if(insensitive.innerHTML!==pure.innerHTML || JSON.stringify(score)!==
+       JSON.stringify(compareTyping(mixed,typed,{caseSensitive:false})))
+     throw new Error('Case-insensitive Unicode parity mismatch');
+   }
+   // An emoji can arrive in UTF-16 chunks. Appending or deleting a
+   // low surrogate changes the previous code point, so startsWith on raw
+   // UTF-16 must not skip over that position in cached scoring.
+   const surrogate=document.createElement('div');
+   document.body.append(surrogate);
+   const half='A'+String.fromCharCode(0xD83D),whole='A👩';
+   for(const typed of ['', 'A',half,whole,half,whole+'Z','A',whole+'Z']){
+    const score=paintTypingFeedback(surrogate,'A👩Z',typed);
+    const pure=document.createElement('div');
+    pure.innerHTML=renderTypingFeedback('A👩Z',typed);
+    if(surrogate.innerHTML!==pure.innerHTML ||
+       JSON.stringify(score)!==JSON.stringify(compareTyping('A👩Z',typed)))
+     throw new Error('Surrogate boundary append/delete regression');
+   }
+   surrogate.remove();
+   // Counting MutationObserver records alone would miss an expensive
+   // full-prompt read loop which compares classes but does not write them.
+   // Instrument native className reads for one real append after 150 chars.
+   const measured=document.createElement('div');
+   document.body.append(measured);
+   paintTypingFeedback(measured,reference,reference.slice(0,150));
+   const descriptor=Object.getOwnPropertyDescriptor(Element.prototype,'className');
+   if(!descriptor?.configurable||!descriptor.get||!descriptor.set)
+    throw new Error('Cannot measure native className access cost');
+   let classReads=0;
+   Object.defineProperty(Element.prototype,'className',{
+    configurable:true,enumerable:descriptor.enumerable,
+    get(){
+     if(this.parentElement===measured)classReads++;
+     return descriptor.get.call(this);
+    },
+    set(value){return descriptor.set.call(this,value);},
+   });
+   try{
+    paintTypingFeedback(measured,reference,reference.slice(0,151));
+   }finally{
+    Object.defineProperty(Element.prototype,'className',descriptor);
+   }
+   measured.remove();box.remove();insensitive.remove();
+   return {renders,stable,smallEditMutations,classReads};
+  });
+  assert.ok(incremental.renders>200,'exercised long passage edits');
+  assert.equal(incremental.stable,incremental.renders-1,
+   'the native cursor-adjacent character tree stays mounted');
+  assert.ok(incremental.smallEditMutations!==null && incremental.smallEditMutations<=3,
+   'a simple append touches only a bounded number of character classes');
+  assert.ok(incremental.classReads<=8,
+   'an append must not revisit the full target span tree: '+incremental.classReads);
+  
 
   // Pure string rendering remains the oracle. Updating a real lyric word
   // must preserve equivalent markup, scores and next-key cues without
