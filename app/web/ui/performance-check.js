@@ -21,6 +21,7 @@ export function makePerformanceReport(stats,context) {
   const elapsed=Math.max(0,Number(context.elapsedMs)||0);
   const fps=stats.frameMsTotal>0?round(stats.frameIntervals*1000/stats.frameMsTotal):null;
   const delays=stats.inputFrameDelays||[];
+  const scrollDelays=stats.scrollFrameDelays||[];
   const modes=Object.entries(stats.modes||{}).map(([name,count])=>name+': '+count).join(', ')||'No practice input detected';
   const lines=[
     'Keystoria — on-device responsiveness check',
@@ -37,9 +38,14 @@ export function makePerformanceReport(stats,context) {
     'Input-to-next-frame samples: '+delays.length,
     'Input-to-next-frame p95: '+(delays.length?round(percentile(delays,.95))+' ms':'Not measured'),
     'Input-to-next-frame maximum: '+(delays.length?round(Math.max(...delays))+' ms':'Not measured'),
+    'Scroll events (including scripted): '+(stats.scrollEvents||0),
+    'Scroll-to-next-frame samples: '+scrollDelays.length,
+    'Scroll-to-next-frame p95: '+(scrollDelays.length?round(percentile(scrollDelays,.95))+' ms':'Not measured'),
+    'Scroll-to-next-frame maximum: '+(scrollDelays.length?round(Math.max(...scrollDelays))+' ms':'Not measured'),
+    'Visual viewport resize events: '+(stats.visualViewportAvailable?(stats.visualViewportResizes||0):'Not exposed by this browser'),
     'Long tasks (>50ms): '+(stats.longTasksSupported?stats.longTasks:'Not exposed by this browser'),
     'Longest long task: '+(stats.longTasksSupported?round(stats.maxLongTask)+' ms':'Unavailable'),
-    'Note: Timing values approximate browser scheduling only; they are not certified physical FPS or a full input-latency trace.',
+    'Note: Timing values approximate browser scheduling only; scroll events can also be initiated by scripts. These are not certified FPS, input latency or interaction-to-next-paint measurements.',
     'Privacy: collected locally after an explicit click; no typed text, stored results, or media links were collected or uploaded.'
   ];
   return lines.join('\n');
@@ -47,7 +53,7 @@ export function makePerformanceReport(stats,context) {
 
 export function createPerformanceCheck({durationMs=10000}={}) {
   let panel=null,recording=false,timeout=null,frame=null,observer=null;
-  let startedAt=0,lastFrame=null,pendingInputAt=null,stats=null,report='';
+  let startedAt=0,lastFrame=null,pendingInputAt=null,pendingScrollAt=null,stats=null,report='';
   const now=()=>performance.now();
   const $=selector=>panel?.querySelector(selector);
 
@@ -82,6 +88,18 @@ export function createPerformanceCheck({durationMs=10000}={}) {
     // The actual typed value is intentionally never read.
   }
 
+  function handleScroll() {
+    if(!recording)return;
+    stats.scrollEvents++;
+    if(pendingScrollAt===null)pendingScrollAt=now();
+    // No scroll offsets, gestures, targets, or page URLs are read.
+  }
+
+  function handleViewportResize(){
+    if(recording)stats.visualViewportResizes++;
+    // A resize can mean keyboard appearance, rotation or browser chrome.
+  }
+
   function animate(time) {
     if(!recording)return;
     if(lastFrame!==null){
@@ -96,6 +114,11 @@ export function createPerformanceCheck({durationMs=10000}={}) {
       if(stats.inputFrameDelays.length<1200)
         stats.inputFrameDelays.push(Math.max(0,time-pendingInputAt));
       pendingInputAt=null;
+    }
+    if(pendingScrollAt!==null){
+      if(stats.scrollFrameDelays.length<1200)
+        stats.scrollFrameDelays.push(Math.max(0,time-pendingScrollAt));
+      pendingScrollAt=null;
     }
     frame=requestAnimationFrame(animate);
   }
@@ -113,6 +136,8 @@ export function createPerformanceCheck({durationMs=10000}={}) {
     frame=null;
     observer?.disconnect();observer=null;
     document.removeEventListener('input',handleInput,true);
+    window.removeEventListener('scroll',handleScroll,true);
+    window.visualViewport?.removeEventListener('resize',handleViewportResize);
     document.removeEventListener('visibilitychange',onVisibilityChange);
     window.removeEventListener('pagehide',onPageHide);
     const context={
@@ -157,9 +182,11 @@ export function createPerformanceCheck({durationMs=10000}={}) {
   function start() {
     if(recording)return false;
     close();
-    recording=true;startedAt=now();lastFrame=null;pendingInputAt=null;
+    recording=true;startedAt=now();lastFrame=null;pendingInputAt=null;pendingScrollAt=null;
     stats={frameIntervals:0,frameMsTotal:0,slowFrames:0,maxFrameGap:0,
-      inputEvents:0,inputFrameDelays:[],modes:{},longTasksSupported:false,longTasks:0,maxLongTask:0};
+      inputEvents:0,inputFrameDelays:[],scrollEvents:0,scrollFrameDelays:[],
+      visualViewportAvailable:!!window.visualViewport,visualViewportResizes:0,
+      modes:{},longTasksSupported:false,longTasks:0,maxLongTask:0};
     showPanel();
     if(typeof PerformanceObserver!=='undefined' &&
         PerformanceObserver.supportedEntryTypes?.includes('longtask')){
@@ -175,6 +202,8 @@ export function createPerformanceCheck({durationMs=10000}={}) {
       }catch{observer?.disconnect();observer=null;}
     }
     document.addEventListener('input',handleInput,true);
+    window.addEventListener('scroll',handleScroll,true);
+    window.visualViewport?.addEventListener('resize',handleViewportResize);
     document.addEventListener('visibilitychange',onVisibilityChange);
     window.addEventListener('pagehide',onPageHide);
     if(typeof requestAnimationFrame==='function')frame=requestAnimationFrame(animate);
