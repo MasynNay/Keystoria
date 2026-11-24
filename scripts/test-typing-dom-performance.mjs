@@ -111,14 +111,39 @@ try{
        JSON.stringify(compareTyping(mixed,typed,{caseSensitive:false})))
      throw new Error('Case-insensitive Unicode parity mismatch');
    }
-   box.remove();insensitive.remove();
-   return {renders,stable,smallEditMutations};
+   // Counting MutationObserver records alone would miss an expensive
+   // full-prompt read loop which compares classes but does not write them.
+   // Instrument native className reads for one real append after 150 chars.
+   const measured=document.createElement('div');
+   document.body.append(measured);
+   paintTypingFeedback(measured,reference,reference.slice(0,150));
+   const descriptor=Object.getOwnPropertyDescriptor(Element.prototype,'className');
+   if(!descriptor?.configurable||!descriptor.get||!descriptor.set)
+    throw new Error('Cannot measure native className access cost');
+   let classReads=0;
+   Object.defineProperty(Element.prototype,'className',{
+    configurable:true,enumerable:descriptor.enumerable,
+    get(){
+     if(this.parentElement===measured)classReads++;
+     return descriptor.get.call(this);
+    },
+    set(value){return descriptor.set.call(this,value);},
+   });
+   try{
+    paintTypingFeedback(measured,reference,reference.slice(0,151));
+   }finally{
+    Object.defineProperty(Element.prototype,'className',descriptor);
+   }
+   measured.remove();box.remove();insensitive.remove();
+   return {renders,stable,smallEditMutations,classReads};
   });
   assert.ok(incremental.renders>200,'exercised long passage edits');
   assert.equal(incremental.stable,incremental.renders-1,
    'the native cursor-adjacent character tree stays mounted');
   assert.ok(incremental.smallEditMutations!==null && incremental.smallEditMutations<=3,
    'a simple append touches only a bounded number of character classes');
+  assert.ok(incremental.classReads<=8,
+   'an append must not revisit the full target span tree: '+incremental.classReads);
   
 
   // Pure string rendering remains the oracle. Updating a real lyric word
