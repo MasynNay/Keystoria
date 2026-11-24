@@ -170,7 +170,10 @@ export function createSpeedController({ state, onRender, playSound }) {
       const target=node('speed-focus-word');
       if(target){
         const focus=speedFocusWord(session.reference,session.typed,caret);
-        const signature=JSON.stringify(focus.characters);
+        // Two separate occurrences of the same word may produce identical
+        // character classes. Include the reference position so moving between
+        // them cannot skip the painter and reuse the old word's nodes.
+        const signature=JSON.stringify([focus.start,focus.word,focus.characters]);
         if(signature!==focusWordSignature){
           paintSpeedFocusWord(target,focus);
           focusWordSignature=signature;
@@ -213,8 +216,11 @@ export function createSpeedController({ state, onRender, playSound }) {
       Math.round(metrics.characters/5/(duration/60))) : 0));
     // Both the thumb action and desktop control track the same live state.
     // A paused or not-yet-started run cannot be paused again.
+    const pauseDisabled=session.status!=='running';
     document.querySelectorAll('[data-action="speed-pause"]').forEach(button=>{
-      button.disabled=session.status!=='running';
+      // A native form-control setter can reflect the disabled attribute.
+      // Avoid attribute churn on 250ms timer ticks once the state is stable.
+      if(button.disabled!==pauseDisabled)button.disabled=pauseDisabled;
     });
     text('speed-mode',session.status === 'paused' ? 'PAUSED · RESUME TO CONTINUE'
       : session.status === 'running' ? 'SESSION LIVE' : 'TIMER STARTS WHEN YOU TYPE');
