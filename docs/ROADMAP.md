@@ -1,3 +1,9 @@
+## Speed Lab Word Focus stable characters — November 23, 2026
+
+**Under release validation; physical phone issue #82 remains open.** When Word Focus was enabled, every typed character within the same word caused the optional small prompt to call `replaceChildren` and rebuild all visible spans. The native textarea stayed mounted, but the repeated prompt remount could create unnecessary DOM and accessibility-tree work beside a software keyboard. The browser and local editions now use a focused painter that retains each existing span when the displayed letters match, changes only their correct/incorrect/current classes, and remounts only on a different word or externally replaced markup. The original word calculation, full scoring, timer, word navigation, keyboard assist and desktop layout are unchanged.
+
+Existing release-gated Playwright mobile/browser checks now exercise real Speed Lab inputs across same-word edits and Space transitions, plus exact markup parity, correction states, external replacement recovery and completion. This is a reduction in avoidable DOM mutations, **not** proof that iOS Safari or Android Chrome latency has improved. Keep [issue #82](https://github.com/MasynNay/Keystoria/issues/82) open for actual-phone measurement.
+
 ## Lyric Lab mounted-word feedback — November 23, 2026
 
 **Under CI review; real-device lag still unverified.** Lyric Lab previously replaced the active word's HTML and compact phone cue's HTML for every character, forcing repeated parsing and character-node replacement beside a native software keyboard. The new incremental grapheme-aware painter retains both sets of character nodes. It updates only changing correct/incorrect/current classes, next-key markers, genuine overtyping and end-caret nodes; new words and externally replaced markup still initialize from the existing pure renderer. Repeated lag-status messages also avoid unchanged text writes.
