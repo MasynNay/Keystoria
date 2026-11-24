@@ -3,7 +3,7 @@
  * This is a separate mode: it never touches mission server state.
  */
 import { safe, ico } from './helpers.js';
-import { renderLyricWordFeedback } from './lyric-word-feedback.js?v=0.52.0';
+import { renderLyricWordFeedback, paintLyricWordFeedback } from './lyric-word-feedback.js?v=0.53.0';
 import { readRecentLyricResults } from './lyric-history.js?v=0.1.0';
 import { MOBILE_TYPING_MEDIA } from './mobile-typing.js?v=0.29.0';
 import { FEATURED_SONGS, cleanWord, sameWord, parseLRC, currentLineAt, expectedWordsAt, scoreRun, searchTimedLyrics, featuredFor, parseYouTubeVideoId, youtubeSearchUrl, PLAYBACK_RATES, nextPlaybackRate, coverStyle, lineHasForeignScript, calibratedOffset, resolveLocalVideoMatch } from './lyric-lab-core.js?v=0.52.0';
@@ -299,7 +299,8 @@ export function createLyricLabController({state,onRender}){
   if(live){const label=lyricTime<chart.lines[0].time?`Instrumental intro · first lyric at ${fmt(chart.lines[0].time-offset)}`:chart.lines[audioLine]?.text||'Waiting for first lyric…';if(live.textContent!==label)live.textContent=label;}
   const lag=$('lyric-lag-status');if(lag){
    const distance=audioLine-typeLine;
-   lag.textContent=lyricTime<chart.lines[0].time?'The lyric will appear when its timestamp arrives.':distance>0?`You're ${distance} lyric ${distance===1?'line':'lines'} behind the music. Use SKIP LINE to move ahead.`:distance<0?`You're ${-distance} ${distance===-1?'line':'lines'} ahead of the music.`:'Your typing is on the current lyric line.';
+   const message=lyricTime<chart.lines[0].time?'The lyric will appear when its timestamp arrives.':distance>0?`You're ${distance} lyric ${distance===1?'line':'lines'} behind the music. Use SKIP LINE to move ahead.`:distance<0?`You're ${-distance} ${distance===-1?'line':'lines'} ahead of the music.`:'Your typing is on the current lyric line.';
+   if(lag.textContent!==message)lag.textContent=message;
   }
   const line=chart.lines[typeLine];if(!line)return;
   const current=$('lyric-current-line'),next=$('lyric-next-line');
@@ -311,7 +312,7 @@ export function createLyricLabController({state,onRender}){
   const announcement=phase==='done'?'':currentWord?`Current word: ${currentWord}`:'';
   if(spoken && spoken.textContent!==announcement)spoken.textContent=announcement;
   const feedback=renderLyricWordFeedback(currentWord,typed,{strict});
-  const mobileWord=$('lyric-mobile-word');if(mobileWord && mobileWord.innerHTML!==feedback.html)mobileWord.innerHTML=feedback.html;
+  const mobileWord=$('lyric-mobile-word');if(mobileWord)paintLyricWordFeedback(mobileWord,currentWord,typed,{strict});
   const mobileToggle=$('lyric-mobile-toggle');if(mobileToggle){const label=active?'PAUSE':'PLAY',pressed=String(active);if(mobileToggle.textContent!==label)mobileToggle.textContent=label;if(mobileToggle.getAttribute('aria-pressed')!==pressed)mobileToggle.setAttribute('aria-pressed',pressed);}
   const nextKeystroke=$('lyric-next-keystroke');
   if(nextKeystroke){
@@ -331,7 +332,7 @@ export function createLyricLabController({state,onRender}){
     current.dataset.wordKey=wordKey;
    }else{
     const activeWord=current.querySelector('.lyric-active-word');
-    if(activeWord && activeWord.innerHTML!==feedback.html)activeWord.innerHTML=feedback.html;
+    if(activeWord)paintLyricWordFeedback(activeWord,currentWord,typed,{strict});
    }
    if(current.dataset.audioLine!==String(audioLine))current.dataset.audioLine=String(audioLine);
   }
