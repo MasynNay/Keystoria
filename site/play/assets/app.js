@@ -10,7 +10,7 @@ import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.1";
 import { sound, toggleSound, isSoundOn } from "./sound.js";
 import { MISSIONS } from "./ui/missions.js";
 import { updateMissionScene } from "./ui/mission-scenes.js";
-import { setCinematicTypingProgress } from "./ui/cinematic-cuts.js";
+import { setCinematicTypingProgress } from "./ui/cinematic-cuts.js?v=0.1.1";
 import { moveStoryReel } from "./ui/story-reel.js";
 import { deploymentDisplay } from "./ui/deployment.js";
 import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";

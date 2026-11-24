@@ -82,6 +82,7 @@ jobs:
           node scripts/test-speed-caret-bursts.mjs
           node scripts/test-performance-check.mjs
           node scripts/test-typing-dom-performance.mjs
+          node scripts/test-cinematic-progress-dom.mjs
           node scripts/test-speed-interruption.mjs
           node scripts/test-speed-keyboard-assist.mjs
           node scripts/test-speed-word-focus.mjs
