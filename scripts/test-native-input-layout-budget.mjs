@@ -49,19 +49,20 @@ async function instrument(page,selector){
   };
   try{
    for(const property of ['offsetWidth','offsetHeight','clientWidth','clientHeight']){
-    const descriptor=Object.getOwnPropertyDescriptor(html,property);
+    const owner=property.startsWith('offset')?html:element;
+     const descriptor=Object.getOwnPropertyDescriptor(owner,property);
     if(!descriptor?.configurable||!descriptor.get)throw Error('Cannot instrument '+property);
-    Object.defineProperty(html,property,{
+    Object.defineProperty(owner,property,{
      configurable:true,enumerable:descriptor.enumerable,
      get(){if(inInput)geometry++;return descriptor.get.call(this);},
      ...(descriptor.set?{set(value){return descriptor.set.call(this,value);}}:{})
     });
-    getters.push([property,descriptor]);
+    getters.push([owner,property,descriptor]);
    }
   }catch(error){
    element.getBoundingClientRect=bounds;
    element.getClientRects=rects;
-   for(const [property,descriptor] of getters)Object.defineProperty(html,property,descriptor);
+   for(const [owner,property,descriptor] of getters)Object.defineProperty(owner,property,descriptor);
    throw error;
   }
   const begin=event=>{
@@ -78,7 +79,7 @@ async function instrument(page,selector){
     document.removeEventListener('input',end,false);
     element.getBoundingClientRect=bounds;
     element.getClientRects=rects;
-    for(const [property,descriptor] of getters)Object.defineProperty(html,property,descriptor);
+    for(const [owner,property,descriptor] of getters)Object.defineProperty(owner,property,descriptor);
     delete window.__layoutInputProbe;
     return {geometry,events,value:field.value,focused:document.activeElement===field,
       attached:field.isConnected};
