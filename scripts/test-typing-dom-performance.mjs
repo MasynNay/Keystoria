@@ -60,6 +60,44 @@ try{
   assert.equal(validation.markupMatches,12);
   assert.equal(validation.stableNodes,11);
 
+
+  // Pure string rendering remains the oracle. Updating a real lyric word
+  // must preserve equivalent markup, scores and next-key cues without
+  // destroying existing grapheme nodes on every native keyboard input.
+  const lyricParity=await page.evaluate(async()=>{
+   const {paintLyricWordFeedback,renderLyricWordFeedback}=
+     await import('./assets/ui/lyric-word-feedback.js?v=0.53.0');
+   const cases=[
+    {word:'Signals',strict:false,steps:['','S','Si','Sig','Signals','Signal','']},
+    {word:'can’t!',strict:false,steps:['','c','ca','cant','cant!','can','']},
+    {word:'Café',strict:true,steps:['','C','Ca','Caf','Café','CafX','']},
+    {word:'A<&"',strict:true,steps:['','A','A<','A<&','A<&"','A','']},
+    {word:'👩‍💻',strict:true,steps:['','👩‍💻','x','']},
+   ];
+   let checked=0;
+   for(const item of cases){
+    const target=document.createElement('div');
+    document.body.append(target);
+    let first=null;
+    for(const value of item.steps){
+     const output=paintLyricWordFeedback(target,item.word,value,{strict:item.strict});
+     const reference=renderLyricWordFeedback(item.word,value,{strict:item.strict});
+     const expected=document.createElement('div');expected.innerHTML=reference.html;
+     if(target.innerHTML!==expected.innerHTML)
+      throw Error('Lyric markup mismatch for '+JSON.stringify({item,value,actual:target.innerHTML,expected:expected.innerHTML}));
+     if(JSON.stringify(output)!==JSON.stringify(reference))
+      throw Error('Lyric cue or scoring changed');
+     const current=target.querySelector('.type-char');
+     if(first&&first!==current)throw Error('Lyric character was remounted on ordinary input');
+     first=current;
+     checked++;
+    }
+    target.remove();
+   }
+   return checked;
+  });
+  assert.equal(lyricParity,32,'all lyric feedback cases match the pure renderer');
+
   // Real Academy input on the published site must not lose either prompt
   // tree, mobile word cue or the actual focused HTML input across edits.
   await page.locator('[data-action="learn"][data-os="linux"]').click();
@@ -96,18 +134,23 @@ try{
   const nodes=await page.evaluate(()=>{
    window.__lyricRow=document.querySelector('#lyric-lines .lyric-line-row');
    window.__lyricWord=document.querySelector('#lyric-current-line > span');
+   window.__lyricFirstChar=document.querySelector('#lyric-current-line .lyric-active-word .type-char');
+   window.__lyricMobileFirstChar=document.querySelector('#lyric-mobile-word .type-char');
    window.__lyricNativeInput=document.querySelector('#lyric-input');
-   return {row:!!window.__lyricRow,word:!!window.__lyricWord};
+   return {row:!!window.__lyricRow,word:!!window.__lyricWord,
+    active:!!window.__lyricFirstChar,mobile:!!window.__lyricMobileFirstChar};
   });
-  assert.deepEqual(nodes,{row:true,word:true});
+  assert.deepEqual(nodes,{row:true,word:true,active:true,mobile:true});
   for(const value of ['a','ab','abz','a','']){
    await lyric.fill(value);
    const stable=await page.evaluate(()=>({
     row:document.querySelector('#lyric-lines .lyric-line-row')===window.__lyricRow,
     word:document.querySelector('#lyric-current-line > span')===window.__lyricWord,
     field:document.getElementById('lyric-input')===window.__lyricNativeInput,
+    active:document.querySelector('#lyric-current-line .lyric-active-word .type-char')===window.__lyricFirstChar,
+    mobile:document.querySelector('#lyric-mobile-word .type-char')===window.__lyricMobileFirstChar,
    }));
-   assert.deepEqual(stable,{row:true,word:true,field:true},
+   assert.deepEqual(stable,{row:true,word:true,field:true,active:true,mobile:true},
     'Lyric must retain line navigation, word spans and native input at '+width+'px');
   }
   await context.close();
