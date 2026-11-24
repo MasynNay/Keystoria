@@ -125,13 +125,15 @@ try {
      character:document.querySelector('#speed-focus-word .speed-focus-char')===window.__speedWordFirstChar,
      field:document.getElementById('speed-input')===window.__speedNativeField,
     })),{character:true,field:true},'same-word typing retains native input and visual glyphs');
-    await field.fill(reference.slice(0,wordEnd+2));
+    const editedWordTransition=reference.slice(0,wordEnd+2);
+    await field.fill(editedWordTransition);
     assert.equal(await page.evaluate(()=>
      document.querySelector('#speed-focus-word .speed-focus-char')===window.__speedWordFirstChar),false,
      'advancing to the next word mounts the new target');
     await toggle.click();
     assert.equal(await toggle.getAttribute('aria-pressed'),'false');
-    assert.equal(await field.inputValue(),clean);
+    assert.equal(await field.inputValue(),editedWordTransition,
+     'Word Focus toggle preserves the text actually edited during the test');
    }
   }finally{await ctx.close();}
  }
