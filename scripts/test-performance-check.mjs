@@ -130,6 +130,11 @@ try{
    assert.equal(await input.evaluate(el=>document.activeElement===el),true,
      'restarting the diagnostic also restores practice focus');
    await page.locator('[data-perf-action="stop"]').click();
+   const restarted=await page.locator('.perf-check-report').inputValue();
+   assert.match(restarted,/Mode input counts: No practice input detected/,
+    'restarting resets per-mode event counts and samples');
+   assert.ok(!restarted.includes('Input-to-next-frame by mode —'),
+    'raw per-mode timings must not survive into a new report');
    await page.locator('[data-perf-action="close"]').click();
   }finally{await context.close();}
  }
