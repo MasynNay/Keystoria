@@ -65,9 +65,48 @@ try{
     for(let n=0;n<25;n++)setCinematicTypingProgress(room,'HELLO x'+String(n));
     const defenseIdleMutations=observer.takeRecords().length;
     observer.disconnect();
+    // Instrument the original case-insensitive prefix comparison. An ordinary
+    // append after a wrong character should need zero further comparisons,
+    // regardless of how many incorrect keys follow it.
+    room.role='hacker';
+    setCinematicTypingProgress(room,'HELLO');
+    const lower=String.prototype.toLowerCase;
+    let lowerCalls=0;
+    String.prototype.toLowerCase=function(...args){
+     lowerCalls++;
+     return lower.apply(this,args);
+    };
+    try{
+     for(let n=0;n<60;n++)setCinematicTypingProgress(room,'HELLO!'+'x'.repeat(n));
+    }finally{String.prototype.toLowerCase=lower;}
+    // Correctness oracle for append, Backspace, middle edits, an overlong
+    // draft, changed objectives, and repeated event delivery.
+    const sequences=['','H','HE','HELLO','HELLO ','HELLO W','HELLO!X',
+      'HELLO!','HELLO','HE','HE!LO','HELLO WORLD','HELLO WORLD!',
+      'HELLO WORLD','HELLO W','HELLO',''];
+    let parity=0;
+    const expectedWidth=(target,value)=>{
+     let count=0;
+     while(count<value.length&&count<target.length
+       &&value[count].toLowerCase()===target[count].toLowerCase())count++;
+     return String(Math.round(270*(target?count/target.length:0)));
+    };
+    for(const value of sequences){
+     setCinematicTypingProgress(room,value);
+     if(field.getAttribute('width')!==expectedWidth(room.target.text,value))
+      throw Error('Story progress changed during append/backspace/middle edit '+JSON.stringify(value));
+     parity++;
+    }
+    room.target={text:'HELLO MARS'};
+    for(const value of ['HELLO WORLD','HELLO MARS','HELLO MA','HELLO MARS!']){
+     setCinematicTypingProgress(room,value);
+     if(field.getAttribute('width')!==expectedWidth(room.target.text,value))
+      throw Error('New objective reused stale correct-prefix cache');
+     parity++;
+    }
     host.remove();
     return {initialWidth,initialMessage,initialStatus,staleMutations,
-      forwardMutations,forwarded,defense,defenseIdleMutations};
+      forwardMutations,forwarded,defense,defenseIdleMutations,lowerCalls,parity};
    });
    assert.ok(Number(actual.initialWidth)>0,'correct prefix advances cinematic progress');
    assert.match(actual.initialStatus,/ACTION IN PROGRESS/);
@@ -84,6 +123,10 @@ try{
    assert.ok(actual.defense.textNodeStable,'role changes retain the status text node');
    assert.equal(actual.defenseIdleMutations,0,
     'repeated invalid defender input must not churn the scene');
+   assert.ok(actual.lowerCalls<=4,
+    '60 extra wrong keys must not rescan the already-correct prefix: '+actual.lowerCalls);
+   assert.equal(actual.parity,21,
+    'repeated target edits and objective changes still match original prefix scoring');
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[],'cinematic progress never throws in touch or desktop contexts');
