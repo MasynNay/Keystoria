@@ -115,16 +115,33 @@ try {
     assert.ok(focusIndex>=0,'stream contains a complete practice word');
     const wordStart=words.slice(0,focusIndex).reduce((n,word)=>n+word.length+1,0);
     const wordEnd=wordStart+words[focusIndex].length;
+    // Native selectionchange may arrive after Playwright fill() on touch
+    // Chromium. Set the exact intended caret and force controller guidance
+    // to settle before capturing DOM identity; never compare two word views
+    // while one still points at an earlier edited location.
+    const settleCaret=async caret=>{
+     await field.evaluate((el,at)=>{
+      el.setSelectionRange(at,at);
+      el.dispatchEvent(new Event('select',{bubbles:true}));
+     },caret);
+     await page.waitForFunction(expected=>
+      document.querySelector('#speed-focus-word')?.textContent===expected,
+      words[focusIndex]);
+    };
     await field.fill(reference.slice(0,wordStart+1));
+    await settleCaret(wordStart+1);
     await page.evaluate(()=>{
      window.__speedWordFirstChar=document.querySelector('#speed-focus-word .speed-focus-char');
      window.__speedNativeField=document.getElementById('speed-input');
     });
     await field.fill(reference.slice(0,wordStart+2));
-    assert.deepEqual(await page.evaluate(()=>({
+    await settleCaret(wordStart+2);
+    const stable=await page.evaluate(()=>({
      character:document.querySelector('#speed-focus-word .speed-focus-char')===window.__speedWordFirstChar,
      field:document.getElementById('speed-input')===window.__speedNativeField,
-    })),{character:true,field:true},'same-word typing retains native input and visual glyphs');
+    }));
+    assert.deepEqual(stable,{character:true,field:true},
+     'same-word typing retains native input and visual glyphs');
     const editedWordTransition=reference.slice(0,wordEnd+2);
     await field.fill(editedWordTransition);
     assert.equal(await page.evaluate(()=>
