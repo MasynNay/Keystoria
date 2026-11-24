@@ -91,8 +91,14 @@ export function paintTypingFeedback(element, expected, typed, options = {}) {
   // IME commits or middle edits, find the first changed Unicode code point.
   let first=0;
   if(prior!==null){
-    if(value.startsWith(entry.previousText))first=prior.length;
-    else if(entry.previousText.startsWith(value))first=input.length;
+    // UTF-16 prefixes can end halfway through an emoji surrogate pair.
+    // Recheck the last whole code point before skipping that suffix.
+    if(value.startsWith(entry.previousText)
+       &&(!prior.length||prior[prior.length-1]===input[prior.length-1]))
+      first=prior.length;
+    else if(entry.previousText.startsWith(value)
+       &&(!input.length||prior[input.length-1]===input[input.length-1]))
+      first=input.length;
     else{
       const limit=Math.min(prior.length,input.length);
       while(first<limit && prior[first]===input[first])first++;
