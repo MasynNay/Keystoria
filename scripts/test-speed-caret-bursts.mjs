@@ -108,19 +108,24 @@ try {
     // A genuine phone input must keep the visible Word Focus spans mounted
     // while the player edits the same word. Crossing the Space boundary
     // remounts only the new word, without detaching the native textarea.
-    const firstBoundary=reference.indexOf(' ');
-    assert.ok(firstBoundary>2,'opening word has at least three characters');
-    await field.fill(reference.slice(0,1));
+    // Randomized Everyday streams can start with "a", "I" or "it".
+    // Select the first actual >=3-character word, not a lucky first roll.
+    const words=reference.split(' ');
+    const focusIndex=words.findIndex(word=>word.length>=3);
+    assert.ok(focusIndex>=0,'stream contains a complete practice word');
+    const wordStart=words.slice(0,focusIndex).reduce((n,word)=>n+word.length+1,0);
+    const wordEnd=wordStart+words[focusIndex].length;
+    await field.fill(reference.slice(0,wordStart+1));
     await page.evaluate(()=>{
      window.__speedWordFirstChar=document.querySelector('#speed-focus-word .speed-focus-char');
      window.__speedNativeField=document.getElementById('speed-input');
     });
-    await field.fill(reference.slice(0,2));
+    await field.fill(reference.slice(0,wordStart+2));
     assert.deepEqual(await page.evaluate(()=>({
      character:document.querySelector('#speed-focus-word .speed-focus-char')===window.__speedWordFirstChar,
      field:document.getElementById('speed-input')===window.__speedNativeField,
     })),{character:true,field:true},'same-word typing retains native input and visual glyphs');
-    await field.fill(reference.slice(0,firstBoundary+2));
+    await field.fill(reference.slice(0,wordEnd+2));
     assert.equal(await page.evaluate(()=>
      document.querySelector('#speed-focus-word .speed-focus-char')===window.__speedWordFirstChar),false,
      'advancing to the next word mounts the new target');
