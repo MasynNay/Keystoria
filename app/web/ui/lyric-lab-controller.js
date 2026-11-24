@@ -312,7 +312,7 @@ export function createLyricLabController({state,onRender}){
   const announcement=phase==='done'?'':currentWord?`Current word: ${currentWord}`:'';
   if(spoken && spoken.textContent!==announcement)spoken.textContent=announcement;
   const feedback=renderLyricWordFeedback(currentWord,typed,{strict});
-  const mobileWord=$('lyric-mobile-word');if(mobileWord)paintLyricWordFeedback(mobileWord,currentWord,typed,{strict});
+  const mobileWord=$('lyric-mobile-word');if(mobileWord)paintLyricWordFeedback(mobileWord,currentWord,typed,{strict,precomputed:feedback});
   const mobileToggle=$('lyric-mobile-toggle');if(mobileToggle){const label=active?'PAUSE':'PLAY',pressed=String(active);if(mobileToggle.textContent!==label)mobileToggle.textContent=label;if(mobileToggle.getAttribute('aria-pressed')!==pressed)mobileToggle.setAttribute('aria-pressed',pressed);}
   const nextKeystroke=$('lyric-next-keystroke');
   if(nextKeystroke){
@@ -332,7 +332,7 @@ export function createLyricLabController({state,onRender}){
     current.dataset.wordKey=wordKey;
    }else{
     const activeWord=current.querySelector('.lyric-active-word');
-    if(activeWord)paintLyricWordFeedback(activeWord,currentWord,typed,{strict});
+    if(activeWord)paintLyricWordFeedback(activeWord,currentWord,typed,{strict,precomputed:feedback});
    }
    if(current.dataset.audioLine!==String(audioLine))current.dataset.audioLine=String(audioLine);
   }
