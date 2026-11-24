@@ -51,18 +51,18 @@ export function renderTypingFeedback(expected, typed, options = {}) {
 const paintedPrompts=new WeakMap();
 export function paintTypingFeedback(element, expected, typed, options = {}) {
   if (!element) return compareTyping(expected, typed, options);
-  const result=compareTyping(expected, typed, options);
   const source=String(expected ?? '');
-  const input=Array.from(String(typed ?? ''));
+  const value=String(typed ?? '');
+  const input=Array.from(value);
   const sensitive=options.caseSensitive!==false;
+  const equal=(left,right)=>sensitive?left===right:left.toLowerCase()===right.toLowerCase();
   let entry=paintedPrompts.get(element);
   if (!entry || entry.source!==source || entry.sensitive!==sensitive
       || element.firstElementChild!==entry.firstChild) {
     const target=Array.from(source);
     let children=Array.from(element.children);
-    // Academy and story templates already have correctly rendered spans on
-    // their first frame. Adopt those nodes instead of rebuilding them on the
-    // very first native keyboard event (the most noticeable phone input lag).
+    // Pre-rendered Academy/Story prompts can be adopted without remounting the
+    // software-keyboard-adjacent character tree on the first native edit.
     const reusable=children.length>=target.length &&
       target.every((character,i)=>children[i]?.tagName==='SPAN'
         && children[i].classList.contains('type-char')
@@ -71,9 +71,7 @@ export function paintTypingFeedback(element, expected, typed, options = {}) {
       children.slice(target.length).every(node=>
         node.classList.contains('extra')||node.classList.contains('type-end-caret'));
     if(!reusable){
-      // Only an actual new reference or externally replaced markup needs a
-      // fresh mount. Keep renderTypingFeedback as the source of truth.
-      element.innerHTML=renderTypingFeedback(expected, typed, options);
+      element.innerHTML=renderTypingFeedback(expected,typed,options);
       children=Array.from(element.children);
     }
     entry={
@@ -82,14 +80,45 @@ export function paintTypingFeedback(element, expected, typed, options = {}) {
       extras:children.slice(target.length).filter(node=>node.classList.contains('extra')),
       endCaret:children.find(node=>node.classList.contains('type-end-caret'))||null,
       firstChild:element.firstElementChild,
+      previousInput:null,previousText:'',correct:0,
     };
     paintedPrompts.set(element,entry);
   }
   const {target,characters,extras}=entry;
-  for(let i=0;i<target.length;i++){
+  const prior=entry.previousInput;
+  // Native ordinary typing and backspace only change a suffix. Compare the
+  // common prefix in the JS engine; for autocorrect, selection replacement,
+  // IME commits or middle edits, find the first changed Unicode code point.
+  let first=0;
+  if(prior!==null){
+    if(value.startsWith(entry.previousText))first=prior.length;
+    else if(entry.previousText.startsWith(value))first=input.length;
+    else{
+      const limit=Math.min(prior.length,input.length);
+      while(first<limit && prior[first]===input[first])first++;
+    }
+  }
+  let correct=entry.correct;
+  if(prior!==null){
+    for(let i=first;i<prior.length;i++)
+      if(i<target.length && equal(target[i],prior[i]))correct--;
+  }
+  for(let i=first;i<input.length;i++)
+    if(i<target.length && equal(target[i],input[i]))correct++;
+  const incorrect=input.length-correct;
+  const result={
+    correct,incorrect,total:input.length,
+    complete:input.length===target.length&&incorrect===0,
+    percent:input.length?Math.round(correct/input.length*100):100,
+  };
+  // Only the changed range and the old/new native caret positions require
+  // class comparisons. On a one-character append this visits at most two
+  // target characters, even in a large Story/Academy reference.
+  const last=prior===null?target.length:
+    Math.min(target.length,Math.max(prior.length,input.length)+1);
+  for(let i=Math.min(first,target.length);i<last;i++){
     const status=i>=input.length?'pending'
-      : (sensitive ? target[i]===input[i] : target[i].toLowerCase()===input[i].toLowerCase())
-        ? 'correct':'incorrect';
+      :equal(target[i],input[i])?'correct':'incorrect';
     const className='type-char '+status+(i===input.length?' current':'');
     if(characters[i].className!==className)characters[i].className=className;
   }
@@ -102,9 +131,9 @@ export function paintTypingFeedback(element, expected, typed, options = {}) {
     else element.append(extra);
     extras.push(extra);
   }
-  for(let i=0;i<extras.length;i++){
-    const value=input[target.length+i];
-    if(extras[i].textContent!==value)extras[i].textContent=value;
+  for(let i=Math.max(0,first-target.length);i<extras.length;i++){
+    const character=input[target.length+i];
+    if(extras[i].textContent!==character)extras[i].textContent=character;
   }
   if(input.length>=target.length){
     if(!entry.endCaret){
@@ -117,6 +146,9 @@ export function paintTypingFeedback(element, expected, typed, options = {}) {
     entry.endCaret.remove();
     entry.endCaret=null;
   }
+  entry.previousInput=input;
+  entry.previousText=value;
+  entry.correct=correct;
   entry.firstChild=element.firstElementChild;
   const accuracy=String(result.percent),errors=String(result.incorrect);
   if(element.dataset.accuracy!==accuracy)element.dataset.accuracy=accuracy;
