@@ -213,8 +213,11 @@ export function createSpeedController({ state, onRender, playSound }) {
       Math.round(metrics.characters/5/(duration/60))) : 0));
     // Both the thumb action and desktop control track the same live state.
     // A paused or not-yet-started run cannot be paused again.
+    const pauseDisabled=session.status!=='running';
     document.querySelectorAll('[data-action="speed-pause"]').forEach(button=>{
-      button.disabled=session.status!=='running';
+      // A native form-control setter can reflect the disabled attribute.
+      // Avoid attribute churn on 250ms timer ticks once the state is stable.
+      if(button.disabled!==pauseDisabled)button.disabled=pauseDisabled;
     });
     text('speed-mode',session.status === 'paused' ? 'PAUSED · RESUME TO CONTINUE'
       : session.status === 'running' ? 'SESSION LIVE' : 'TIMER STARTS WHEN YOU TYPE');
