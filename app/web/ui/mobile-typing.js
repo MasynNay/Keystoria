@@ -121,7 +121,7 @@ export function paintSpeedFocusWord(element,focus){
    }
  }else{
    const existing=Array.from(element.children);
-   const adopt=existing.length===characters.length &&
+   const adopt=(sameWord||!nodes) && existing.length===characters.length &&
      element.childNodes.length===existing.length &&
      characters.every((ch,i)=>existing[i].tagName==='SPAN'
        &&existing[i].classList.contains('speed-focus-char')
