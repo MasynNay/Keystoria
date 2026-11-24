@@ -172,6 +172,18 @@ try {
      if(first && typed.length>6 && first!==box.firstElementChild)transitions++;
      if(!first)first=box.firstElementChild;
     }
+    // A repeated word in another part of the reference is a new target,
+    // even if every visible letter matches the previous word exactly.
+    const repeating='signal signal';
+    paintSpeedFocusWord(box,speedFocusWord(repeating,'s',1));
+    const previousRepeatedWord=box.firstElementChild;
+    paintSpeedFocusWord(box,speedFocusWord(repeating,'signal s',8));
+    if(box.firstElementChild===previousRepeatedWord)
+     throw new Error('same-spelling next word reused stale word position');
+    const currentRepeatedWord=box.firstElementChild;
+    paintSpeedFocusWord(box,speedFocusWord(repeating,'signal si',9));
+    if(box.firstElementChild!==currentRepeatedWord)
+     throw new Error('same-spelling subsequent input remounted active word');
     box.replaceChildren(document.createElement('em'));
     paintSpeedFocusWord(box,speedFocusWord(reference,'s',1));
     if(!box.firstElementChild?.classList.contains('speed-focus-char'))
