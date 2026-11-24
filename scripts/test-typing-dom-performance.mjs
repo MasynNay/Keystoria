@@ -111,6 +111,21 @@ try{
        JSON.stringify(compareTyping(mixed,typed,{caseSensitive:false})))
      throw new Error('Case-insensitive Unicode parity mismatch');
    }
+   // An emoji can arrive in UTF-16 chunks. Appending or deleting a
+   // low surrogate changes the previous code point, so startsWith on raw
+   // UTF-16 must not skip over that position in cached scoring.
+   const surrogate=document.createElement('div');
+   document.body.append(surrogate);
+   const half='A'+String.fromCharCode(0xD83D),whole='A👩';
+   for(const typed of ['', 'A',half,whole,half,whole+'Z','A',whole+'Z']){
+    const score=paintTypingFeedback(surrogate,'A👩Z',typed);
+    const pure=document.createElement('div');
+    pure.innerHTML=renderTypingFeedback('A👩Z',typed);
+    if(surrogate.innerHTML!==pure.innerHTML ||
+       JSON.stringify(score)!==JSON.stringify(compareTyping('A👩Z',typed)))
+     throw new Error('Surrogate boundary append/delete regression');
+   }
+   surrogate.remove();
    // Counting MutationObserver records alone would miss an expensive
    // full-prompt read loop which compares classes but does not write them.
    // Instrument native className reads for one real append after 150 chars.
