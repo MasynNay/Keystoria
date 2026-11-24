@@ -257,31 +257,71 @@ export function renderCinematicCut(room, step) {
   </g>`;
 }
 
+/** Keep the same live status text node mounted across typing events.
+ * A native phone input should not recreate accessible content unnecessarily.
+ */
+function setTextIfDifferent(element,value){
+  if(!element || element.textContent===value)return;
+  if(element.childNodes.length===1 && element.firstChild.nodeType===3)
+    element.firstChild.nodeValue=value;
+  else element.textContent=value;
+}
+
+// Each mounted cinematic SVG has its own short-lived progress state. This
+// WeakMap does not persist drafts or outlive its detached scene element.
+const cinematicPrefixCache=new WeakMap();
+function correctPrefixCount(target,typed,previous){
+  let count=0;
+  if(previous?.target===target){
+    if(typed.startsWith(previous.typed)){
+      // Appending after an earlier error cannot advance the correct prefix.
+      // Otherwise only inspect the newly appended code units.
+      count=previous.count;
+      if(count<previous.typed.length)return count;
+    }else if(previous.typed.startsWith(typed)){
+      // Backspace only shortens the previously correct prefix.
+      return Math.min(previous.count,typed.length);
+    }
+  }
+  // Earlier selection edits, paste, composition commits, and changed
+  // objectives fall back to the original full correct-prefix calculation.
+  while(count<typed.length && count<target.length &&
+    typed[count].toLowerCase()===target[count].toLowerCase())count++;
+  return count;
+}
+
 export function setCinematicTypingProgress(room, typed) {
-  const target = room?.target?.text || '';
-  const field = document.getElementById('shot-completion-fill');
-  if (!field) return;
-  // Only a correct prefix advances the visual actuator. Incorrect letters can
-  // still be corrected using Backspace without falsely granting progress.
-  let count = 0;
-  while(count < typed.length && count < target.length &&
-    typed[count].toLowerCase() === target[count].toLowerCase()) count += 1;
-  const fraction = target ? count / target.length : 0;
-  field.setAttribute('width', String(Math.round(270 * fraction)));
+  const target=room?.target?.text||'';
+  const field=document.getElementById('shot-completion-fill');
+  if(!field)return;
+  const value=String(typed??'');
+  const count=correctPrefixCount(target,value,cinematicPrefixCache.get(field));
+  cinematicPrefixCache.set(field,{target,typed:value,count});
+  const fraction=target?count/target.length:0;
+  const width=String(Math.round(270*fraction));
+  if(field.getAttribute('width')!==width)field.setAttribute('width',width);
   const message=document.querySelector('.cinematic-closeup .shot-story-message');
-  if(message) message.textContent=partialDecode(message.getAttribute('data-encoded'),message.getAttribute('data-decoded'),fraction);
-  // The physical prop reacts as well: doors part, maps trace routes, liquids
-  // fill, and vehicles move while the player enters a correct prefix.
+  if(message){
+    const text=partialDecode(message.getAttribute('data-encoded'),message.getAttribute('data-decoded'),fraction);
+    setTextIfDifferent(message,text);
+  }
+  // Only mutate the SVG/animation styles when progress or role really changes.
   const camera=document.getElementById('cinema-art');
   if(camera){
-    const defender=room?.role === 'defender';
-    camera.style.setProperty('--typing-progress', defender ? '0' : String(fraction));
-    camera.style.setProperty('--defense-progress', defender ? String(fraction) : '0');
-    camera.dataset.typingPhase=fraction<.25?'starting':fraction<.65?'engaged':fraction<1?'finalizing':'complete';
+    const defender=room?.role==='defender';
+    const typing=defender?'0':String(fraction);
+    const defense=defender?String(fraction):'0';
+    if(camera.style.getPropertyValue('--typing-progress')!==typing)
+      camera.style.setProperty('--typing-progress',typing);
+    if(camera.style.getPropertyValue('--defense-progress')!==defense)
+      camera.style.setProperty('--defense-progress',defense);
+    const phase=fraction<.25?'starting':fraction<.65?'engaged':fraction<1?'finalizing':'complete';
+    if(camera.dataset.typingPhase!==phase)camera.dataset.typingPhase=phase;
   }
-  document.getElementById('cinema-action-status')?.replaceChildren(document.createTextNode(
-    room?.role === 'hacker' ? `ACTION IN PROGRESS · ${Math.round(fraction*100)}%` :
-    `DEFENSE INTERCEPT · ${Math.round(fraction*100)}%`));
+  const status=room?.role==='hacker'
+    ?`ACTION IN PROGRESS · ${Math.round(fraction*100)}%`
+    :`DEFENSE INTERCEPT · ${Math.round(fraction*100)}%`;
+  setTextIfDifferent(document.getElementById('cinema-action-status'),status);
 }
 
 Object.assign(palettes, {"clockfall": ["#7ff2eb", "#347e9b"], "nightmarket": ["#ff96c9", "#a9518d"], "emberwing": ["#ffac52", "#c66b3e"], "deepvault": ["#74c5ff", "#2d7a9e"], "aurora_arc": ["#a5ff9c", "#5196aa"], "inkbound": ["#f4d59d", "#a786a0"]});
