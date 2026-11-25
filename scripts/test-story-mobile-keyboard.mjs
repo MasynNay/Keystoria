@@ -83,7 +83,8 @@ try{
       'wide desktop Story input must not trigger mobile keyboard correction');
    }
    await page.locator('.prefs-toggle').focus();
-   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(resolve)));
+   // Shared native keyboard handler has a 180ms blur grace period.
+   await page.waitForFunction(()=>!document.body.classList.contains('mobile-typing-active'));
    assert.equal(await page.evaluate(()=>document.body.classList.contains('mobile-typing-active')),false,
     'Story mobile keyboard state clears when the player leaves input');
    await page.evaluate(()=>{
