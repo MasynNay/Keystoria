@@ -2,7 +2,7 @@
  * We keep prompts next to real HTML inputs, then correct their visible position
  * when a native visualViewport shrinks or shifts. No imitation keyboard.
  */
-export const MOBILE_TYPING_FIELDS=Object.freeze(['speed-input','lyric-input','lesson-input']);
+export const MOBILE_TYPING_FIELDS=Object.freeze(['speed-input','lyric-input','lesson-input','task-input']);
 /** Keep thumb controls on shallow touch landscapes without switching desktop
  * windows merely because they are short. Match the CSS media query exactly.
  */
@@ -184,8 +184,10 @@ export function mobileScrollDelta(rect,visibleTop,visibleHeight,padding=12) {
 export function mobileFocusBounds(field) {
  if (!field?.getBoundingClientRect) return null;
  const input=field.getBoundingClientRect();
- const cue=field.closest?.('.mobile-typing-entry')
-   ?.querySelector?.('.mobile-speed-cue,.mobile-lyric-word,.mobile-academy-target');
+ const cue=field.id==='task-input'
+   ? field.closest?.('.mission-input-pane')?.querySelector?.('#target-text')
+   : field.closest?.('.mobile-typing-entry')
+     ?.querySelector?.('.mobile-speed-cue,.mobile-lyric-word,.mobile-academy-target');
  const target=cue?.getBoundingClientRect?.();
  if (!target || target.height<=0) return input;
  return {top:Math.min(target.top,input.top),bottom:Math.max(target.bottom,input.bottom)};
