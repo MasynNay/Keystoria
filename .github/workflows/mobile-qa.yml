@@ -26,6 +26,7 @@ on:
       - 'scripts/test-performance-check.mjs'
       - 'app/tests/test_performance_check.mjs'
       - 'scripts/test-typing-dom-performance.mjs'
+      - 'scripts/test-native-input-layout-budget.mjs'
       - 'scripts/test-cinematic-progress-dom.mjs'
       - 'scripts/test-speed-interruption.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
@@ -62,6 +63,7 @@ on:
       - 'scripts/test-performance-check.mjs'
       - 'app/tests/test_performance_check.mjs'
       - 'scripts/test-typing-dom-performance.mjs'
+      - 'scripts/test-native-input-layout-budget.mjs'
       - 'scripts/test-cinematic-progress-dom.mjs'
       - 'scripts/test-speed-interruption.mjs'
       - 'scripts/test-speed-keyboard-assist.mjs'
@@ -137,6 +139,7 @@ jobs:
           node scripts/test-speed-caret-bursts.mjs
           node scripts/test-performance-check.mjs
           node scripts/test-typing-dom-performance.mjs
+          node scripts/test-native-input-layout-budget.mjs
           node scripts/test-cinematic-progress-dom.mjs
           node scripts/test-speed-interruption.mjs
           node scripts/test-speed-keyboard-assist.mjs
