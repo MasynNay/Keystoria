@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.0';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.3';
-import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.0';
+import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
 
 const node = id => document.getElementById(id);
 const text = (id, value) => { const element=node(id); if (element && element.textContent!==String(value)) element.textContent=value; };
