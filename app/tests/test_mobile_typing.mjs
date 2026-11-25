@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { MOBILE_TYPING_FIELDS, nextSpeedCue, mobileScrollDelta, mobileFocusBounds, patchMobileTraining, previousWordRange, speedSpokenTarget, speedFocusWord } from '../web/ui/mobile-typing.js';
 
 test('every practice input is tracked for keyboard visibility',()=>{
- assert.deepEqual([...MOBILE_TYPING_FIELDS],['speed-input','lyric-input','lesson-input']);
+ assert.deepEqual([...MOBILE_TYPING_FIELDS],['speed-input','lyric-input','lesson-input','task-input']);
 });
 test('mobile speed cue follows the exact character, preserving spaces',()=>{
  const a=nextSpeedCue('cat dog','ca');
@@ -43,6 +43,25 @@ test('keyboard scroll target keeps prompt and input, not buttons below them',()=
  assert.deepEqual(mobileFocusBounds(field),fieldBox,'missing wrapper stays safe');
  assert.equal(mobileFocusBounds(null),null);
 });
+test('Story mode keyboard scroll keeps the real target prompt alongside its input',()=>{
+ const targetBounds={top:180,bottom:276,height:96};
+ const inputBounds={top:312,bottom:362,height:50};
+ const prompt={getBoundingClientRect:()=>targetBounds};
+ const pane={querySelector:selector=>selector==='#target-text'?prompt:null};
+ const field={
+  id:'task-input',getBoundingClientRect:()=>inputBounds,
+  closest:selector=>selector==='.mission-input-pane'?pane:null,
+ };
+ assert.deepEqual(mobileFocusBounds(field),{top:180,bottom:362});
+ assert.equal(mobileScrollDelta(mobileFocusBounds(field),0,480),0,
+  'visible Story target and typing field need no corrective scrolling');
+ assert.ok(mobileScrollDelta(mobileFocusBounds(field),0,300)>0,
+  'short virtual-keyboard viewport must reveal the Story input');
+ pane.querySelector=()=>null;
+ assert.deepEqual(mobileFocusBounds(field),inputBounds,
+  'missing Story target safely falls back to native input geometry');
+});
+
 test('tall prompt prioritizes typing input on a short keyboard viewport',()=>{
  const big={top:10,bottom:410,height:400};
  const input={top:440,bottom:500,height:60};
