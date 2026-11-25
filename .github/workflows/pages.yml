@@ -69,6 +69,7 @@ jobs:
           node scripts/test-dialog-keyboard.mjs
           node scripts/test-navigation-accessibility.mjs
           node scripts/test-mobile-viewport-recovery.mjs
+          node scripts/test-story-mobile-keyboard.mjs
           node scripts/test-mobile-compositor.mjs
           node scripts/test-session-recovery-browser.mjs
           node scripts/test-academy-focus.mjs
