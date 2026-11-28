@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.0';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.4';
-import { reviewSpeedKeys, createFocusedSpeedDrill } from './speed-insights.js?v=0.48.4';
+import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope } from './speed-insights.js?v=0.48.5';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
 
 const node = id => document.getElementById(id);
@@ -74,6 +74,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[] } = {}) {
     const enteringFromAnotherMode=!state.speed;
     const leavingResults=state.speed?.status==='complete';
+    const priorSession=state.speed;
     cancelPendingFocus();
     clearTimer();
     flow?.dispose?.();
@@ -89,11 +90,17 @@ export function createSpeedController({ state, onRender, playSound }) {
     // physical-keyboard scores as Assisted unless the primary pointer is touch.
     const phoneLayout=compact && (window.matchMedia?.('(pointer: coarse)').matches ?? false);
     const keyboardAssist=phoneLayout && selectedPack!=='numpad' && preferredAssist();
+    const scope={pack:selectedPack,seconds:DURATIONS.includes(seconds)?seconds:30,keys:focusedDrill?.keys??[]};
+    // Keep only the last eligible summary in an unchanged focused drill.
+    // A canceled/interrupted attempt does not replace a valid baseline.
+    const candidate=priorSession?.focusAttempt&&!priorSession.focusAttempt.interrupted
+      ?priorSession.focusAttempt:priorSession?.previousFocusAttempt;
+    const previousFocusAttempt=scope.keys.length&&sameFocusScope(scope,candidate)?candidate:null;
     state.speed={
       pack:selectedPack,
       seconds:DURATIONS.includes(seconds) ? seconds : 30,
       reference:focusedDrill?.reference??createWordStream(selectedPack),
-      targetKeys:focusedDrill?.keys??[],
+      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,
       typed:'',startedAt:null,pausedAt:null,interrupted:false,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
       focusPractice:phoneLayout && preferredFocus(),
@@ -320,6 +327,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     // The private learning recap is computed once, after the clock stops.
     // Keep it separate from the persisted/exported result object.
     session.keyReview=reviewSpeedKeys(session.reference,session.typed,{numpad:session.pack==='numpad'});
+    session.focusAttempt=summarizeFocusedAttempt(session);
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.

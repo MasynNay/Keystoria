@@ -268,11 +268,37 @@ try {
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),storageBefore,
     'even a perfect targeted drill never alters regular score history');
    assert.equal(await page.locator('[data-action="speed-targeted"]').count(),0);
+   const comparison=page.locator('#speed-focus-comparison');
+   assert.equal(await comparison.getAttribute('data-comparison'),'first');
+   assert.equal(await comparison.locator('li').count(),2);
+   assert.ok((await comparison.locator('li strong').allTextContents()).every(x=>x==='100%'));
    await page.locator('[data-action="speed-restart"]').first().click();
    assert.equal(await banner.count(),1,'Test Again keeps targeted drill mode');
    assert.equal(await review.count(),0);
+   assert.equal(await comparison.count(),0,'comparison is absent while typing');
+   const repeat=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   await page.locator('#speed-input').fill(repeat.split('').map(ch=>ch===key?wrong:ch).join(''));
+   await page.locator('#speed-results-heading').waitFor();
+   assert.equal(await comparison.getAttribute('data-comparison'),'matched');
+   const keyRows=await comparison.locator('li').evaluateAll(items=>items.map(el=>({
+    key:el.dataset.key,rate:el.querySelector('strong').textContent,delta:el.querySelector('[data-delta]')?.dataset.delta
+   })));
+   assert.deepEqual(keyRows,[{key,rate:'0%',delta:'-100'},{key:' ',rate:'100%',delta:'0'}]);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),storageBefore);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=2);
+   // Retry again; improvement is relative to the last attempt, not a saved best.
+   await page.locator('[data-action="speed-restart"]').first().click();
+   const recovery=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   await page.locator('#speed-input').fill(recovery);
+   await page.locator('#speed-results-heading').waitFor();
+   assert.equal(await comparison.getAttribute('data-comparison'),'matched');
+   assert.equal(await comparison.locator('[data-delta="100"]').count(),1);
    await page.locator('[data-action="speed-duration"][data-seconds="15"]').click();
    assert.equal(await banner.count(),1,'duration changes keep focused mode');
+   const shorter=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   await page.locator('#speed-input').fill(shorter);
+   await page.locator('#speed-results-heading').waitFor();
+   assert.equal(await comparison.getAttribute('data-comparison'),'first','duration change resets the comparison');
    await page.locator('[data-action="speed-regular"]').click();
    assert.equal(await banner.count(),0,'explicit return restores regular drills');
    assert.equal(await page.locator('#speed-time').innerText(),'15');

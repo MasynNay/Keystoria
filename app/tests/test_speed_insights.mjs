@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -284,4 +284,53 @@ test('targeted Numpad drills keep valid digits and separators, including Space-o
  }
  assert.equal(createFocusedSpeedDrill('numpad',['x','<']),null);
  assert.ok(createFocusedSpeedDrill('numpad',[' '],8,()=>0.5).reference.split(' ').every(group=>group.length===3));
+});
+
+const focusedSession=(reference,typed,overrides={})=>({
+ pack:'everyday',seconds:30,targetKeys:['a',' '],reference,typed,
+ result:{practiceMode:'standard-exact'},...overrides
+});
+
+test('focused summaries count only submitted target positions, preserve case and omit text',()=>{
+ const attempt=summarizeFocusedAttempt(focusedSession('a A a t','x A a'));
+ assert.deepEqual(attempt.rows,[{key:'a',attempted:2,correct:1},{key:' ',attempted:2,correct:2}]);
+ assert.equal(attempt.reference,undefined);
+ assert.equal(attempt.typed,undefined);
+ assert.equal(summarizeFocusedAttempt(focusedSession('a','a',{targetKeys:[]})),null);
+ const first=compareFocusedAttempts(attempt,null);
+ assert.equal(first.reason,'first');
+ assert.equal(first.rows[0].rate,50);
+ assert.equal(first.rows[0].delta,null);
+ const empty=summarizeFocusedAttempt(focusedSession('a a',''));
+ assert.equal(compareFocusedAttempts(empty,attempt).rows[0].rate,null);
+});
+
+test('focused retry comparison uses each target denominator and rejects tiny samples',()=>{
+ const before=summarizeFocusedAttempt(focusedSession('a a a a a a','x x x a a a'));
+ const after=summarizeFocusedAttempt(focusedSession('a a a a a a','a a a a a a'));
+ const compared=compareFocusedAttempts(after,before);
+ assert.equal(compared.reason,'matched');
+ assert.deepEqual(compared.rows.map(x=>[x.key,x.rate,x.priorRate,x.delta]),[['a',100,50,50],[' ',100,100,0]]);
+ assert.equal(compareFocusedAttempts(before,after).rows[0].delta,-50);
+ const short=summarizeFocusedAttempt(focusedSession('a a a','a a'));
+ assert.equal(compareFocusedAttempts(short,before).rows[0].delta,null);
+ assert.equal(compareFocusedAttempts(after,short).rows[0].delta,null);
+ assert.equal(compareFocusedAttempts(after,before).rows[0].prior.attempted,6);
+});
+
+test('focused comparison cannot cross scope, keyboard mode, interruption or key order',()=>{
+ const prior=summarizeFocusedAttempt(focusedSession('a a a a a a','x a a a a a'));
+ const summary=overrides=>summarizeFocusedAttempt(focusedSession('a a a a a a','a a a a a a',overrides));
+ for(const overrides of [{seconds:15},{pack:'technology'},{targetKeys:[' ','a']},{targetKeys:['a']}]){
+  assert.equal(sameFocusScope(summary(overrides),prior),false);
+  assert.equal(compareFocusedAttempts(summary(overrides),prior).reason,'scope');
+  assert.ok(compareFocusedAttempts(summary(overrides),prior).rows.every(r=>r.delta===null));
+ }
+ const mode=summary({result:{practiceMode:'mobile-assisted'}});
+ assert.equal(compareFocusedAttempts(mode,prior).reason,'keyboard');
+ assert.equal(compareFocusedAttempts(summary({interrupted:true}),prior).reason,'interrupted');
+ assert.equal(compareFocusedAttempts(summary({}),summary({interrupted:true})).reason,'scope');
+ const numpad=summary({pack:'numpad',targetKeys:['1',' '],reference:'1 1 1 1 1 1',typed:'1 1 9 1 1 1'});
+ assert.equal(numpad.rows[0].correct,5);
+ assert.equal(numpad.rows[0].attempted,6);
 });
