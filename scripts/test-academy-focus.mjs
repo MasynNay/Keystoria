@@ -22,6 +22,12 @@ try {
   await page.locator('#app .brand-name').waitFor();
   const welcome=page.locator('.welcome-continue');
   if(await welcome.count()&&await welcome.isVisible())await welcome.click();
+  const atlas=page.locator('#campaign-atlas');
+  assert.equal(await atlas.locator('.campaign-chapter').count(),4);
+  assert.equal(await atlas.locator('[data-campaign-mission]').count(),24);
+  assert.match(await atlas.innerText(),/0 \/ 24/);
+  assert.equal(await atlas.locator('[data-action="campaign-select"]').count(),0);
+  assert.ok(await atlas.evaluate(el=>el.scrollWidth<=el.clientWidth+2));
   const dossier=page.locator('#player-dossier');
   assert.equal(await dossier.locator('.dossier-card').count(),4);
   assert.equal(await dossier.locator('.dossier-milestone').count(),12);

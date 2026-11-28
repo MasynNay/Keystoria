@@ -1,8 +1,10 @@
+import { MISSIONS } from './missions.js';
 /** Local-only progression, retained independently of active room state. */
 const HISTORY_KEY = "panic.history.v1";
 const CAREER_KEY = "panic.career.v1";
 const HISTORY_LIMIT = 24;
 const WORLDS = ["station", "hollow", "outbreak"];
+const validMissions=values=>[...new Set((Array.isArray(values)?values:[]).filter(id=>typeof id==="string"&&Object.hasOwn(MISSIONS,id)))];
 
 export function readHistory(storage = globalThis.localStorage) {
   try {
@@ -21,6 +23,7 @@ function fromHistory(history) {
     runs: history.length, wins: wins.length,
     best: history.reduce((max, run) => Math.max(max, run.score || 0), 0),
     worlds: [...new Set(wins.map(run => run.mission).filter(id => WORLDS.includes(id)))],
+    completedMissions: validMissions(wins.filter(run=>run.won===true).map(run=>run.mission)),
     overdriveWin: wins.some(run => run.difficulty === "overdrive"),
     cleanWin: wins.some(run => run.mistakes === 0),
     pulseUsed: history.some(run => run.pulses > 0),
@@ -36,7 +39,8 @@ export function readCareer(storage = globalThis.localStorage) {
       runs: value.runs,
       wins: Number.isSafeInteger(value.wins) ? Math.max(0, value.wins) : 0,
       best: Number.isFinite(value.best) ? Math.max(0, value.best) : 0,
-      worlds: Array.isArray(value.worlds) ? value.worlds.filter(id => WORLDS.includes(id)) : [],
+      worlds: validMissions([...(Array.isArray(value.worlds)?value.worlds:[]),...fallback.worlds]).filter(id=>WORLDS.includes(id)),
+      completedMissions: validMissions([...validMissions(value.completedMissions),...validMissions(value.worlds),...fallback.completedMissions]),
       overdriveWin: value.overdriveWin === true,
       cleanWin: value.cleanWin === true,
       pulseUsed: value.pulseUsed === true,
@@ -66,7 +70,8 @@ export function recordResult(room, storage = globalThis.localStorage) {
     runs: career.runs + 1,
     wins: career.wins + (record.won ? 1 : 0),
     best: Math.max(career.best, record.score),
-    worlds: [...new Set([...career.worlds, ...(record.won ? [record.mission] : [])])],
+    worlds: validMissions([...career.worlds,...(record.won?[record.mission]:[])]).filter(id=>WORLDS.includes(id)),
+    completedMissions: validMissions([...career.completedMissions,...(record.won?[record.mission]:[])]),
     overdriveWin: career.overdriveWin || (record.won && record.difficulty === "overdrive"),
     cleanWin: career.cleanWin || (record.won && record.mistakes === 0),
     pulseUsed: career.pulseUsed || record.pulses > 0,

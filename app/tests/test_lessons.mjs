@@ -1,3 +1,5 @@
+import { campaignSummary, campaignAtlasTemplate, CAMPAIGN_IDS } from '../web/ui/campaign-atlas.js';
+import { readCareer, recordResult, MILESTONES } from '../web/ui/progression.js';
 import { RHYTHM_CHALLENGES, rhythmOutcome } from '../web/ui/lyric-rhythm.js';
 import { parseLRC } from '../web/ui/lyric-lab-core.js';
 import { playerMilestones } from '../web/ui/player-milestones.js';
@@ -243,4 +245,28 @@ test('unified player dossier reads existing bounded histories without writes or 
   assert.equal(rhythmOutcome(t,{...m,attempts:n*2}),'accuracy');
   assert.equal(rhythmOutcome(t,{...m,invalid:true}),'practice');
  }
+ });
+
+ test('campaign atlas covers all 24 worlds and migrates legacy wins without inventing progress',()=>{
+ const map=new Map([['panic.career.v1',JSON.stringify({runs:3,wins:2,best:100,worlds:['station','inkbound','unknown']})]]);
+ const storage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,String(v))};
+ let c=readCareer(storage);
+ assert.deepEqual(c.completedMissions,['station','inkbound']);
+ assert.deepEqual(c.worlds,['station']);
+ assert.equal(CAMPAIGN_IDS.length,24);
+ assert.equal(new Set(CAMPAIGN_IDS).size,24);
+ assert.equal(campaignSummary(c).next,'hollow');
+ for(let i=0;i<26;i++){
+  recordResult({phase:'won',runId:'atlas-'+i,mission:i===0?'aurora_arc':'hollow',difficulty:'normal',players:[],finalScore:1},storage);
+ }
+ c=readCareer(storage);
+ assert.ok(c.completedMissions.includes('aurora_arc'),'victory survives the 24-run history retention');
+ assert.equal(campaignSummary(c).completed,4);
+ assert.equal(MILESTONES.find(b=>b.id==='all-worlds').unlocked(c),false);
+ recordResult({phase:'lost',runId:'lost',mission:'outbreak',difficulty:'normal',players:[],finalScore:1},storage);
+ assert.equal(readCareer(storage).completedMissions.includes('outbreak'),false);
+ const full=campaignSummary({completedMissions:CAMPAIGN_IDS});
+ assert.equal(full.next,null);assert.deepEqual(full.groups.map(g=>g.completed),[6,6,6,6]);
+ assert.match(campaignAtlasTemplate({career:c,browserEdition:true}),/local Python edition/);
+ assert.doesNotMatch(campaignAtlasTemplate({career:c,browserEdition:true}),/data-action="campaign-select"/);
  });
