@@ -321,4 +321,108 @@ export const COMMAND_GUIDES = {
     "caution": "A successful TCP connection does not verify application behavior, authentication or TLS trust."
   }
 ],
+  docker: [
+  {
+    "use": "When diagnosing an installation, compare the client and engine versions.",
+    "benefit": "Distinguishes CLI availability from engine availability.",
+    "caution": "Access to the Docker daemon can be highly privileged."
+  },
+  {
+    "use": "Look for a service that exited unexpectedly.",
+    "benefit": "Reveals status and container names before further inspection.",
+    "caution": "An exited container may be an intentionally completed job."
+  },
+  {
+    "use": "Review which application images are present locally.",
+    "benefit": "Useful for inventory and checking expected image tags.",
+    "caution": "This list does not check remote registry updates."
+  },
+  {
+    "use": "Investigate startup or application problems.",
+    "benefit": "Limits initial output to a manageable sample.",
+    "caution": "Logs can contain sensitive data; review before sharing."
+  },
+  {
+    "use": "Check the current state without printing the entire inspection document.",
+    "benefit": "A focused field reduces clutter and exposure of unrelated details.",
+    "caution": "A running process does not guarantee a healthy application."
+  },
+  {
+    "use": "Investigate whether containers appear resource constrained.",
+    "benefit": "Offers a quick CPU and memory snapshot.",
+    "caution": "A single sample does not represent sustained utilization."
+  },
+  {
+    "use": "Identify the network objects available to containers.",
+    "benefit": "Helps plan further connectivity inspection.",
+    "caution": "It does not prove two particular containers can communicate."
+  },
+  {
+    "use": "Identify persistent storage attached to a deployment.",
+    "benefit": "Separates volume inventory from container lifecycle.",
+    "caution": "A listed volume is not evidence of a working backup."
+  },
+  {
+    "use": "Review a multi-container application from its project directory.",
+    "benefit": "Shows the relationship between services and their containers.",
+    "caution": "Use the correct project context; this does not list every engine container."
+  },
+  {
+    "use": "Assess disk use before considering cleanup.",
+    "benefit": "Identifies which classes of objects consume storage.",
+    "caution": "Reclaimable does not mean safe to delete; verify dependencies and backups first."
+  }
+],
+  sql: [
+  {
+    "use": "Create a simple inventory view without displaying unnecessary columns.",
+    "benefit": "Returns only fields relevant to the report.",
+    "caution": "Without ORDER BY, row order is not guaranteed."
+  },
+  {
+    "use": "Identify items that may require replenishment.",
+    "benefit": "Filters the report to a specific condition.",
+    "caution": "A quantity of exactly ten is excluded."
+  },
+  {
+    "use": "Review the most expensive inventory items first.",
+    "benefit": "Provides an understandable ranking.",
+    "caution": "Add a second sort column for deterministic ordering of ties."
+  },
+  {
+    "use": "Preview a small table before examining more rows.",
+    "benefit": "Keeps sample results compact.",
+    "caution": "LIMIT is not a random sample and syntax differs across database engines."
+  },
+  {
+    "use": "Discover which categories exist in an inventory table.",
+    "benefit": "Avoids repeated values in a simple category list.",
+    "caution": "It does not count items per category."
+  },
+  {
+    "use": "Check the number of inventory records.",
+    "benefit": "Useful as a quick report baseline.",
+    "caution": "The row count is not the number of physical units."
+  },
+  {
+    "use": "Calculate the total number of units represented by the records.",
+    "benefit": "Aggregates numeric values instead of counting records.",
+    "caution": "Missing quantities can make the total incomplete."
+  },
+  {
+    "use": "Compare inventory record counts across categories.",
+    "benefit": "Produces compact summaries rather than individual rows.",
+    "caution": "Groups are not guaranteed to appear in a particular order."
+  },
+  {
+    "use": "Find inventory names with a common prefix.",
+    "benefit": "Useful when a full exact value is unknown.",
+    "caution": "Case behavior varies by database and settings; wildcards are not regular expressions."
+  },
+  {
+    "use": "Combine stored category labels with inventory names.",
+    "benefit": "Retrieves related information without duplicating labels in every item record.",
+    "caution": "Non-unique matching keys can multiply result rows."
+  }
+],
 };

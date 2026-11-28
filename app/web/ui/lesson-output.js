@@ -77,4 +77,28 @@ export const LESSON_OUTPUTS = {
   "Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)",
   "ComputerName     : example.com\nRemotePort       : 443\nTcpTestSucceeded : True"
 ],
+  docker: [
+  "Client: Docker Engine\n Version: 28.0.0\nServer: Docker Engine\n Version: 28.0.0",
+  "CONTAINER ID   IMAGE          STATUS          NAMES\nabc123def456   demo-web:1.0   Up 8 minutes    academy-web\n321fed654cba   demo-job:1.0   Exited (0)      academy-job",
+  "REPOSITORY   TAG   IMAGE ID       SIZE\ndemo-web     1.0   abc123def456   84MB",
+  "[INFO] Service started\n[INFO] Health check passed",
+  "running",
+  "NAME          CPU %   MEM USAGE / LIMIT\nacademy-web   0.42%   64MiB / 512MiB",
+  "NETWORK ID     NAME      DRIVER    SCOPE\nabc123def456   bridge    bridge    local",
+  "DRIVER    VOLUME NAME\nlocal     academy-data",
+  "NAME          SERVICE   STATUS\nacademy-web   web       Up 8 minutes\nacademy-job   job       Exited (0)",
+  "TYPE            TOTAL   ACTIVE   SIZE\nImages          3       2        240MB\nLocal Volumes   2       1        64MB"
+],
+  sql: [
+  "name     | quantity\nNotebook | 12\nPencil   | 30",
+  "name\nMarker\nFolder",
+  "name     | price\nNotebook | 4.50\nFolder   | 2.00",
+  "name\nNotebook\nPencil\nMarker\nFolder\nEraser",
+  "category\npaper\nwriting",
+  "total\n5",
+  "units\n58",
+  "category | COUNT(*)\npaper    | 2\nwriting  | 3",
+  "name\nPencil",
+  "name     | label\nNotebook | Paper products\nPencil   | Writing supplies"
+],
 };

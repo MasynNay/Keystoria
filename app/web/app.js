@@ -1,6 +1,6 @@
-import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js?v=0.2.0";
-import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.2";
-import { trainingTemplate } from "./ui/training-view.js?v=0.50.2";
+import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js?v=0.2.1";
+import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.3";
+import { trainingTemplate } from "./ui/training-view.js?v=0.50.3";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel, dailyPracticePanel } from "./ui/speed-view.js?v=0.48.11";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.48.11";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity, readGuidedActivity, recommendDailyPractice } from "./ui/speed-insights.js?v=0.48.11";
@@ -14,7 +14,7 @@ import { setCinematicTypingProgress } from "./ui/cinematic-cuts.js?v=0.1.1";
 import { moveStoryReel } from "./ui/story-reel.js";
 import { deploymentDisplay } from "./ui/deployment.js";
 import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";
-import { createViews } from "./ui/views.js?v=0.2.1";
+import { createViews } from "./ui/views.js?v=0.2.2";
 import { describeSessionRecovery } from "./ui/session-recovery.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";

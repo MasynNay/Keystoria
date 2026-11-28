@@ -120,3 +120,42 @@ A fictional office reports a connectivity issue. Compare local interface, routin
 | `ping -c 4 192.0.2.1` | The -c option limits the number of requests; the address is reserved for documentation. |
 | `ping -n 4 192.0.2.1` | Windows ping uses -n for a request count instead of the Unix-style -c flag. |
 | `Test-NetConnection example.com -Port 443` | The cmdlet can report DNS, remote address and whether the TCP connection succeeded. |
+
+
+## DOCKER OPERATIONS (10 commands)
+
+A fictional application is deployed in containers. You have been asked to investigate its health, image versions, service logs and resource usage before proposing any changes.
+
+**Note:** These commands require Docker and some require a running daemon or the Compose plugin. Every example is simulated; no container, daemon or network is contacted.
+
+| Command | What it does |
+| --- | --- |
+| `docker version` | The server section requires access to a reachable Docker daemon. A client version alone does not establish that the daemon is working. |
+| `docker ps -a` | The -a option includes stopped containers. Without it, Docker normally lists only running containers. |
+| `docker images` | Image tags identify references, not necessarily immutable content. Multiple tags can reference the same image. |
+| `docker logs --tail 20 academy-web` | The --tail option limits returned lines. The container name in this example is fictional. |
+| `docker inspect --format '{{.State.Status}}' academy-web` | The format expression selects a specific field from Docker inspection data; single quotes work in POSIX shells and PowerShell. |
+| `docker stats --no-stream` | The --no-stream flag prevents the ongoing live display, returning a single sample instead. |
+| `docker network ls` | Shows network names, identifiers, drivers and scope. |
+| `docker volume ls` | The command lists volume objects, not their file contents or backups. |
+| `docker compose ps -a` | The -a option includes stopped project containers. Requires the Compose plugin and a project configuration. |
+| `docker system df` | Reports used and potentially reclaimable storage without removing anything. |
+
+## SQL QUERY BASICS (10 commands)
+
+A fictional inventory team needs a small report. Practice reading rows, filtering records, summarizing totals and connecting tables using a tiny imaginary database.
+
+**Note:** Examples use SQLite-compatible SELECT syntax and a fictional items table (id, name, category, quantity, price) plus categories (name, label). Each query is independent and simulated; no database is accessed.
+
+| Command | What it does |
+| --- | --- |
+| `SELECT name, quantity FROM items;` | SELECT identifies output columns, and FROM identifies the source table. The query does not modify stored rows. |
+| `SELECT name FROM items WHERE quantity < 10;` | WHERE applies a condition before rows appear in the result. Rows with NULL quantity do not satisfy this comparison. |
+| `SELECT name, price FROM items ORDER BY price DESC;` | ORDER BY defines result ordering; DESC means descending. Rows tied on price have no guaranteed relative order without a tie-breaker. |
+| `SELECT name FROM items ORDER BY id LIMIT 5;` | LIMIT caps result rows in SQLite. ORDER BY id determines which rows are selected. |
+| `SELECT DISTINCT category FROM items;` | DISTINCT eliminates duplicate result rows. Here it operates on the category column alone. |
+| `SELECT COUNT(*) AS total FROM items;` | COUNT(*) includes rows containing NULL values. AS assigns a readable name to the output column. |
+| `SELECT SUM(quantity) AS units FROM items;` | SUM ignores NULL inputs; if no non-NULL values exist, SQLite SUM returns NULL. |
+| `SELECT category, COUNT(*) FROM items GROUP BY category;` | GROUP BY combines rows with the same category; COUNT(*) counts rows within each group. |
+| `SELECT name FROM items WHERE name LIKE 'P%';` | The percent wildcard matches zero or more characters. SQLite LIKE is normally case-insensitive for ASCII characters. |
+| `SELECT items.name, categories.label FROM items JOIN categories ON items.category = categories.name;` | An inner JOIN returns matching row combinations according to the ON condition. Unmatched items are excluded. |
