@@ -128,6 +128,12 @@ try{
   assert.equal(correction.current,1,'a single visible caret survives correction');
   assert.ok(correction.changed<=3,
    'a single correction must not rewrite unchanged suffix glyphs: '+correction.changed);
+  // Resume the original next-character cue after the isolated correction.
+  // A real touch player can reposition the native caret without rescoring.
+  await input.evaluate(el=>{
+   el.setSelectionRange(el.value.length,el.value.length);
+   el.dispatchEvent(new Event('select',{bubbles:true}));
+  });
   if(compact){
    assert.ok(await view.locator('.type-char').count()<=220,'must not grow DOM after 330 chars');
    assert.equal(await page.locator('#speed-mobile-first').textContent(),reference[330]===' '?'␣':reference[330]);
