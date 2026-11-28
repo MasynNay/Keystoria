@@ -22,6 +22,11 @@ try {
   await page.locator('#app .brand-name').waitFor();
   const welcome=page.locator('.welcome-continue');
   if(await welcome.count()&&await welcome.isVisible())await welcome.click();
+  const dossier=page.locator('#player-dossier');
+  assert.equal(await dossier.locator('.dossier-card').count(),4);
+  assert.match(await dossier.locator('[data-dossier="academy"]').innerText(),/0 \/ 9/);
+  assert.match(await dossier.locator('[data-dossier="story"]').innerText(),/local Python edition/);
+  assert.ok(await dossier.evaluate(el=>el.scrollWidth<=el.clientWidth+2));
   await page.locator('[data-action="learn"][data-os="linux"]').click();
   const input=page.locator('#lesson-input');
   // Zoom-narrowed desktop uses the compact action layout even with a mouse.
@@ -256,6 +261,8 @@ try {
     'clearing unfinished progress must not erase earned badges');
   assert.match(await page.locator('[data-action="learn"][data-os="windows"]').innerText(),/OPEN TERMINAL/,
     'cleared course offers a fresh start');
+  assert.match(await dossier.locator('[data-dossier="academy"]').innerText(),/1 \/ 9/);
+  assert.match(await dossier.locator('[data-dossier="academy"]').innerText(),/No unfinished courses/);
   // Exercise six specialist courses on the same real UI without executing commands.
   for(const courseId of ['git','network','docker','sql','python','services']){
    const card=page.locator('[data-action="learn"][data-os="'+courseId+'"]');

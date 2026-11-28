@@ -8,6 +8,7 @@ import { renderSceneSVG } from "./scene-illustrations.js";
 import { safe, timeString, pad, ico, brand, tag } from "./helpers.js";
 import { isSoundOn } from "../sound.js";
 import { THEMES } from "./themes.js";
+import { playerDossierTemplate } from "./player-dossier.js?v=0.1.0";
 import { trainingLibrary } from "./training-view.js?v=0.50.4";
 import { speedLibrary } from "./speed-view.js";
 import { readHistory, readCareer, summarizeHistory, MILESTONES } from "./progression.js";
@@ -87,6 +88,7 @@ function homeTemplate() {
   <section class="lyric-home-teaser shell" id="lyric-lab"><div><span>// NEW · RHYTHM TYPING</span><h2>LYRIC <em>LAB.</em></h2><p>Type along with real songs and the original YouTube player. Search for timed lyrics, match the beat, and improve your accuracy—no music files required.</p></div><button class="btn btn-primary btn-large" data-action="lyric-open">${ico("play",20)} ENTER LYRIC LAB ${ico("arrow",18)}</button></section>
   ${trainingLibrary()}
   ${speedLibrary()}
+  ${playerDossierTemplate({browserEdition:BROWSER_EDITION})}
   <section class="how shell" id="how-it-works"><div class="how-intro">${tag("THE RULES")}<h2>DIFFERENT ROLES.<br/><span>ONE SHARED FATE.</span></h2><p>It's not a race against your friend. It's a race against everything else. Build a shared signal pulse together, survive a crisis, and regroup for a rematch. ${BROWSER_EDITION ? "These co-op missions run in the local Python edition; this browser version offers the three practice modes." : ""}</p></div><div class="how-steps"><div class="how-step"><span class="step-id">01 // CONNECT</span><div class="step-icon">${ico("users",29)}</div><h3>FIND YOUR PERSON.</h3><p>Create a private room and share a six-character code. Or play with ECHO, your automated teammate.</p></div><div class="how-step"><span class="step-id">02 // SURVIVE</span><div class="step-icon">${ico("keyboard",29)}</div><h3>DO YOUR JOB.</h3><p>One operator types commands to complete the objective. The other types countermeasures to stop incoming attacks.</p></div><div class="how-step"><span class="step-id">03 // ADAPT</span><div class="step-icon">${ico("refresh",29)}</div><h3>SWITCH UNDER FIRE.</h3><p>Halfway through, your assignments reverse. Stay accurate, protect system integrity, and finish together.</p></div></div></section>
   <section class="record-section shell" id="career-record">
     <div class="record-head">${tag("OPERATOR DOSSIER / STORED ON THIS DEVICE")}<h2>YOUR FIELD <em>RECORD.</em></h2><p>Every operation leaves a mark. Your results stay in this browser, without an account.</p></div>
