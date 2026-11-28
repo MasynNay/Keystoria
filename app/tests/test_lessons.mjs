@@ -1,3 +1,5 @@
+import { RHYTHM_CHALLENGES, rhythmOutcome } from '../web/ui/lyric-rhythm.js';
+import { parseLRC } from '../web/ui/lyric-lab-core.js';
 import { playerMilestones } from '../web/ui/player-milestones.js';
 /** Training reference integrity and isolation: no command execution is exposed. */
 import test from 'node:test';
@@ -224,4 +226,21 @@ test('unified player dossier reads existing bounded histories without writes or 
  assert.equal(enabled.earned,true);
  const cleared=playerMilestones({...d,speedCount:0}).find(b=>b.id==='explorer');
  assert.equal(cleared.earned,false);
+ });
+
+ test('three original offline rhythm challenges have bounded timed charts and exact qualification',()=>{
+ assert.equal(RHYTHM_CHALLENGES.length,3);
+ assert.equal(new Set(RHYTHM_CHALLENGES.map(t=>t.id)).size,3);
+ assert.deepEqual(RHYTHM_CHALLENGES.map(t=>t.goal),[90,95,98]);
+ assert.deepEqual(RHYTHM_CHALLENGES.map(t=>t.bpm),[90,120,150]);
+ for(const t of RHYTHM_CHALLENGES){
+  const chart=parseLRC(t.syncedLyrics,t.duration);
+  assert.ok(chart.words.length>=30);
+  assert.ok(chart.lines.at(-1).time<t.duration);
+  const n=chart.words.length,m={total:n,correct:n,attempts:n,skipped:0};
+  assert.equal(rhythmOutcome(t,m),'passed');
+  assert.equal(rhythmOutcome(t,{...m,correct:n-1,skipped:1}),'incomplete');
+  assert.equal(rhythmOutcome(t,{...m,attempts:n*2}),'accuracy');
+  assert.equal(rhythmOutcome(t,{...m,invalid:true}),'practice');
+ }
  });

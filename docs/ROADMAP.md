@@ -1,3 +1,7 @@
+## Offline Lyric Lab rhythm challenges — November 28, 2026
+
+**Proposed; CI pending.** Three original timed lyric passages with generated electronic practice beats at 90, 120 and 150 BPM. Warm-up, Precision and Expert require full word coverage with no skips and exact accuracy fractions of 90%, 95% and 98%. Pauses and playback speeds remain available; seeking, looping and timing adjustment invalidate qualification without blocking practice. Challenge scores never enter normal song history. No external provider or additional timer, storage key, or per-input work; original demo and existing songs preserved. Unit and viewport browser regressions cover chart validity, qualification, launch, invalidation and reset. Physical device QA remains open.
+
 ## Daily and weekly calendar challenges — November 28, 2026
 
 **Proposed; CI pending.** Deterministic local-date daily and Monday-start weekly passages rotate seven existing categories. Daily: ten tokens, 30 seconds, exact 95% final accuracy; weekly: twenty tokens, 60 seconds, exact 98%. Both require full submission, no interruption, and a current calendar period. Explicit remember stores at most two current completion markers in a separate key; no scores, dates of attempts, input logs, rankings or streaks. Clear is confirmed. Uses existing timer and input path; no new per-key calculations. Unit and browser regressions cover calendar boundaries, qualification, optional memory and score isolation. Physical-device QA remains open.
