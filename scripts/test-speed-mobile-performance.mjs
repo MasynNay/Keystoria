@@ -97,6 +97,37 @@ try{
   assert.ok(appending.changed<=8,
    'single appended character must cause bounded DOM class mutations: '+appending.changed);
   await input.fill(reference.slice(0,330));
+
+  // One early correction in a long passage must leave every unaffected
+  // suffix glyph mounted and styled exactly as it was.
+  const correction=await page.evaluate(full=>{
+   const field=document.getElementById('speed-input');
+   const letters=document.getElementById('speed-letters');
+   const good=full.slice(0,330),at=25;
+   const bad=good.slice(0,at)+'!'+good.slice(at+1);
+   field.value=bad;
+   field.setSelectionRange(at+1,at+1);
+   field.dispatchEvent(new Event('input',{bubbles:true}));
+   const observer=new MutationObserver(()=>{});
+   observer.observe(letters,{attributes:true,attributeFilter:['class'],subtree:true});
+   try{
+    field.value=good;
+    field.setSelectionRange(at+1,at+1);
+    field.dispatchEvent(new Event('input',{bubbles:true}));
+    return {
+     changed:observer.takeRecords().filter(r=>r.target.classList?.contains('type-char')).length,
+     value:field.value,caret:field.selectionStart,
+     accuracy:letters.dataset.accuracy,
+     current:letters.querySelectorAll('.type-char.current').length
+    };
+   }finally{observer.disconnect();}
+  },reference);
+  assert.equal(correction.value,reference.slice(0,330));
+  assert.equal(correction.caret,26,'the native selection survives correction');
+  assert.equal(correction.accuracy,'100','the exact score survives correction');
+  assert.equal(correction.current,1,'a single visible caret survives correction');
+  assert.ok(correction.changed<=3,
+   'a single correction must not rewrite unchanged suffix glyphs: '+correction.changed);
   if(compact){
    assert.ok(await view.locator('.type-char').count()<=220,'must not grow DOM after 330 chars');
    assert.equal(await page.locator('#speed-mobile-first').textContent(),reference[330]===' '?'␣':reference[330]);
