@@ -268,7 +268,9 @@ try {
     await page.locator('#lesson-input').fill(target);
     await page.locator('#lesson-input').press('Enter');
     assert.match(await page.locator('#training-feedback').innerText(),/COMMAND RECOGNIZED/);
-    assert.ok((await page.locator('.sample-output pre').innerText()).length>4);
+    const output=await page.locator('.sample-output pre').textContent();
+    assert.ok(output.trim().length>0,'nonempty simulated output for '+target);
+    if(target==='git branch --show-current')assert.equal(output.trim(),'main');
     await page.locator('#lesson-input').press('Enter');
    }
    assert.equal(commandsSeen.size,10);
