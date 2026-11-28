@@ -1,3 +1,4 @@
+import { calendarChallenge, calendarOutcome, saveCalendarMark, readCalendarMarks, clearCalendarMarks } from '../web/ui/calendar-challenges.js';
 import { selectPaceGhost, ghostProgress, ghostOutcome, ghostScope } from '../web/ui/pace-ghost.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -596,3 +597,30 @@ test('pace ghost uses only comparable saved metrics and a bounded steady estimat
  assert.deepEqual(ghostProgress(numeric,10,38),{target:40,player:38,delta:-2});
  assert.equal(ghostScope({pack:'numpad',seconds:30,phoneLayout:true,keyboardAssist:false}).practiceMode,'mobile-exact');
 });
+
+ test('calendar challenges rotate by local date and Monday, with exact accuracy and opt-in bounded markers',()=>{
+ const monday=new Date(2026,10,23,12),tuesday=new Date(2026,10,24,12),nextMonday=new Date(2026,10,30,12);
+ const d=calendarChallenge('daily',monday),w=calendarChallenge('weekly',monday);
+ assert.equal(d.key,'2026-11-23');
+ assert.equal(w.key,'2026-11-23');
+ assert.deepEqual(calendarChallenge('weekly',tuesday),w);
+ assert.notEqual(calendarChallenge('daily',tuesday).key,d.key);
+ assert.notEqual(calendarChallenge('weekly',nextMonday).key,w.key);
+ assert.equal(d.reference.split(' ').length,10);
+ assert.equal(w.reference.split(' ').length,20);
+ const n=d.reference.length,perfect={characters:n,correct:n};
+ assert.equal(calendarOutcome(d,perfect,false,monday),'passed');
+ assert.equal(calendarOutcome(d,perfect,true,monday),'interrupted');
+ assert.equal(calendarOutcome(d,perfect,false,tuesday),'expired');
+ assert.equal(calendarOutcome(d,{characters:n-1,correct:n-1},false,monday),'incomplete');
+ assert.equal(calendarOutcome(d,{characters:n,correct:Math.ceil(n*.95)-1},false,monday),'accuracy');
+ const st=storage();
+ assert.deepEqual(readCalendarMarks(st,monday),{});
+ assert.equal(saveCalendarMark(d,perfect,false,st,monday),true);
+ assert.equal(saveCalendarMark(w,{characters:w.reference.length,correct:w.reference.length},false,st,monday),true);
+ assert.deepEqual(readCalendarMarks(st,monday),{daily:d.key,weekly:w.key});
+ assert.deepEqual(readCalendarMarks(st,tuesday),{weekly:w.key});
+ assert.deepEqual(readCalendarMarks(st,nextMonday),{});
+ assert.equal(clearCalendarMarks(st),true);
+ assert.deepEqual(readCalendarMarks(st,monday),{});
+ });

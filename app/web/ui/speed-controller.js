@@ -1,3 +1,4 @@
+import { calendarChallenge, calendarOutcome, saveCalendarMark } from './calendar-challenges.js?v=0.1.0';
 import { ghostScope, selectPaceGhost, ghostProgress, ghostMatches } from './pace-ghost.js?v=0.1.0';
 /** Lifecycle for the optional local typing test.
  *
@@ -72,7 +73,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     interval=null;
   }
 
-  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[], guidedGoal=null, keepRoutine=false, accuracyLadder=null, survival=null, adaptiveCircuit=null, ghostRace=null } = {}) {
+  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[], guidedGoal=null, keepRoutine=false, accuracyLadder=null, survival=null, adaptiveCircuit=null, ghostRace=null, calendarRun=null } = {}) {
     const enteringFromAnotherMode=!state.speed;
     const leavingResults=state.speed?.status==='complete';
     const priorSession=state.speed;
@@ -107,8 +108,8 @@ export function createSpeedController({ state, onRender, playSound }) {
     state.speed={
       pack:selectedPack,
       seconds:DURATIONS.includes(seconds) ? seconds : 30,
-      reference:focusedDrill?.reference??createWordStream(selectedPack,adaptiveCircuit?CIRCUIT_TIERS[adaptiveCircuit.tier]:survival?SURVIVAL_WAVES[survival.wave]:700),
-      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,focusRoutine:routine,accuracyLadder,survival,adaptiveCircuit,ghostRace,ghostInvalid:ghostRace?!ghostMatches(ghostRace,{pack:selectedPack,seconds,practiceMode:phoneLayout?(keyboardAssist?'mobile-assisted':'mobile-exact'):'standard-exact'}):false,
+      reference:calendarRun?.reference??focusedDrill?.reference??createWordStream(selectedPack,adaptiveCircuit?CIRCUIT_TIERS[adaptiveCircuit.tier]:survival?SURVIVAL_WAVES[survival.wave]:700),
+      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,focusRoutine:routine,accuracyLadder,survival,adaptiveCircuit,ghostRace,calendarRun,calendarResult:null,ghostInvalid:ghostRace?!ghostMatches(ghostRace,{pack:selectedPack,seconds,practiceMode:phoneLayout?(keyboardAssist?'mobile-assisted':'mobile-exact'):'standard-exact'}):false,
       typed:'',startedAt:null,pausedAt:null,interrupted:false,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
       focusPractice:phoneLayout && preferredFocus(),
@@ -127,7 +128,7 @@ export function createSpeedController({ state, onRender, playSound }) {
         : focusChoice==='speed-duration'
           ? document.querySelector('[data-action="speed-duration"][data-seconds="'+launchedSession.seconds+'"]')
           : null;
-      (choice||field).focus({preventScroll:!(!choice&&(accuracyLadder||survival||adaptiveCircuit||focusedDrill&&(leavingResults||guidedGoal!==null)))});
+      (choice||field).focus({preventScroll:!(!choice&&(accuracyLadder||survival||adaptiveCircuit||calendarRun||focusedDrill&&(leavingResults||guidedGoal!==null)))});
     };
     if(enteringFromAnotherMode && typeof requestAnimationFrame==='function'){
       focusFrame=requestAnimationFrame(()=>{
@@ -147,7 +148,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   // The previous draft and key review never enter browser storage.
   function startTargeted({guided=false}={}) {
     const session=state.speed;
-    if(session?.status!=='complete'||session.accuracyLadder||session.survival||session.adaptiveCircuit||session.ghostRace||!session.keyReview?.keys.length)return;
+    if(session?.status!=='complete'||session.accuracyLadder||session.survival||session.adaptiveCircuit||session.ghostRace||session.calendarRun||!session.keyReview?.keys.length)return;
     open({pack:session.pack,seconds:session.seconds,targetKeys:session.keyReview.keys.map(row=>row.key),guidedGoal:guided?readAccuracyGoal():null});
   }
 
@@ -214,9 +215,25 @@ export function createSpeedController({ state, onRender, playSound }) {
     return true;
   }
 
+  function launchCalendar(kind){
+    const session=state.speed;
+    if(!session||!['idle','complete'].includes(session.status))return false;
+    const challenge=calendarChallenge(kind);
+    if(!challenge)return false;
+    open({pack:challenge.pack,seconds:challenge.seconds,calendarRun:challenge});
+    return true;
+  }
+  function rememberCalendar(){
+    const session=state.speed;
+    if(session?.status!=='complete'||!session.calendarRun||session.calendarResult!=='passed')return false;
+    const saved=saveCalendarMark(session.calendarRun,session.result,session.interrupted);
+    if(saved)onRender();
+    return saved;
+  }
   function restart({regular=false}={}) {
     const session=state.speed;
     if(!session)return;
+    if(session.calendarRun&&!regular){const c=calendarChallenge(session.calendarRun.kind);if(c)open({pack:c.pack,seconds:c.seconds,calendarRun:c});return;}
     if(session.ghostRace&&!regular){open({pack:session.pack,seconds:session.seconds,ghostRace:session.ghostRace});return;}
     if(session.adaptiveCircuit&&!regular){open({pack:session.pack,adaptiveCircuit:restartAdaptiveCircuit(session.adaptiveCircuit)});return;}
     if(session.survival&&!regular){open({pack:session.pack,survival:restartSurvival(session.interrupted&&session.survival.status==='ready'?{...session.survival,status:'interrupted'}:session.survival)});return;}
@@ -396,7 +413,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     const session=state.speed;
     if (!session || session.status==='complete') return;
     clearTimer();
-    const challenge=Boolean(session.accuracyLadder||session.survival||session.adaptiveCircuit);
+    const challenge=Boolean(session.accuracyLadder||session.survival||session.adaptiveCircuit||session.calendarRun);
     const scoredSeconds=challenge?Math.max(1,elapsed()):session.seconds;
     const metrics=scoreSpeedRun(session.reference,session.typed,scoredSeconds,session.keystrokes);
     session.result={
@@ -417,10 +434,11 @@ export function createSpeedController({ state, onRender, playSound }) {
     session.accuracyLadder=evaluateAccuracyLadder(session.accuracyLadder,metrics,session.interrupted);
     session.survival=evaluateSurvival(session.survival,metrics,session.reference.length,session.interrupted);
     session.adaptiveCircuit=evaluateAdaptiveCircuit(session.adaptiveCircuit,metrics,session.reference.length,session.interrupted);
+    if(session.calendarRun)session.calendarResult=calendarOutcome(session.calendarRun,metrics,session.interrupted);
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.
-    if(!session.interrupted&&!session.targetKeys?.length&&!session.accuracyLadder&&!session.survival&&!session.adaptiveCircuit&&!session.ghostRace)saveSpeedResult(session.result);
+    if(!session.interrupted&&!session.targetKeys?.length&&!session.accuracyLadder&&!session.survival&&!session.adaptiveCircuit&&!session.ghostRace&&!session.calendarRun)saveSpeedResult(session.result);
     releaseLiveScore(); // Drop transient previous input after final scoring.
     playSound('success');
     onRender();
@@ -444,7 +462,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     }
     if(document.hidden){pauseForInterruption();return;}
     // Challenge submissions after the deadline cannot qualify during a delayed timer tick.
-    if((session.survival||session.accuracyLadder||session.adaptiveCircuit)&&session.status==='running'&&elapsed()>=session.seconds){finish();return;}
+    if((session.survival||session.accuracyLadder||session.adaptiveCircuit||session.calendarRun)&&session.status==='running'&&elapsed()>=session.seconds){finish();return;}
     session.typed=(session.pack==='numpad'?value.replace(/[^0-9 ]/g,''):value.replace(/[\r\n]/g,'')).slice(0,session.reference.length);
     const field=node('speed-input');
     if (field && field.value!==session.typed) field.value=session.typed;
@@ -546,5 +564,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,startTargeted,launchFocusPlan,launchAccuracyLadder,advanceAccuracyLadder,launchSurvival,advanceSurvival,launchAdaptiveCircuit,advanceAdaptiveCircuit,launchPaceGhost,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
+  return {open,close,startTargeted,launchFocusPlan,launchAccuracyLadder,advanceAccuracyLadder,launchSurvival,advanceSurvival,launchAdaptiveCircuit,advanceAdaptiveCircuit,launchPaceGhost,launchCalendar,rememberCalendar,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
 }
