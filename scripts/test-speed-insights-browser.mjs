@@ -317,7 +317,10 @@ try {
    const routine=page.locator('#speed-focus-routine');
    assert.equal(await routine.getAttribute('data-streak'),'0');
    assert.equal(await routine.getAttribute('data-routine-status'),'ready');
-   assert.match(await routine.innerText(),/Goal: \d+% or higher/);
+   assert.match(await routine.innerText(),/Goal: 98% or higher/);
+   await page.locator('[data-action="speed-goal"][data-goal="90"]').click();
+   assert.match(await routine.innerText(),/Goal: 98% or higher/,'goal changes do not silently alter an active routine');
+   await page.locator('[data-action="speed-goal"][data-goal="98"]').click();
    const attempt=async(correct)=>{
     const passage=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
     await page.locator('#speed-input').fill(correct?passage:passage.split('').map(ch=>ch===focusKey?wrongKey:ch).join(''));

@@ -116,7 +116,7 @@ function speedKeyReview(session) {
     <p>${description}</p>
     ${review.keys.length?`<ul aria-label="Target keys with the most remaining mistakes">${review.keys.map(row=>`<li data-key="${safe(row.key)}"><kbd>${row.key===' '?'Space':safe(row.key)}</kbd><span><strong>${row.mistakes}</strong> of ${row.attempts} ${row.attempts===1?'position':'positions'} missed</span></li>`).join('')}</ul>`:''}
     ${review.otherMistakes?`<p>Other remaining mistakes: ${review.otherMistakes}.</p>`:''}
-    ${review.keys.length?`<button type="button" class="btn btn-primary speed-targeted-launch" data-action="speed-targeted">PRACTICE THESE KEYS</button><button type="button" class="btn btn-outline speed-targeted-launch" data-action="speed-guided">START GUIDED ROUTINE</button><p>Practice freely or aim for two qualifying attempts at your selected accuracy goal (${readAccuracyGoal()}%). Neither option saves personal records.</p>`:""}
+    ${review.keys.length?`<button type="button" class="btn btn-primary speed-targeted-launch" data-action="speed-targeted">PRACTICE THESE KEYS</button><button type="button" class="btn btn-outline speed-targeted-launch" data-action="speed-guided">START GUIDED ROUTINE</button><p>Practice freely or aim for two qualifying attempts at your selected accuracy goal. Neither option saves personal records.</p>`:""}
     <p class="speed-key-review-note">Based on the final submitted text${session.result?.keyboardAssisted?' after native keyboard assistance':''}. Corrected mistakes and untyped characters are not counted. This is a practice recap, not a keystroke log. The key breakdown is not saved or exported.</p>
   </section>`;
 }
@@ -155,7 +155,7 @@ function speedFocusRoutine(session) {
   return `<section id="speed-focus-routine" class="speed-focus-routine" aria-labelledby="speed-focus-routine-heading" data-streak="${routine.streak}" data-routine-status="${routine.status}">
     <div class="speed-routine-heading"><h3 id="speed-focus-routine-heading">${label}</h3><strong>${routine.streak}/${FOCUS_ROUTINE_ATTEMPTS} qualifying attempts</strong></div>
     <progress max="${FOCUS_ROUTINE_ATTEMPTS}" value="${routine.streak}" aria-label="Qualifying attempts"></progress>
-    <p>Goal: ${routine.goal}% or higher on each focus key, with at least five positions per key in each attempt. Changing the duration or category ends this routine.</p>
+    <p>Goal: ${routine.goal}% or higher on each focus key, with at least five positions per key in each attempt. This goal is fixed for the routine. Changing the duration or category ends it.</p>
     <p role="status">${message}</p>
     ${done&&routine.status==='complete'?'<p>Return to a regular drill whenever you are ready. No practice records or mastery awards are saved.</p>':''}
   </section>`;
