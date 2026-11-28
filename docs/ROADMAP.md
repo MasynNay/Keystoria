@@ -1,6 +1,14 @@
+## Challenge Arcade and Adaptive Circuit — November 28, 2026
+
+**Under CI review.** The three opt-in challenges now share one responsive Arcade in Speed Lab, while active challenge controls remain next to the typing console. Adaptive Circuit uses five 30-second rounds, selectable starting difficulty, and five passage lengths (6–22 tokens). Full submission at exact 98% or higher increases the next tier; incomplete or below 90% decreases it; otherwise stays steady. No elimination or personal history dependency; interrupted rounds do not count. Results and difficulty are session-only and never enter ordinary records or guided activity. Finite challenge rates now use actual elapsed time with a one-second floor, with explicit labeling; existing regular timed scoring is unchanged. Browser and unit tests cover adaptation, bounds, results, score isolation, desktop and Numpad/touch. Original maps, artwork and themes preserved. Physical-device QA remains open.
+
+## Survival waves — November 28, 2026
+
+**Under CI review.** Five 30-second passages of 8, 12, 16, 20 and 24 tokens (Numpad groups). A shared budget of five final mismatches is charged only on full submission. Corrected errors are free; zero budget permits perfect waves. Incomplete passage at timeout or exceeding the budget ends the run. Explicit next advances a cleared wave; restart begins a new run except interrupted waves retain their earlier budget and wave. No new timers, persistence, record pollution or guided activity. Pure tests and text/Numpad mobile/desktop browser flows verify progression, failure and score isolation. Real-device QA remains open.
+
 ## Python tooling and Linux service diagnostics — November 28, 2026
 
-**Proposed; CI not yet verified.** Two new independent Field Academy courses add twenty simulated exercises, bringing the curriculum to nine courses and 102 commands. Python covers interpreter, package metadata, dependency checks and built-in help; Linux service diagnostics covers systemd state, unit status, journal filters and recorded exit results. Existing randomization, checkpoints, badges and guide UI are reused without per-input work or real execution. Expanded unit and browser tests cover completion and aligned examples. Physical phone QA remains open.
+**Merged:** [PR #122](https://github.com/MasynNay/Keystoria/pull/122) passed all four reported PR workflows and merged as `4bd22be`. Production deployment has not been independently verified. Two new independent Field Academy courses add twenty simulated exercises, bringing the curriculum to nine courses and 102 commands. Python covers interpreter, package metadata, dependency checks and built-in help; Linux service diagnostics covers systemd state, unit status, journal filters and recorded exit results. Existing randomization, checkpoints, badges and guide UI are reused without per-input work or real execution. Expanded unit and browser tests cover completion and aligned examples. Physical phone QA remains open.
 
 ## Accuracy Ladder — November 27, 2026
 

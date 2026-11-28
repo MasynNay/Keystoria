@@ -479,6 +479,93 @@ try {
    await ladder.locator('[data-action="speed-regular"]').click();
    assert.equal(await ladder.getAttribute('data-ladder'),'off');
   }
+  // Survival uses short fully submitted waves and a shared error budget.
+  for(const pack of ['everyday','numpad']){
+   await page.locator('[data-action="speed-pack"][data-pack="'+pack+'"]').click();
+   const survival=page.locator('#speed-survival');
+   const scores=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
+   const activity=await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1'));
+   await page.locator('#speed-input').fill('1');
+   await survival.locator('[data-action="speed-survival-start"]').click();
+   assert.equal(await page.locator('#speed-input').inputValue(),'1');
+   await page.locator('[data-action="speed-restart"]:visible').first().click();
+   await survival.locator('[data-action="speed-survival-start"]').click();
+   assert.equal(await survival.getAttribute('data-wave'),'1');
+   assert.equal(await survival.getAttribute('data-budget'),'5');
+   assert.equal(await page.locator('#speed-accuracy-ladder').count(),0);
+   const passage=()=>page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   const submit=async(errors)=>{
+    const reference=await passage();
+    let missed=0;
+    const typed=reference.split('').map(ch=>{
+     if(ch===' '||missed>=errors)return ch;
+     missed++;
+     return pack==='numpad'?(ch==='9'?'8':'9'):(ch==='!'?'?':'!');
+    }).join('');
+    await page.locator('#speed-input').fill(typed);
+    await page.locator('#speed-results-heading').waitFor();
+   };
+   await submit(6);
+   assert.equal(await survival.getAttribute('data-survival'),'depleted');
+   assert.equal(await survival.locator('[data-action="speed-survival-next"]').count(),0);
+   await page.locator('[data-action="speed-restart"]:visible').first().click();
+   assert.equal(await survival.getAttribute('data-budget'),'5');
+   for(const [i,count] of [8,12,16,20,24].entries()){
+    assert.equal((await passage()).split(' ').length,count);
+    assert.equal(await survival.getAttribute('data-wave'),String(i+1));
+    await submit(i===0?3:i===1?2:0);
+    assert.equal(await survival.getAttribute('data-budget'),i===0?'2':'0');
+    assert.equal(await survival.getAttribute('data-survival'),i===4?'complete':'passed');
+    if(i<4){
+      await survival.locator('[data-action="speed-survival-next"]').click();
+      if(i===0){
+       await page.locator('#speed-input').fill((await passage()).slice(0,1));
+       await page.locator('[data-action="speed-pause"]:visible').first().click();
+       await page.locator('#speed-pause-banner').waitFor({state:'visible'});
+       await page.locator('[data-action="speed-restart"]:visible').first().click();
+       assert.equal(await survival.getAttribute('data-wave'),'2','paused restart retains wave');
+       assert.equal(await survival.getAttribute('data-budget'),'2','paused restart retains remaining budget');
+      }
+     }
+   }
+   assert.equal(await survival.locator('progress').getAttribute('value'),'5');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),scores);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1')),activity);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
+   await survival.locator('[data-action="speed-regular"]').click();
+   assert.equal(await survival.getAttribute('data-survival'),'off');
+  }
+  // Adaptive circuit: rise, fall, steady, completion and no score pollution.
+  for(const pack of ['everyday','numpad']){
+   await page.locator('[data-action="speed-pack"][data-pack="'+pack+'"]').click();
+   const arcade=page.locator('#speed-challenge-arcade');
+   const circuit=page.locator('#speed-adaptive-circuit');
+   assert.equal(await arcade.locator('.speed-arcade-grid>section').count(),3);
+   const saved=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
+   const activity=await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1'));
+   await circuit.locator('[data-action="speed-circuit-start"][data-tier="1"]').click();
+   assert.equal(await circuit.getAttribute('data-tier'),'1');
+   assert.equal(await arcade.count(),0);
+   for(const [i,tier] of [1,2,1,2,3].entries()){
+    const reference=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+    assert.equal(reference.split(' ').length,[6,10,14,18,22][tier]);
+    assert.equal(await circuit.getAttribute('data-tier'),String(tier));
+    assert.equal(await circuit.getAttribute('data-round'),String(i+1));
+    const typed=i===1?reference.replace(/[^ ]/g,ch=>pack==='numpad'?(ch==='9'?'8':'9'):(ch==='!'?'?':'!')):reference;
+    await page.locator('#speed-input').fill(typed);
+    await page.locator('#speed-results-heading').waitFor();
+    assert.equal(await circuit.getAttribute('data-count'),String(i+1));
+    assert.equal(await circuit.getAttribute('data-circuit'),i===4?'complete':'review');
+    assert.match(await page.locator('.speed-results').innerText(),/Challenge rates use/);
+    if(i<4)await circuit.locator('[data-action="speed-circuit-next"]').click();
+   }
+   assert.equal(await circuit.locator('progress').getAttribute('value'),'5');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),saved);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1')),activity);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
+   await circuit.locator('[data-action="speed-regular"]').click();
+   assert.equal(await arcade.count(),1);
+  }
   await context.close();
  }
  assert.deepEqual(errors,[],'practice progress browser actions must be error-free');
