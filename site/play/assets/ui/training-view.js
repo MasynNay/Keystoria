@@ -1,8 +1,8 @@
 /** Stateless presentation for optional self-paced terminal lessons. */
-import { LESSONS, savedLessons, activeCommandIndex } from "./lessons.js";
-import { readAcademyCheckpoints } from "./academy-checkpoint.js?v=0.1.1";
-import { LESSON_OUTPUTS } from "./lesson-output.js";
-import { COMMAND_GUIDES } from "./command-guides.js";
+import { LESSONS, savedLessons, activeCommandIndex } from "./lessons.js?v=0.2.0";
+import { readAcademyCheckpoints } from "./academy-checkpoint.js?v=0.1.2";
+import { LESSON_OUTPUTS } from "./lesson-output.js?v=0.2.0";
+import { COMMAND_GUIDES } from "./command-guides.js?v=0.2.0";
 import { renderTypingFeedback } from "./typing-feedback.js";
 import { safe, ico, tag } from "./helpers.js";
 
@@ -12,7 +12,7 @@ export function trainingLibrary() {
   return `<section class="academy shell" id="academy">
     <div class="academy-heading">${tag("THE FIELD ACADEMY / NO TIMER, NO PRESSURE")}
       <h2 id="academy-course-heading" tabindex="-1">LEARN THE <em>REAL COMMANDS.</em></h2>
-      <p>Three hands-on practice terminals. Type everyday commands, consult the optional reference panel, and review a complete command guide when you finish. <strong>Everything is simulated — nothing runs on your machine.</strong> Your course progress resumes on this device; command drafts are never saved.</p></div>
+      <p>Five hands-on practice courses, including Git and network diagnostics. Type everyday commands, consult the optional reference panel, and review a complete command guide when you finish. <strong>Everything is simulated — nothing runs on your machine.</strong> Your course progress resumes on this device; command drafts are never saved.</p></div>
     <div class="academy-grid">${Object.entries(LESSONS).map(([id,lesson]) => `<button class="academy-card" data-action="learn" data-os="${id}"><span class="academy-number">COURSE ${lesson.number} ${checkpoints[id] ? `· IN PROGRESS ${checkpoints[id].index+(checkpoints[id].answered?1:0)}/${lesson.commands.length}` : completed[id] ? "· COMPLETED ✓" : `· ${lesson.commands.length} COMMANDS`}</span><span class="academy-icon">${lesson.icon}</span><strong>${safe(lesson.name)}</strong><small>${safe(lesson.objective)}</small><span class="academy-open">${checkpoints[id] ? "CONTINUE COURSE" : "OPEN TERMINAL"} ${ico("arrow", 16)}</span></button>`).join("")}</div>
     ${Object.keys(checkpoints).length ? `<div class="academy-progress-controls">
       <button type="button" class="btn btn-outline" data-action="academy-clear-progress">CLEAR UNFINISHED COURSE PROGRESS</button>
@@ -42,12 +42,12 @@ export function trainingTemplate(state, header) {
        aria-label="Review command ${i+1}: ${safe(entry.title)}"><span>${String(i+1).padStart(2,"0")}</span><code>${safe(entry.text)}</code><small>${status}</small></button>`;
   }).join("");
   return `${header({inGame:true})}<main class="game-shell academy-play" data-lesson="${state.os}">
-    <div class="training-nav"><button class="text-button" data-action="training-home">${ico("arrow",15)} BACK TO HOME</button><span>FIELD ACADEMY / COURSE ${lesson.number}</span></div>
+    <div class="training-nav"><button class="text-button" data-action="training-home">${ico("arrow",15)} BACK TO MISSIONS</button><span>FIELD ACADEMY / COURSE ${lesson.number}</span></div>
     <div class="training-title">${tag(lesson.label)}<h1>${safe(lesson.name)}<span>.</span></h1><p>${safe(lesson.story)}</p></div>
     <div class="academy-shuffle-tools"><p class="academy-shuffle-label">↻ RANDOMIZED PRACTICE ORDER — FRESH SEQUENCE EACH ATTEMPT</p><button class="btn btn-outline" type="button" data-action="training-shuffle">RESHUFFLE & START OVER ↻</button></div>
     <div class="training-hud"><div><span>LESSON PROGRESS</span><strong>${progress} / ${commands.length}</strong></div><div class="training-progress"><i style="width:${progress / commands.length * 100}%"></i></div><div><span>MISTAKES</span><strong>${state.errors}</strong></div></div>
     <div class="training-layout"><section class="terminal-card">
-    ${done ? `<div class="training-complete">${tag("CURRICULUM COMPLETE")}<h2 id="academy-complete-heading" tabindex="-1">MISSION ACCOMPLISHED.</h2><p>All ${commands.length} commands completed. Select any command on the right to review how it works and when to use it.</p><div class="training-buttons"><button class="btn btn-primary" data-action="training-restart">REPLAY LESSON</button><button class="btn btn-outline" data-action="training-home">BACK TO HOME</button></div></div>` : `
+    ${done ? `<div class="training-complete">${tag("CURRICULUM COMPLETE")}<h2 id="academy-complete-heading" tabindex="-1">MISSION ACCOMPLISHED.</h2><p>All ${commands.length} commands completed. Select any command on the right to review how it works and when to use it.</p><div class="training-buttons"><button class="btn btn-primary" data-action="training-restart">REPLAY LESSON</button><button class="btn btn-outline" data-action="training-home">EXPLORE MORE MISSIONS</button></div></div>` : `
       <div class="terminal-bar"><span>● ● ●</span><strong>SIMULATED CONSOLE</strong><span>STEP ${String(state.index+1).padStart(2,"0")} / ${commands.length}</span></div>
       <div class="terminal-inner">${tag("YOUR NEXT COMMAND")}<h2>${safe(task.title)}</h2><p>${safe(task.summary)}</p>
        <div class="terminal-prompt"><small>${state.os === "windows" ? "PS C:\\Training>" : "operator@academy ~ %"}</small><code class="typing-feedback academy-target" id="lesson-target-text" aria-live="off">${renderTypingFeedback(task.text, correct ? task.text : state.draft || "", {caseSensitive:true})}</code></div>

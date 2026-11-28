@@ -8,7 +8,7 @@ import { renderSceneSVG } from "./scene-illustrations.js";
 import { safe, timeString, pad, ico, brand, tag } from "./helpers.js";
 import { isSoundOn } from "../sound.js";
 import { THEMES } from "./themes.js";
-import { trainingLibrary } from "./training-view.js";
+import { trainingLibrary } from "./training-view.js?v=0.50.2";
 import { speedLibrary } from "./speed-view.js";
 import { readHistory, readCareer, summarizeHistory, MILESTONES } from "./progression.js";
 import { deploymentDisplay } from "./deployment.js";

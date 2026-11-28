@@ -1,6 +1,10 @@
+## Git and network Field Academy courses — November 27, 2026
+
+**Under CI review.** Two independent simulated courses extend the three existing OS terminals with ten Git inspection commands and ten platform-labeled networking diagnostics. Every step includes curated example output, context, benefit and caution; no actual shell or network calls. Documentation-reserved IPs and fictional examples are used. Existing randomized order, local checkpoints, completion badges and guides are reused. Unit and browser coverage verifies all 20 steps and mobile/desktop completion. No artwork or mission changes.
+
 ## Keyboard challenges — November 27, 2026
 
-**Under CI review.** Six new Speed Lab categories in a separate Keyboard Challenges group: QWERTY home, top and bottom rows; capitalization; punctuation and symbols; and mixed letters/numbers. Built-in bounded ASCII tokens retain the existing timer, WPM/accuracy path, Numpad CPM isolation, exact/assisted separation, key-review, focused generation, saved plans, and regular local score export. The bottom row is explicitly pattern practice, not words; the symbols and alphanumeric drills are fictional typing patterns, not commands. No artwork or mission changes. Unit and browser tests cover row constraints, case and symbol rendering, category selection, scoring, targeted practice, and narrow/desktop layouts. Physical phone QA remains open.
+**Merged:** [PR #116](https://github.com/MasynNay/Keystoria/pull/116) passed all six PR workflows and merged as `618479b`; production deployment pending. Six new Speed Lab categories in a separate Keyboard Challenges group: QWERTY home, top and bottom rows; capitalization; punctuation and symbols; and mixed letters/numbers. Built-in bounded ASCII tokens retain the existing timer, WPM/accuracy path, Numpad CPM isolation, exact/assisted separation, key-review, focused generation, saved plans, and regular local score export. The bottom row is explicitly pattern practice, not words; the symbols and alphanumeric drills are fictional typing patterns, not commands. No artwork or mission changes. Unit and browser tests cover row constraints, case and symbol rendering, category selection, scoring, targeted practice, and narrow/desktop layouts. Physical phone QA remains open.
 
 ## Rolling practice milestones — November 27, 2026
 

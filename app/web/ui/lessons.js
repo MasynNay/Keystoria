@@ -68,6 +68,42 @@ export const LESSONS = {
       command("man open", "Read native help", "Open the manual page for the open command.", "Manual pages explain system flags; use q to leave the manual viewer."),
     ],
   },
+  git: {
+    name: "GIT FUNDAMENTALS", label: "VERSION CONTROL / GIT", icon: "GIT", number: "04",
+    story: "A team is preparing a release in a shared project. Inspect the repository, understand its changes and review its history before deciding what to do next.",
+    objective: "Learn to inspect branches, changes, commits and tracked files without changing project history.",
+    note: "Git must be installed and most commands run inside a repository. Each simulated step is independent; nothing is committed, pushed or executed.",
+    commands: [
+      command("git --version", "Check Git version", "Display the installed Git version.", "Use this command to confirm Git is installed and identify the version before troubleshooting."),
+      command("git status --short", "Inspect working changes", "Show a compact summary of changed and untracked files.", "Two status columns distinguish index changes from working-tree changes; ?? marks an untracked path."),
+      command("git branch --show-current", "Identify the branch", "Print the currently checked-out branch name.", "The output is empty when HEAD is detached; this command does not switch branches."),
+      command("git branch -a", "List branches", "List local and remote-tracking branches.", "The asterisk identifies the current local branch; remote-tracking refs reflect the last fetched state."),
+      command("git log --oneline -5", "Review recent commits", "Show up to five recent commits in condensed form.", "Each line includes an abbreviated commit identifier and the commit subject."),
+      command("git diff", "Review unstaged edits", "Display unstaged changes to tracked files.", "By default git diff compares the working tree with the index; it excludes untracked files."),
+      command("git diff --staged", "Review staged edits", "Show changes staged for the next commit.", "This compares the index with HEAD in a repository with existing commits."),
+      command("git remote -v", "Inspect remote addresses", "List configured remotes and their fetch/push URLs.", "This reads local configuration; it does not connect to a server."),
+      command("git ls-files", "List tracked files", "List paths tracked in the Git index.", "The command lists tracked paths even when a working-tree file has been deleted."),
+      command("git show --stat HEAD", "Inspect latest commit", "Display the current commit and a summary of affected files.", "The --stat option summarizes changed paths and line counts instead of a full patch."),
+    ],
+  },
+  network: {
+    name: "NETWORK DIAGNOSTICS", label: "CONNECTIVITY / MIXED PLATFORMS", icon: "NET", number: "05",
+    story: "A fictional office reports a connectivity issue. Compare local interface, routing, name resolution and connection checks across platforms without contacting a real device.",
+    objective: "Learn safe, platform-specific network inspection and interpret the limits of connectivity checks.",
+    note: "Some utilities are platform-specific or optional. The addresses are documentation examples and domains are illustrative. Every step is simulated, independent and never sends traffic.",
+    commands: [
+      command("ip addr show", "Linux interface addresses", "Show network interfaces and assigned addresses on Linux.", "The ip tool is part of iproute2; this view lists addresses and interface state."),
+      command("ip route show", "Linux routing table", "Display the Linux routing table.", "A default route identifies the usual next hop for destinations without a more specific route."),
+      command("ipconfig /all", "Windows interface configuration", "Display detailed Windows IP configuration.", "Shows adapter addresses, gateways, DNS servers and DHCP details when available."),
+      command("Get-NetIPConfiguration", "PowerShell network summary", "Inspect network IP configuration on supported Windows systems.", "Returns structured interface, IP, gateway and DNS information."),
+      command("ifconfig", "macOS interface overview", "Display interface configuration on macOS and systems with ifconfig.", "The command without modification arguments reports interface state and addresses."),
+      command("route -n get default", "macOS default route", "Inspect the default route on macOS.", "The get subcommand requests information about a route; -n avoids name resolution."),
+      command("nslookup example.com", "Check DNS resolution", "Request address information using the configured DNS service.", "A real lookup sends a DNS query; this lesson shows fictional response data."),
+      command("ping -c 4 192.0.2.1", "Linux/macOS reachability", "Send four ICMP echo requests on Linux or macOS.", "The -c option limits the number of requests; the address is reserved for documentation."),
+      command("ping -n 4 192.0.2.1", "Windows reachability", "Send four ICMP echo requests on Windows.", "Windows ping uses -n for a request count instead of the Unix-style -c flag."),
+      command("Test-NetConnection example.com -Port 443", "Windows TCP connectivity", "Check connectivity to a specified TCP port using PowerShell.", "The cmdlet can report DNS, remote address and whether the TCP connection succeeded."),
+    ],
+  },
 };
 
 /** Generate an independent course order for each attempt. Reference materials keep

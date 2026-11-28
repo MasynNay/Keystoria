@@ -256,6 +256,29 @@ try {
     'clearing unfinished progress must not erase earned badges');
   assert.match(await page.locator('[data-action="learn"][data-os="windows"]').innerText(),/OPEN TERMINAL/,
     'cleared course offers a fresh start');
+  // Exercise both new courses on the same real UI without a shell.
+  for(const courseId of ['git','network']){
+   const card=page.locator('[data-action="learn"][data-os="'+courseId+'"]');
+   await card.click();
+   assert.equal(await page.locator('.academy-play').getAttribute('data-lesson'),courseId);
+   const commandsSeen=new Set();
+   for(let step=0;step<10;step++){
+    const target=(await page.locator('#lesson-target-text').textContent()).trim();
+    commandsSeen.add(target);
+    await page.locator('#lesson-input').fill(target);
+    await page.locator('#lesson-input').press('Enter');
+    assert.match(await page.locator('#training-feedback').innerText(),/COMMAND RECOGNIZED/);
+    assert.ok((await page.locator('.sample-output pre').innerText()).length>4);
+    await page.locator('#lesson-input').press('Enter');
+   }
+   assert.equal(commandsSeen.size,10);
+   assert.match(await page.locator('#academy-complete-heading').innerText(),/MISSION ACCOMPLISHED/);
+   assert.equal(await page.evaluate(id=>JSON.parse(localStorage.getItem('panic.lessons.v1')||'{}')[id],courseId),true);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
+   await page.locator('.training-nav [data-action="training-home"]').click();
+   if(await welcome.count()&&await welcome.isVisible())await welcome.click();
+   assert.match(await card.innerText(),/COMPLETED/);
+  }
   await ctx.close();
  }
  assert.deepEqual(errors,[],'no uncaught runtime errors');

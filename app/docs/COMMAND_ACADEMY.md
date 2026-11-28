@@ -81,3 +81,42 @@ Try a command in the fictional lesson first, then read the explanation and check
 The command list in the right-hand sidebar is clickable throughout the lesson and after completion. It changes only the reference card, never the active command or course progress. Each entry offers a practical usage situation, the benefit of using the command, a caution about running it on a real computer, and example terminal output.
 
 **Press Enter to validate, then Enter again to continue.** This keeps the command feedback on screen long enough to read the sample output. All terminal responses are simulated. No browser input is sent to your OS shell.
+
+
+## GIT FUNDAMENTALS (10 commands)
+
+A team is preparing a release in a shared project. Inspect the repository, understand its changes and review its history before deciding what to do next.
+
+**Note:** Git must be installed and most commands run inside a repository. Each simulated step is independent; nothing is committed, pushed or executed.
+
+| Command | What it does |
+| --- | --- |
+| `git --version` | Use this command to confirm Git is installed and identify the version before troubleshooting. |
+| `git status --short` | Two status columns distinguish index changes from working-tree changes; ?? marks an untracked path. |
+| `git branch --show-current` | The output is empty when HEAD is detached; this command does not switch branches. |
+| `git branch -a` | The asterisk identifies the current local branch; remote-tracking refs reflect the last fetched state. |
+| `git log --oneline -5` | Each line includes an abbreviated commit identifier and the commit subject. |
+| `git diff` | By default git diff compares the working tree with the index; it excludes untracked files. |
+| `git diff --staged` | This compares the index with HEAD in a repository with existing commits. |
+| `git remote -v` | This reads local configuration; it does not connect to a server. |
+| `git ls-files` | The command lists tracked paths even when a working-tree file has been deleted. |
+| `git show --stat HEAD` | The --stat option summarizes changed paths and line counts instead of a full patch. |
+
+## NETWORK DIAGNOSTICS (10 commands)
+
+A fictional office reports a connectivity issue. Compare local interface, routing, name resolution and connection checks across platforms without contacting a real device.
+
+**Note:** Some utilities are platform-specific or optional. The addresses are documentation examples and domains are illustrative. Every step is simulated, independent and never sends traffic.
+
+| Command | What it does |
+| --- | --- |
+| `ip addr show` | The ip tool is part of iproute2; this view lists addresses and interface state. |
+| `ip route show` | A default route identifies the usual next hop for destinations without a more specific route. |
+| `ipconfig /all` | Shows adapter addresses, gateways, DNS servers and DHCP details when available. |
+| `Get-NetIPConfiguration` | Returns structured interface, IP, gateway and DNS information. |
+| `ifconfig` | The command without modification arguments reports interface state and addresses. |
+| `route -n get default` | The get subcommand requests information about a route; -n avoids name resolution. |
+| `nslookup example.com` | A real lookup sends a DNS query; this lesson shows fictional response data. |
+| `ping -c 4 192.0.2.1` | The -c option limits the number of requests; the address is reserved for documentation. |
+| `ping -n 4 192.0.2.1` | Windows ping uses -n for a request count instead of the Unix-style -c flag. |
+| `Test-NetConnection example.com -Port 443` | The cmdlet can report DNS, remote address and whether the TCP connection succeeded. |
