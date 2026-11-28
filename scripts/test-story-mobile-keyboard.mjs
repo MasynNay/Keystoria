@@ -94,9 +94,78 @@ try{
    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(resolve)));
    assert.equal(await page.evaluate(()=>window.__storyViewportScrolls?.length),0,
     'blurred Story field cannot trigger stale keyboard scrolling');
-   console.log('PASS Story keyboard focus/bounds/resize at '+width+'x'+height+(touch?' touch':' desktop'));
+   // Story's actual delegated input/keydown handlers must treat IME text
+   // conversion as a single commit. This runs against the mounted app shell,
+   // without inventing an unauthorized multiplayer room or fake socket.
+   const ime=await page.evaluate(async()=>{
+    const field=document.getElementById('task-input');
+    const target=document.getElementById('target-text');
+    field.focus();
+    target.textContent='UNCOMMITTED SENTINEL';
+    field.value='';
+    field.dispatchEvent(new CompositionEvent('compositionstart',{
+      bubbles:true,data:'候'
+    }));
+    field.value='候';
+    field.dispatchEvent(new InputEvent('input',{
+      bubbles:true,isComposing:true,inputType:'insertCompositionText',data:'候'
+    }));
+    const afterNative=target.textContent;
+    // Some mobile browsers emit an unflagged input before compositionend.
+    field.value='候補';
+    field.dispatchEvent(new InputEvent('input',{
+      bubbles:true,isComposing:false,inputType:'insertCompositionText',data:'補'
+    }));
+    const afterUnflagged=target.textContent;
+    const composingEnter=new KeyboardEvent('keydown',{
+      bubbles:true,cancelable:true,key:'Enter',isComposing:true
+    });
+    field.dispatchEvent(composingEnter);
+    const legacyEnter=new KeyboardEvent('keydown',{
+      bubbles:true,cancelable:true,key:'Enter'
+    });
+    Object.defineProperty(legacyEnter,'keyCode',{configurable:true,value:229});
+    field.dispatchEvent(legacyEnter);
+    const afterEnters=target.textContent;
+    field.dispatchEvent(new CompositionEvent('compositionend',{
+      bubbles:true,data:'候補'
+    }));
+    await new Promise(resolve=>queueMicrotask(resolve));
+    const committed=target.textContent;
+    const normalEnter=new KeyboardEvent('keydown',{
+      bubbles:true,cancelable:true,key:'Enter'
+    });
+    field.dispatchEvent(normalEnter);
+    return {
+      afterNative,afterUnflagged,afterEnters,
+      composingEnterBlocked:composingEnter.defaultPrevented,
+      legacyEnterBlocked:legacyEnter.defaultPrevented,
+      normalEnterBlocked:normalEnter.defaultPrevented,
+      committed,keptValue:field.value,
+      focused:document.activeElement===field,
+      connected:field.isConnected
+    };
+   });
+   assert.equal(ime.afterNative,'UNCOMMITTED SENTINEL',
+     'uncommitted Story IME input must not repaint the command target');
+   assert.equal(ime.afterUnflagged,'UNCOMMITTED SENTINEL',
+     'unflagged native input during composition must remain guarded');
+   assert.equal(ime.afterEnters,'UNCOMMITTED SENTINEL',
+     'IME Enter/legacy keyCode 229 must not validate the draft');
+   assert.equal(ime.composingEnterBlocked,false,
+     'IME Enter must be free for the OS candidate picker');
+   assert.equal(ime.legacyEnterBlocked,false,
+     'legacy keyCode 229 must not intercept conversion');
+   assert.equal(ime.normalEnterBlocked,true,
+     'ordinary Enter after commit must retain Story submit semantics');
+   assert.equal(ime.committed,'SCANNING FOR SIGNAL...',
+     'compositionend must reconcile the committed Story draft exactly once');
+   assert.equal(ime.keptValue,'候補');
+   assert.equal(ime.focused&&ime.connected,true,
+     'IME commit preserves native input identity and keyboard focus');
+   console.log('PASS Story keyboard and IME composition at '+width+'x'+height+(touch?' touch':' desktop'));
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[],'Story keyboard fixture has no uncaught page errors');
- console.log('PASS: Story mobile input keyboard recovery includes command cue and never steals focus');
+ console.log('PASS: Story viewport recovery, native focus, and safe IME composition/Enter handling');
 }finally{await browser.close();}
