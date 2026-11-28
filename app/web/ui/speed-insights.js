@@ -36,6 +36,54 @@ export function reviewSpeedKeys(reference, typed, {numpad=false}={}) {
     otherMistakes:mistakes-keys.reduce((total,row)=>total+row.mistakes,0)};
 }
 
+
+/** Build a private follow-up passage from the same built-in vocabulary.
+ * One requested target is guaranteed in each successive word/group (except
+ * Space, which gets shorter tokens to increase separator frequency).
+ * This is deliberate practice, never a comparable personal-best test.
+ * Limit keys and passage size; unsupported input cannot become prompt text.
+ */
+export function createFocusedSpeedDrill(pack, requested, count=700, rng=Math.random) {
+  if(!Object.hasOwn(PACKS,pack)||!Array.isArray(requested))return null;
+  const numpad=pack==='numpad', words=PACKS[pack].words;
+  const shortest=words.length?Math.min(...words.map(word=>word.length)):0;
+  const shortWords=words.filter(word=>word.length<=Math.max(4,shortest));
+  const candidates=new Map();
+  for(const key of requested.slice(0,5)){
+    if(typeof key!=='string'||key.length!==1||candidates.has(key))continue;
+    if(numpad){
+      if(/^[0-9 ]$/.test(key))candidates.set(key,[]);
+      continue;
+    }
+    if(!/^[\x20-\x7e]$/.test(key))continue;
+    const matches=key===' '?shortWords
+      : pack==='atmosphere'&&(key==='.'||key===',')?words.map(word=>word+key)
+      : words.filter(word=>word.includes(key));
+    if(matches.length)candidates.set(key,matches);
+  }
+  const keys=[...candidates.keys()];
+  if(!keys.length)return null;
+  const groups=[];
+  const size=Number.isInteger(count)?Math.min(700,Math.max(2,count)):700;
+  const pick=length=>{
+    const value=Number(rng());
+    return Math.min(length-1,Math.max(0,Math.floor((Number.isFinite(value)?value:0)*length)));
+  };
+  for(let i=0;i<size;i++){
+    const key=keys[i%keys.length];
+    if(numpad){
+      const length=key===' '?3:3+(i%4);
+      const digits=Array.from({length},()=>String(pick(10)));
+      if(key!==' ')digits[pick(length)]=key;
+      groups.push(digits.join(''));
+    }else{
+      const pool=candidates.get(key);
+      groups.push(pool[pick(pool.length)]);
+    }
+  }
+  return {keys,reference:groups.join(' ')};
+}
+
 export function practiceMode(session = {}) {
   // An explicit mode is authoritative for new saved runs. Older exports can
   // carry the assisted flag without phoneLayout or a practiceMode string:

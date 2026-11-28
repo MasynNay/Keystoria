@@ -209,3 +209,11 @@
 .speed-key-review li strong{color:var(--accent)}
 .speed-key-review .speed-key-review-note{font-size:11px;margin-bottom:0}
 @media(max-width:380px){.speed-key-review{padding:12px}.speed-key-review li{gap:8px}}
+
+/* Targeted drill notice and optional transition use the existing theme. */
+.speed-targeted-launch{margin-top:6px;min-height:44px;max-width:100%;white-space:normal}
+.speed-targeted-banner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;background:var(--panel-2);color:var(--text)}
+.speed-targeted-banner>div{flex:1 1 210px;min-width:0}
+.speed-targeted-banner strong{font:700 12px/1.5 var(--mono);color:var(--text)}
+.speed-targeted-banner p{margin:4px 0 0;overflow-wrap:anywhere;font:12px/1.6 var(--body);color:var(--text)}
+.speed-targeted-banner button{min-height:44px;max-width:100%;white-space:normal}

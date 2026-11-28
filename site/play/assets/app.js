@@ -1,9 +1,9 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.1";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.1";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.3";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.48.5";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.3";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.4";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.48.6";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.4";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";
 import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.1";
@@ -565,9 +565,11 @@ app.addEventListener("click",event=>{
     toast("Saved Speed Lab results cleared.");
     break;
   }
-  case "speed-duration":if(state.speed)speedController.open({pack:state.speed.pack,seconds:Number(item.dataset.seconds),focusChoice:event.detail===0?"speed-duration":null});break;
+  case "speed-duration":if(state.speed)speedController.open({pack:state.speed.pack,seconds:Number(item.dataset.seconds),targetKeys:state.speed.targetKeys,focusChoice:event.detail===0?"speed-duration":null});break;
   case "speed-pack":if(state.speed)speedController.open({pack:item.dataset.pack,seconds:state.speed.seconds,focusChoice:event.detail===0?"speed-pack":null});break;
-  case "speed-restart":if(state.speed)speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});break;
+  case "speed-targeted":speedController.startTargeted();break;
+   case "speed-regular":speedController.restart({regular:true});break;
+   case "speed-restart":speedController.restart();break;
   case "speed-home":speedController.close();showModal("welcome");break;
   case "create":showModal("create");break;
   case "show-join":showModal("join");break;
@@ -897,7 +899,7 @@ app.addEventListener("keydown",event=>{
  }
  if(event.key==='Escape'&&state.modal){event.preventDefault();dismissModal();return;}
  if (state.speed && event.ctrlKey && event.key === "Enter") {
-   event.preventDefault();speedController.open({pack:state.speed.pack,seconds:state.speed.seconds});return;
+   event.preventDefault();speedController.restart();return;
  }
  if(state.speed && event.target.id === "speed-input" && event.key === "Enter") {
    if(event.isComposing || event.keyCode===229)return;

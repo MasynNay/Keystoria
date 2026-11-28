@@ -59,6 +59,7 @@ try {
   assert.equal(await review.getAttribute('data-error-count'),'0');
   assert.match(await review.innerText(),/No mistakes remain/);
   assert.equal(await review.locator('li').count(),0);
+  assert.equal(await page.locator('[data-action="speed-targeted"]').count(),0,'perfect run has no invented focus keys');
   assert.equal(await week.getAttribute('data-active-days'),'1','a finished run counts once today');
   assert.equal(await week.getAttribute('data-saved-runs'),'1');
   assert.equal(await week.locator('li').last().getAttribute('data-runs'),'1');
@@ -245,8 +246,39 @@ try {
    assert.equal(saved[0].reference,undefined);
    assert.equal(saved[0].typed,undefined);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=2);
+
+   // Start the follow-up using the completed review, then exercise actual
+   // targeted typing, unchanged scoring, private history, retry and exit.
+   const storageBefore=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
+   await page.locator('[data-action="speed-targeted"]').click();
+   const banner=page.locator('#speed-targeted-banner');
+   assert.match(await banner.innerText(),/TARGETED PRACTICE · NOT SAVED/);
+   assert.match(await banner.innerText(),/Space/);
+   assert.equal(await review.count(),0);
+   const focusReference=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   const tokens=focusReference.split(' ');
+   assert.ok(tokens.length>=100);
+   assert.ok(tokens.every((word,i)=>i%2===0?word.includes(key):word.length<= (pack==='numpad'?3:4)),
+    'alternating focus keys and short space tokens appear in the generated passage');
+   assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),pack==='numpad'?'numeric':'text');
+   await page.locator('#speed-input').fill(focusReference);
+   await page.locator('#speed-results-heading').waitFor();
+   assert.match(await page.locator('.speed-assist-result-label').innerText(),/TARGETED PRACTICE \(NOT SAVED\)/);
+   assert.equal(await page.locator('#speed-accuracy').innerText(),'100%');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),storageBefore,
+    'even a perfect targeted drill never alters regular score history');
+   assert.equal(await page.locator('[data-action="speed-targeted"]').count(),0);
    await page.locator('[data-action="speed-restart"]').first().click();
-   assert.equal(await review.count(),0,'next run discards the previous recap');
+   assert.equal(await banner.count(),1,'Test Again keeps targeted drill mode');
+   assert.equal(await review.count(),0);
+   await page.locator('[data-action="speed-duration"][data-seconds="15"]').click();
+   assert.equal(await banner.count(),1,'duration changes keep focused mode');
+   await page.locator('[data-action="speed-regular"]').click();
+   assert.equal(await banner.count(),0,'explicit return restores regular drills');
+   assert.equal(await page.locator('#speed-time').innerText(),'15');
+   assert.equal(await page.locator('#speed-input').inputValue(),'');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),storageBefore);
+   await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();
   }
   await context.close();
  }

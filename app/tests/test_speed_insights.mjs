@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -252,4 +252,36 @@ test('review is bounded, deterministic, case-sensitive and Numpad-aware',()=>{
   attempted:5,mistakes:2,keys:[{key:'1',attempts:2,mistakes:1},{key:'2',attempts:2,mistakes:1}],otherMistakes:0,
  });
  assert.deepEqual(reviewSpeedKeys('éa','za'),{attempted:2,mistakes:1,keys:[],otherMistakes:1});
+});
+
+test('focused follow-up uses existing words, alternating target keys and short space drills',()=>{
+ const drill=createFocusedSpeedDrill('everyday',['t','a',' '],12,()=>0);
+ assert.deepEqual(drill.keys,['t','a',' ']);
+ const words=drill.reference.split(' ');
+ assert.equal(words.length,12);
+ for(let i=0;i<words.length;i++){
+  if(i%3===2)assert.ok(words[i].length<=4);
+  else assert.ok(words[i].includes(drill.keys[i%3]));
+ }
+ const punctuation=createFocusedSpeedDrill('atmosphere',['.',','],6,()=>0);
+ assert.ok(punctuation.reference.split(' ').every((word,i)=>word.endsWith(punctuation.keys[i%2])));
+ assert.equal(createFocusedSpeedDrill('everyday',['<','%','7']),null);
+ assert.equal(createFocusedSpeedDrill('__proto__',['a']),null);
+ assert.equal(createFocusedSpeedDrill('everyday',null),null);
+ assert.deepEqual(createFocusedSpeedDrill('everyday',['a','a','t'],4,()=>1).keys,['a','t']);
+ assert.equal(createFocusedSpeedDrill('everyday',['t'],10000,()=>NaN).reference.split(' ').length,700);
+});
+
+test('targeted Numpad drills keep valid digits and separators, including Space-only practice',()=>{
+ const drill=createFocusedSpeedDrill('numpad',['8','1',' '],12,()=>0);
+ const groups=drill.reference.split(' ');
+ assert.deepEqual(drill.keys,['8','1',' ']);
+ assert.equal(groups.length,12);
+ for(let i=0;i<groups.length;i++){
+  assert.match(groups[i],/^[0-9]{3,6}$/);
+  if(i%3===2)assert.equal(groups[i].length,3);
+  else assert.ok(groups[i].includes(drill.keys[i%3]));
+ }
+ assert.equal(createFocusedSpeedDrill('numpad',['x','<']),null);
+ assert.ok(createFocusedSpeedDrill('numpad',[' '],8,()=>0.5).reference.split(' ').every(group=>group.length===3));
 });
