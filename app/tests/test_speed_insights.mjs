@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity, recommendDailyPractice
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -453,4 +453,19 @@ test('guided activity bounds calendar data and ignores invalid counts and future
  assert.equal(readGuidedActivity(denied,now),null);
  assert.equal(enableGuidedActivity(denied,now),false);
  assert.equal(clearGuidedActivity(denied),false);
+});
+
+test('daily practice prefers completed activity, ongoing routines, saved plans, then missed keys and regular practice',()=>{
+ const now=new Date(2026,10,27,12), plan={pack:'numpad',seconds:15,goal:98,keys:['7',' ']};
+ const session={pack:'technology',seconds:60,status:'complete',keyReview:{keys:[{key:'t'}]}};
+ const activity={enabled:true,days:{'2026-11-27':2}};
+ assert.deepEqual(recommendDailyPractice(session,plan,activity,now),{kind:'done-today',today:2});
+ assert.equal(recommendDailyPractice({...session,focusRoutine:{status:'complete'}},plan,null,now).kind,'done-session');
+ assert.equal(recommendDailyPractice({...session,focusRoutine:{status:'qualified'}},plan,null,now).kind,'continue');
+ assert.deepEqual(recommendDailyPractice(session,plan,null,now),{kind:'saved',plan});
+ assert.deepEqual(recommendDailyPractice(session,null,null,now),{kind:'review',keys:['t'],pack:'technology',seconds:60});
+ assert.deepEqual(recommendDailyPractice({...session,status:'idle'},null,null,now),{kind:'regular',pack:'technology',seconds:60});
+ assert.deepEqual(recommendDailyPractice(null,{...plan,keys:['<']},null,now),{kind:'regular',pack:'everyday',seconds:30});
+ assert.equal(recommendDailyPractice(session,plan,activity,new Date(2026,10,28,12)).kind,'saved','previous calendar day does not satisfy today');
+ assert.equal(recommendDailyPractice(session,plan,{enabled:false,days:activity.days},now).kind,'saved','disabled tracking cannot infer today was completed');
 });

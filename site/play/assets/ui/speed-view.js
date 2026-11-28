@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS, readFocusPlan, focusPlanFromSession, sameFocusScope, readGuidedActivity, summarizeGuidedActivity } from './speed-insights.js?v=0.48.8';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS, readFocusPlan, focusPlanFromSession, sameFocusScope, readGuidedActivity, summarizeGuidedActivity, recommendDailyPractice } from './speed-insights.js?v=0.48.9';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -187,6 +187,34 @@ export function guidedActivityPanel() {
   </section>`;
 }
 
+export function dailyPracticePanel(session) {
+  const suggestion=recommendDailyPractice(session,readFocusPlan(),readGuidedActivity());
+  const keysText=keys=>keys.map(key=>key===' '?'Space':safe(key)).join(' · ');
+  const title={
+    'done-today':'TODAY’S GUIDED PRACTICE IS COMPLETE',
+    'done-session':'YOU COMPLETED A GUIDED ROUTINE',
+    continue:'CONTINUE YOUR CURRENT ROUTINE',
+    saved:'REVISIT YOUR SAVED FOCUS PLAN',
+    review:'TURN YOUR MISSED KEYS INTO PRACTICE',
+    regular:'START WITH A REGULAR DRILL'
+  }[suggestion.kind];
+  const descriptions={
+    'done-today':()=>`${suggestion.today} completed ${suggestion.today===1?'routine':'routines'} recorded today. That is enough for this optional suggestion. Take a break or choose another drill whenever you want.`,
+    'done-session':()=> 'Your current guided routine reached its goal. You can stop here or practice again whenever you want.',
+    continue:()=> 'Finish the current routine at a comfortable pace. Two qualifying attempts in the same keyboard mode complete it.',
+    saved:()=> `${safe(PACKS[suggestion.plan.pack].title)} · ${suggestion.plan.seconds}s · ${suggestion.plan.goal}% goal. Focus keys: ${keysText(suggestion.plan.keys)}.`,
+    review:()=> `${safe(PACKS[suggestion.pack].title)} · ${suggestion.seconds}s. Practice the missed keys ${keysText(suggestion.keys)} at your selected accuracy goal.`,
+    regular:()=> `${safe(PACKS[suggestion.pack].title)} · ${suggestion.seconds}s. Complete a regular drill to discover keys worth practicing; no speed target is required.`
+  };
+  const action={saved:'START SAVED ROUTINE',review:'START GUIDED ROUTINE',regular:'START REGULAR DRILL'}[suggestion.kind];
+  return `<section id="speed-daily-practice" class="speed-saved-focus-plan speed-daily-practice" aria-labelledby="speed-daily-practice-heading" data-suggestion="${suggestion.kind}">
+    <h3 id="speed-daily-practice-heading">TODAY’S PRACTICE · OPTIONAL</h3>
+    <p class="speed-daily-title"><strong>${title}</strong></p><p>${descriptions[suggestion.kind]()}</p>
+    ${action?`<button type="button" class="btn btn-primary" data-action="speed-daily-start">${action}</button>`:''}
+    <p class="speed-plan-note">Based only on your saved plan, current drill and optional local activity. No extra tracking, required streaks or daily deadlines. Refresh or reopen Speed Lab for a new calendar day.</p>
+  </section>`;
+}
+
 export function speedTemplate(session, header) {
   const done = session.status === 'complete';
   const result = session.result;
@@ -221,6 +249,7 @@ export function speedTemplate(session, header) {
         </div>
         <div class="speed-controls"><span>TIME STARTS ON FIRST KEY · PAUSE MAKES A RUN PRACTICE-ONLY · CTRL + ENTER TO RESTART</span><button type="button" class="btn btn-outline" data-action="speed-pause" aria-label="Pause for practice. This session will not be saved." disabled>PAUSE PRACTICE</button><button class="btn btn-outline" data-action="speed-restart">${ico('refresh',16)} RESTART</button></div>`}
     </section>
+    ${dailyPracticePanel(session)}
     ${savedFocusPlanPanel(session)}
     ${guidedActivityPanel()}
     <div class="speed-bottom"><section><span>// YOUR RECENT RESULTS</span><h2>PERSONAL RECORDS.</h2><div id="speed-history-panel">${speedHistoryPanel()}</div>${speedInsightsPanel(session)}</section><aside><span>// PRACTICE PROFILE</span><h2>${safe(PACKS[session.pack].title)}</h2><p>${safe(PACKS[session.pack].description)}</p><p>Timed solo drills use local browser storage, so you can train without an account. None of these words are shell commands.</p></aside></div>

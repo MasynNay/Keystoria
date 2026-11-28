@@ -1,9 +1,9 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.1";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.1";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel } from "./ui/speed-view.js?v=0.48.8";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel, dailyPracticePanel } from "./ui/speed-view.js?v=0.48.9";
 import { createSpeedController } from "./ui/speed-controller.js?v=0.48.10";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity } from "./ui/speed-insights.js?v=0.48.8";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity, readGuidedActivity, recommendDailyPractice } from "./ui/speed-insights.js?v=0.48.9";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";
 import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.1";
@@ -242,6 +242,11 @@ async function restoreSpeedFile(field) {
     if(isCurrent())
       document.querySelector('[data-action="speed-import"]')?.focus({preventScroll:true});
   }
+}
+
+function refreshDailyPractice() {
+  const panel=document.getElementById("speed-daily-practice");
+  if(panel&&state.speed)panel.outerHTML=dailyPracticePanel(state.speed);
 }
 
 function refreshSpeedInsights() {
@@ -578,6 +583,7 @@ app.addEventListener("click",event=>{
      const panel=document.getElementById("speed-saved-focus-plan");
      if(panel)panel.outerHTML=savedFocusPlanPanel(state.speed);
      document.getElementById("speed-saved-focus-heading")?.focus({preventScroll:true});
+     refreshDailyPractice();
      toast("Focus plan saved on this device.");
      break;
    }
@@ -593,6 +599,7 @@ app.addEventListener("click",event=>{
      const panel=document.getElementById("speed-saved-focus-plan");
      if(panel)panel.outerHTML=savedFocusPlanPanel(state.speed);
      document.getElementById("speed-saved-focus-heading")?.focus({preventScroll:true});
+     refreshDailyPractice();
      toast("Saved focus plan removed.");
      break;
    }
@@ -605,7 +612,23 @@ app.addEventListener("click",event=>{
      const panel=document.getElementById("speed-guided-activity");
      if(panel)panel.outerHTML=guidedActivityPanel();
      document.getElementById("speed-guided-activity-heading")?.focus({preventScroll:true});
+     refreshDailyPractice();
      toast(clear?"Guided activity turned off and cleared.":"Local guided activity enabled.");
+     break;
+   }
+   case "speed-daily-start": {
+     if(!state.speed)break;
+     if(!['idle','complete'].includes(state.speed.status)){
+       toast("Finish or restart the current drill before beginning another practice session.","error");
+       break;
+     }
+     const recommendation=recommendDailyPractice(state.speed,readFocusPlan(),readGuidedActivity());
+     if(recommendation.kind==="saved")speedController.launchFocusPlan(recommendation.plan);
+     else if(recommendation.kind==="review")speedController.startTargeted({guided:true});
+     else if(recommendation.kind==="regular"){
+       speedController.restart({regular:true});
+       document.getElementById("speed-input")?.focus({preventScroll:false});
+     }else refreshDailyPractice();
      break;
    }
    case "speed-regular":speedController.restart({regular:true});break;

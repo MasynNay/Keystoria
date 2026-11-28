@@ -263,3 +263,8 @@
 .speed-guided-days{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:4px;margin:10px 0}
 .speed-guided-days span{aspect-ratio:1;max-width:18px;border:1px solid var(--line);border-radius:3px;background:var(--panel-2)}
 .speed-guided-days .has-activity{background:var(--accent);border-color:var(--accent)}
+
+/* Optional next step, outside the active typing console. */
+.speed-daily-practice .speed-daily-title{margin-top:10px;color:var(--accent);font:800 15px/1.4 var(--mono)}
+.speed-daily-practice button{margin:7px 0}
+@media(max-width:480px){.speed-daily-practice button{width:100%}}
