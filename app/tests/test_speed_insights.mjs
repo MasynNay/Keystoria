@@ -1,3 +1,4 @@
+import { selectPaceGhost, ghostProgress, ghostOutcome, ghostScope } from '../web/ui/pace-ghost.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -574,4 +575,24 @@ test('adaptive circuit adjusts exact difficulty, clamps extremes, and counts fiv
  assert.equal(evaluateAdaptiveCircuit(createAdaptiveCircuit(4),{correct:20,characters:20},20).results[0].nextTier,4);
  assert.deepEqual(CIRCUIT_TIERS,[6,10,14,18,22]);
  assert.equal(focusPlanFromSession({status:'complete',adaptiveCircuit:run,pack:'everyday',seconds:30,keyReview:{keys:[{key:'a'}]}},95),null);
+});
+
+
+test('pace ghost uses only comparable saved metrics and a bounded steady estimate',()=>{
+ const scope={pack:'everyday',seconds:30,practiceMode:'standard-exact'};
+ const best=selectPaceGhost([{...scope,wpm:80,accuracy:93},{...scope,wpm:80,accuracy:98},{...scope,wpm:900,accuracy:99,practiceMode:'mobile-assisted'},{...scope,wpm:900,accuracy:99,seconds:60}],scope);
+ assert.equal(best.rate,80);assert.equal(best.accuracy,98);
+ assert.deepEqual(ghostProgress(best,15,110),{target:100,player:110,delta:10});
+ assert.equal(ghostProgress(best,100,0).target,200);
+ const session={...scope,result:{...scope,wpm:85,accuracy:97}};
+ assert.deepEqual(ghostOutcome(best,session),{delta:5,accuracyDelta:-1});
+ assert.equal(ghostOutcome(best,{...session,interrupted:true}),null);
+ assert.equal(ghostOutcome(best,{...session,ghostInvalid:true}),null);
+ assert.equal(ghostOutcome(best,{...session,result:{...session.result,practiceMode:'mobile-exact'}}),null);
+ assert.equal(selectPaceGhost([{...scope,wpm:0,accuracy:100}],scope),null);
+ const ns={pack:'numpad',seconds:30,practiceMode:'mobile-exact'};
+ const numeric=selectPaceGhost([{...ns,cpm:240,wpm:500,accuracy:95}],ns);
+ assert.equal(numeric.unit,'CPM');
+ assert.deepEqual(ghostProgress(numeric,10,38),{target:40,player:38,delta:-2});
+ assert.equal(ghostScope({pack:'numpad',seconds:30,phoneLayout:true,keyboardAssist:false}).practiceMode,'mobile-exact');
 });
