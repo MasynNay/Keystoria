@@ -295,6 +295,22 @@ try {
    if(await welcome.count()&&await welcome.isVisible())await welcome.click();
    assert.match(await card.innerText(),/COMPLETED/);
   }
+  // Exercise offline Lyric Lab challenge library without contacting a provider.
+  await page.locator('[data-action="lyric-open"]').first().click();
+  const rhythm=page.locator('#lyric-rhythm-library');
+  assert.equal(await rhythm.locator('[data-action="lyric-rhythm"]').count(),3);
+  const historyBefore=await page.evaluate(()=>localStorage.getItem('panic.lyric.history'));
+  await rhythm.locator('[data-action="lyric-rhythm"][data-index="0"]').click();
+  assert.match(await page.locator('#lyric-rhythm-active').innerText(),/90% ACCURACY/);
+  await page.locator('#lyric-toggle').click();
+  await page.locator('#lyric-input').waitFor();
+  await page.locator('[data-action="lyric-rewind"]').click();
+  assert.match(await page.locator('#lyric-rhythm-result').innerText(),/Practice only/);
+  await page.locator('[data-action="lyric-retry"]').first().click();
+  assert.match(await page.locator('#lyric-rhythm-result').innerText(),/Ready for the challenge/);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('panic.lyric.history')),historyBefore);
+  await page.locator('[data-action="lyric-back"]').click();
+  assert.equal(await rhythm.locator('[data-action="lyric-rhythm"]').count(),3);
   await ctx.close();
  }
  assert.deepEqual(errors,[],'no uncaught runtime errors');

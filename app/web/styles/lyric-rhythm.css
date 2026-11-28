@@ -1,0 +1,9 @@
+/* Original offline challenges. Static layout; no additional per-key work. */
+.lyric-rhythm{margin:22px 0;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);min-width:0;color:var(--text)}
+.lyric-rhythm h2,.lyric-rhythm h3,.lyric-rhythm p{margin:0 0 9px}
+.lyric-rhythm p{color:var(--muted);font:13px/1.6 var(--body)}
+.lyric-rhythm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.lyric-rhythm-grid article{min-width:0;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:8px;padding:12px;overflow-wrap:anywhere}
+.lyric-rhythm-grid article h3{color:var(--accent)}
+.lyric-rhythm-grid button{min-height:44px;margin-top:auto}
+.lyric-rhythm-result{color:var(--accent);font-weight:700;line-height:1.5}

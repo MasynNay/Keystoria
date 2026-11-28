@@ -6,7 +6,7 @@ import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPan
 import { createSpeedController } from "./ui/speed-controller.js?v=0.48.17";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity, readGuidedActivity, recommendDailyPractice } from "./ui/speed-insights.js?v=0.48.14";
 import { readSpeedHistory } from "./ui/speed-engine.js?v=0.40.1";
-import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";
+import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.54.0";
 import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.1";
 import { sound, toggleSound, isSoundOn } from "./sound.js";
 import { MISSIONS } from "./ui/missions.js";
