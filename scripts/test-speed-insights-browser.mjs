@@ -431,6 +431,54 @@ try {
    assert.equal(await page.locator('#speed-input').inputValue(),dailyDraft,'daily recommendation cannot replace active typing');
    await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();
   }
+  // Three rounds, retry, interruption rules, isolated score history.
+  for(const pack of ['everyday','numpad']){
+   await page.locator('[data-action="speed-pack"][data-pack="'+pack+'"]').click();
+   const ladder=page.locator('#speed-accuracy-ladder');
+   assert.equal(await ladder.getAttribute('data-ladder'),'off');
+   const scores=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
+   const priorActivity=await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1'));
+   await page.locator('#speed-input').fill('1');
+   await ladder.locator('[data-action="speed-ladder-start"]').click();
+   assert.equal(await page.locator('#speed-input').inputValue(),'1','starting ladder cannot replace active draft');
+   await page.locator('[data-action="speed-restart"]:visible').first().click();
+   await ladder.locator('[data-action="speed-ladder-start"]').click();
+   assert.equal(await ladder.getAttribute('data-stage'),'1');
+   assert.equal(await ladder.getAttribute('data-ladder'),'ready');
+   assert.equal(await page.locator('#speed-time').innerText(),'15');
+   const finishRound=async(correct)=>{
+    const passage=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+    const bad=pack==='numpad'?passage.replace(/[0-9]/g,d=>d==='9'?'8':'9'):passage.split('').map(ch=>ch==='!'?'?':'!').join('');
+    await page.locator('#speed-input').fill(correct?passage:bad);
+    await page.locator('#speed-results-heading').waitFor();
+   };
+   await finishRound(false);
+   assert.equal(await ladder.getAttribute('data-ladder'),'below-goal');
+   assert.equal(await ladder.locator('[data-action="speed-ladder-next"]').count(),0);
+   await page.locator('[data-action="speed-restart"]').first().click();
+   await finishRound(true);
+   assert.equal(await ladder.getAttribute('data-ladder'),'passed');
+   await ladder.locator('[data-action="speed-ladder-next"]').click();
+   assert.equal(await ladder.getAttribute('data-stage'),'2');
+   assert.equal(await page.locator('#speed-time').innerText(),'30');
+   await finishRound(false);
+   assert.equal(await ladder.getAttribute('data-ladder'),'below-goal');
+   await page.locator('[data-action="speed-restart"]').first().click();
+   assert.equal(await ladder.getAttribute('data-stage'),'2','retry retains passed stages');
+   await finishRound(true);
+   await ladder.locator('[data-action="speed-ladder-next"]').click();
+   assert.equal(await page.locator('#speed-time').innerText(),'60');
+   await finishRound(true);
+   assert.equal(await ladder.getAttribute('data-ladder'),'complete');
+   assert.equal(await ladder.locator('progress').getAttribute('value'),'3');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),scores);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1')),priorActivity);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
+   await page.locator('[data-action="speed-restart"]').first().click();
+   assert.equal(await ladder.getAttribute('data-stage'),'1');
+   await ladder.locator('[data-action="speed-regular"]').click();
+   assert.equal(await ladder.getAttribute('data-ladder'),'off');
+  }
   await context.close();
  }
  assert.deepEqual(errors,[],'practice progress browser actions must be error-free');

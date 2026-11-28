@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity, recommendDailyPractice, summarizeTrainingMilestones
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity, recommendDailyPractice, summarizeTrainingMilestones, ACCURACY_LADDER, createAccuracyLadder, retryAccuracyLadder, nextAccuracyLadder, evaluateAccuracyLadder
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -492,4 +492,28 @@ test('milestone windows are seven local calendar days across year and month boun
  assert.deepEqual(summary.recent,{routines:5,activeDays:2,from:'2026-12-28',through:'2027-01-03'});
  assert.deepEqual(summary.previous,{routines:5,activeDays:2,from:'2026-12-21',through:'2026-12-27'});
  assert.equal(summary.milestones.find(m=>m.id==='ten-routines').reached,true);
+});
+
+test('accuracy ladder requires three explicit qualifying rounds, exact fractions and sufficient positions',()=>{
+ let ladder=createAccuracyLadder();
+ assert.equal(nextAccuracyLadder(ladder),null);
+ assert.equal(evaluateAccuracyLadder(ladder,{correct:19,characters:19}).status,'insufficient');
+ assert.equal(evaluateAccuracyLadder(ladder,{correct:17,characters:20}).status,'below-goal');
+ assert.equal(evaluateAccuracyLadder(ladder,{correct:20,characters:20},true).status,'interrupted');
+ ladder=evaluateAccuracyLadder(ladder,{correct:18,characters:20});
+ assert.deepEqual(ladder,{stage:0,status:'passed'});
+ ladder=nextAccuracyLadder(ladder);
+ assert.deepEqual(ladder,{stage:1,status:'ready'});
+ assert.equal(evaluateAccuracyLadder(ladder,{correct:37,characters:39}).status,'insufficient');
+ const failure=evaluateAccuracyLadder(ladder,{correct:37,characters:40});
+ assert.deepEqual(retryAccuracyLadder(failure),{stage:1,status:'ready'});
+ ladder=nextAccuracyLadder(evaluateAccuracyLadder(ladder,{correct:38,characters:40}));
+ assert.deepEqual(ladder,{stage:2,status:'ready'});
+ assert.equal(evaluateAccuracyLadder(ladder,{correct:97,characters:99,accuracy:98}).status,'below-goal');
+ ladder=evaluateAccuracyLadder(ladder,{correct:98,characters:100});
+ assert.deepEqual(ladder,{stage:2,status:'complete'});
+ assert.equal(nextAccuracyLadder(ladder),null);
+ assert.deepEqual(retryAccuracyLadder(ladder),createAccuracyLadder());
+ assert.deepEqual(ACCURACY_LADDER.map(s=>s.seconds),[15,30,60]);
+ assert.equal(focusPlanFromSession({status:'complete',accuracyLadder:ladder,pack:'everyday',seconds:60,keyReview:{keys:[{key:'a'}]}},95),null);
 });

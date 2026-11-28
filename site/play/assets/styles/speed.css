@@ -282,3 +282,13 @@
 .speed-training-weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .speed-training-weeks>div{display:grid;gap:5px}
 @media(max-width:400px){.speed-training-milestones ul,.speed-training-weeks{grid-template-columns:1fr}}
+
+/* Optional ladder uses the existing theme, with no new active typing updates. */
+.speed-ladder-active{margin:10px 0}
+.speed-ladder-rounds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none;padding:0;margin:10px 0}
+.speed-ladder-rounds li{display:grid;gap:4px;min-width:0;padding:9px;border:1px solid var(--line);border-radius:6px;font:12px/1.5 var(--body);overflow-wrap:anywhere}
+.speed-ladder-rounds li[aria-current="step"]{border-color:var(--accent)}
+.speed-ladder-rounds small{font:10px/1.5 var(--mono);color:var(--accent)}
+.speed-ladder-active progress{width:100%;accent-color:var(--accent)}
+.speed-ladder-active button{margin:5px 6px 5px 0}
+@media(max-width:480px){.speed-ladder-rounds{grid-template-columns:1fr}.speed-ladder-active button{width:100%;margin-right:0}}

@@ -179,7 +179,7 @@ export function normalizeFocusPlan(value) {
 }
 
 export function focusPlanFromSession(session,goal=95) {
-  if(session?.status!=='complete')return null;
+  if(session?.status!=='complete'||session.accuracyLadder)return null;
   const keys=session.targetKeys?.length?session.targetKeys:session.keyReview?.keys.map(row=>row.key);
   return normalizeFocusPlan({pack:session.pack,seconds:session.seconds,
     goal:session.focusRoutine?.goal??goal,keys});
@@ -310,6 +310,35 @@ export function summarizeTrainingMilestones(activity,now=new Date()){
   }));
   return {milestones,reached:milestones.filter(item=>item.reached).length,
     recent:window(summary.days.slice(-7)),previous:window(summary.days.slice(-14,-7))};
+}
+
+
+/** Optional three-round challenge; never persist its attempts or outcomes.
+ * Accuracy uses the exact submitted-position fraction, not rounded UI scores.
+ * Each stage's timer remains the ordinary Speed Lab timer. */
+export const ACCURACY_LADDER=Object.freeze([
+ Object.freeze({name:'Warm-up',seconds:15,goal:90,minimum:20}),
+ Object.freeze({name:'Precision',seconds:30,goal:95,minimum:40}),
+ Object.freeze({name:'Endurance',seconds:60,goal:98,minimum:60})
+]);
+export function createAccuracyLadder(){return {stage:0,status:'ready'};}
+export function retryAccuracyLadder(ladder){
+ if(!ladder||!ACCURACY_LADDER[ladder.stage]||ladder.status==='complete')return createAccuracyLadder();
+ return {stage:ladder.stage,status:'ready'};
+}
+export function nextAccuracyLadder(ladder){
+ return ladder?.status==='passed'&&ladder.stage<ACCURACY_LADDER.length-1
+  ?{stage:ladder.stage+1,status:'ready'}:null;
+}
+export function evaluateAccuracyLadder(ladder,metrics,interrupted=false){
+ if(!ladder||ladder.status!=='ready'||!ACCURACY_LADDER[ladder.stage])return ladder;
+ const stage=ACCURACY_LADDER[ladder.stage];
+ if(interrupted)return {...ladder,status:'interrupted'};
+ const {correct,characters}=metrics??{};
+ if(!Number.isInteger(correct)||!Number.isInteger(characters)||correct<0||correct>characters||characters<stage.minimum)
+  return {...ladder,status:'insufficient'};
+ if(correct*100<stage.goal*characters)return {...ladder,status:'below-goal'};
+ return {...ladder,status:ladder.stage===ACCURACY_LADDER.length-1?'complete':'passed'};
 }
 
 export function readAccuracyGoal(storage = globalThis.localStorage) {

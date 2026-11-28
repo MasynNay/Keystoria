@@ -1,3 +1,7 @@
+## Accuracy Ladder — November 27, 2026
+
+**Under CI review.** Optional three-round challenge in the selected Speed Lab category. Warm-up 15s/90%/20 submitted positions; Precision 30s/95%/40; Endurance 60s/98%/60. Exact final accuracy fraction and sufficient submitted positions (including spaces) are required. A paused/interrupted round does not qualify; retry keeps earlier rounds, explicit next advances, and completion permits a fresh ladder. Category or duration change and exit end the challenge. No score or activity records, persisted ladder state, mastery rating or extra per-input work. Original timer, native field and scoring remain intact. Unit and browser tests cover qualification, retry, mode exit, Numpad, phone/desktop and storage isolation. Physical-device QA remains open.
+
 ## Docker and SQL Field Academy courses — November 27, 2026
 
 **Under CI review.** Adds ten Docker inspection exercises (engine version, container state/logs, images, resources, networks, volumes, Compose and disk usage) and ten read-only SQLite-compatible SELECT exercises (columns, conditions, sorting, limiting, distinct values, aggregates, grouping and joining). Each includes a fictional example output, practical context, benefit and caution. No engine, shell, database or network is contacted. Existing checkpoints, shuffled order and completion badges remain in place. Unit tests and specialist browser completion tests cover all new exercises. Original OS/Git/network lessons are preserved. Physical phone QA remains open.

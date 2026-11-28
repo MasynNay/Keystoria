@@ -1,9 +1,9 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js?v=0.2.1";
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.3";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.3";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel, dailyPracticePanel } from "./ui/speed-view.js?v=0.48.11";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.48.11";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity, readGuidedActivity, recommendDailyPractice } from "./ui/speed-insights.js?v=0.48.11";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel, dailyPracticePanel } from "./ui/speed-view.js?v=0.48.12";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.48.12";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity, readGuidedActivity, recommendDailyPractice } from "./ui/speed-insights.js?v=0.48.12";
 import { readSpeedHistory } from "./ui/speed-engine.js?v=0.40.1";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";
 import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.1";
@@ -650,6 +650,12 @@ app.addEventListener("click",event=>{
      }else refreshDailyPractice();
      break;
    }
+   case "speed-ladder-start":
+     if(!speedController.launchAccuracyLadder())toast("Finish or restart the current drill before starting a ladder.","error");
+     break;
+   case "speed-ladder-next":
+     speedController.advanceAccuracyLadder();
+     break;
    case "speed-regular":speedController.restart({regular:true});break;
    case "speed-restart":speedController.restart();break;
   case "speed-home":speedController.close();showModal("welcome");break;
