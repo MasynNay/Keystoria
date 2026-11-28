@@ -217,7 +217,10 @@ try {
    if(pack==='numpad')await page.locator('[data-action="speed-pack"][data-pack="numpad"]').click();
    assert.equal(await review.count(),0,'no recap during active typing');
    const full=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
-   const key=full.match(pack==='numpad'?/[0-9]/:/[A-Za-z]/)[0];
+   // Pick a repeated character rather than relying on the random first word.
+   const candidates=[...new Set(full.match(pack==='numpad'?/[0-9]/g:/[A-Za-z]/g))];
+   const key=candidates.find(ch=>full.split(ch).length>=3);
+   assert.ok(key,'the long drill contains a repeated target character');
    const positions=[];for(let i=0;i<full.length;i++)if(full[i]===key)positions.push(i);
    assert.ok(positions.length>=2);
    const draft=full.split('');
