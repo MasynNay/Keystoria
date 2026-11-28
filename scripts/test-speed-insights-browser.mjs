@@ -20,6 +20,8 @@ try {
   assert.equal(await insight.getAttribute('data-matches'),'0','new visitors have no comparable progress yet');
   assert.equal(await page.locator('#speed-saved-focus-plan').getAttribute('data-saved'),'false');
   assert.equal(await page.locator('#speed-guided-activity').getAttribute('data-enabled'),'false');
+  const daily=page.locator('#speed-daily-practice');
+  assert.equal(await daily.getAttribute('data-suggestion'),'regular');
   assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1')),null);
   assert.equal(await page.locator('[data-action="speed-plan-save"]').count(),0);
   const week=insight.locator('.speed-week-activity');
@@ -317,7 +319,9 @@ try {
    await page.locator('#speed-input').fill(regular.split('').map(ch=>ch===focusKey?wrongKey:ch).join(''));
    await page.locator('#speed-results-heading').waitFor();
    const savedBeforeRoutine=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
-   await page.locator('[data-action="speed-guided"]').click();
+   assert.equal(await daily.getAttribute('data-suggestion'),'review');
+   await daily.locator('[data-action="speed-daily-start"]').click();
+   assert.equal(await daily.getAttribute('data-suggestion'),'continue');
    const routine=page.locator('#speed-focus-routine');
    const activity=page.locator('#speed-guided-activity');
    assert.equal(await activity.getAttribute('data-enabled'),'false');
@@ -348,6 +352,8 @@ try {
    }
    assert.equal(await routine.getAttribute('data-routine-status'),'complete');
    assert.equal(await activity.getAttribute('data-total'),'1');
+   assert.equal(await daily.getAttribute('data-suggestion'),'done-today');
+   assert.equal(await daily.locator('button').count(),0,'no obligation to continue after daily suggestion is satisfied');
    assert.equal(await activity.locator('.speed-guided-days span').count(),30);
    const activityData=await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.speed.guidedActivity.v1')));
    assert.deepEqual(Object.keys(activityData).sort(),['days','enabled']);
@@ -377,9 +383,15 @@ try {
    await page.locator('[data-action="speed-open"]').first().click();
    assert.equal(await planPanel.getAttribute('data-saved'),'true');
    assert.equal(await activity.getAttribute('data-total'),'1','completion counts survive reload');
+   assert.equal(await daily.getAttribute('data-suggestion'),'done-today');
+   page.once('dialog',d=>d.accept());
+   await page.locator('[data-action="speed-activity-clear"]').click();
+   assert.equal(await daily.getAttribute('data-suggestion'),'saved','saved plan is suggested when tracking is off');
    assert.match(await planPanel.innerText(),/30s · 98% goal/);
-   await page.locator('[data-action="speed-plan-launch"]').click();
+   await daily.locator('[data-action="speed-daily-start"]').click();
+   assert.equal(await daily.getAttribute('data-suggestion'),'continue');
    assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),pack);
+   await page.locator('[data-action="speed-activity-enable"]').click();
    assert.equal(await routine.getAttribute('data-streak'),'0','saved plan launches a fresh routine');
    assert.equal(await routine.getAttribute('data-routine-status'),'ready');
    assert.equal(await page.locator('#speed-focus-comparison').count(),0);
@@ -393,7 +405,8 @@ try {
    assert.equal(await planPanel.getAttribute('data-saved'),'false');
    assert.equal(await page.locator('#speed-input').inputValue(),launched.slice(0,1),'clearing a plan never detaches the draft');
    assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.focusPlan.v1')),null);
-   assert.equal(await activity.getAttribute('data-total'),'1','plan removal does not erase activity');
+   assert.equal(await activity.getAttribute('data-total'),'0','plan removal does not erase the enabled activity slot');
+   assert.equal(await activity.getAttribute('data-enabled'),'true');
    page.once('dialog',d=>d.accept());
    await page.locator('[data-action="speed-activity-clear"]').click();
    assert.equal(await activity.getAttribute('data-enabled'),'false');
@@ -401,6 +414,11 @@ try {
    assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1')),null);
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),savedBeforeRoutine);
    await page.locator('[data-action="speed-regular"]').click();
+   assert.equal(await daily.getAttribute('data-suggestion'),'regular');
+   await page.locator('#speed-input').fill('1');
+   const dailyDraft=await page.locator('#speed-input').inputValue();
+   await daily.locator('[data-action="speed-daily-start"]').click();
+   assert.equal(await page.locator('#speed-input').inputValue(),dailyDraft,'daily recommendation cannot replace active typing');
    await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();
   }
   await context.close();

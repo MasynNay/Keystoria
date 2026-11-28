@@ -266,6 +266,27 @@ export function summarizeGuidedActivity(activity,now=new Date()){
     activeDays:days.filter(day=>day.count>0).length,today:days.at(-1)?.count??0};
 }
 
+
+/** One optional recommendation derived from existing local settings and
+ * current-session feedback. No new history, streak, date storage, or timers.
+ * When activity is disabled, never infer whether today's goal was completed.
+ */
+export function recommendDailyPractice(session,plan,activity,now=new Date()){
+  const daily=summarizeGuidedActivity(activity,now);
+  if(daily.enabled&&daily.today>0)return {kind:'done-today',today:daily.today};
+  if(session?.focusRoutine?.status==='complete')return {kind:'done-session'};
+  if(session?.focusRoutine)return {kind:'continue'};
+  const saved=normalizeFocusPlan(plan);
+  if(saved)return {kind:'saved',plan:saved};
+  if(session?.status==='complete'&&session.keyReview?.keys?.length){
+    const candidate=normalizeFocusPlan({pack:session.pack,seconds:session.seconds,goal:95,
+      keys:session.keyReview.keys.map(row=>row.key)});
+    if(candidate)return {kind:'review',keys:candidate.keys,pack:candidate.pack,seconds:candidate.seconds};
+  }
+  return {kind:'regular',pack:typeof session?.pack==='string'&&Object.hasOwn(PACKS,session.pack)?session.pack:'everyday',
+    seconds:DURATIONS.includes(session?.seconds)?session.seconds:30};
+}
+
 export function readAccuracyGoal(storage = globalThis.localStorage) {
   try {
     const value = Number(storage?.getItem(GOAL_KEY));
