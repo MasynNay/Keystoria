@@ -1,6 +1,14 @@
+## Cross-mode journey achievements — November 28, 2026
+
+**Proposed; integrated CI pending.** Twelve responsive milestones derive from existing validated Academy, regular Speed Lab, recent Lyric Lab, local story and opt-in guided activity records. Progress bars and reached/optional-off states make goals visible without new persistence, telemetry, scores or typing overhead. Retention and clearing can change derived milestones; no permanent awards are claimed. Story play remains local only. Includes unit and browser regressions for empty and populated states, retention, privacy, and mobile layout. Integrated with the merged Pace Race; physical-device QA remains open.
+
+## Unified Player Dossier — November 28, 2026
+
+**Four previous PR workflows passed; combined CI pending.** Home dashboard derives Academy completions and resumable steps, latest comparable-mode-labeled regular Speed Lab result, optional guided activity and saved-plan status, latest Lyric performance, and local story career totals. No cross-mode rank, added tracking, new storage, active typing overhead or public story hosting. Existing records and privacy controls remain authoritative. Theme-aware responsive cards and unit/browser regressions cover empty and populated results, malformed records, Numpad metric isolation, escaping, and Academy completion/reset. This branch builds on the integrated Arcade revision; real-device QA remains open.
+
 ## Personal Pace Race — November 28, 2026
 
-**Proposed; CI pending.** Opt-in Speed Lab pace ghost snapshots the best valid saved result matching category, duration and keyboard mode. Two lanes compare correct characters (WPM) or digits (CPM) with an estimated constant pace, not a recorded replay. Retry retains the target, mode changes and interruptions invalidate comparison, and regular drills remain unchanged. Race results never enter saved history or guided activity. No new timers, stored ghost data, per-key logs or network calls. Unit and mobile/desktop browser regressions cover eligibility, pace arithmetic, Numpad, retry, native input identity and privacy. Physical-device QA remains open.
+**Merged:** [PR #124](https://github.com/MasynNay/Keystoria/pull/124) passed six workflows and merged as `6c524ef`. Production deployment not independently verified. Opt-in Speed Lab pace ghost snapshots the best valid saved result matching category, duration and keyboard mode. Two lanes compare correct characters (WPM) or digits (CPM) with an estimated constant pace, not a recorded replay. Retry retains the target, mode changes and interruptions invalidate comparison, and regular drills remain unchanged. Race results never enter saved history or guided activity. No new timers, stored ghost data, per-key logs or network calls. Unit and mobile/desktop browser regressions cover eligibility, pace arithmetic, Numpad, retry, native input identity and privacy. Physical-device QA remains open.
 
 ## Challenge Arcade and Adaptive Circuit — November 28, 2026
 

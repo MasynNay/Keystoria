@@ -1,0 +1,25 @@
+/* Read-only home dashboard: no animations or active-typing layout work. */
+.player-dossier {padding-block:clamp(24px,5vw,64px);}
+.dossier-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;}
+.dossier-card {min-width:0;display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid var(--theme-line,var(--line));border-radius:12px;background:var(--theme-panel,var(--panel));color:var(--theme-text,var(--text));overflow-wrap:anywhere;}
+.dossier-card h3,.dossier-card p,.dossier-card ul {margin:0;}
+.dossier-card p,.dossier-card li {color:var(--theme-muted,var(--muted));line-height:1.5;font-size:14px;}
+.dossier-card ul {padding-inline-start:20px;}
+.dossier-metric {font-size:clamp(24px,4vw,36px);color:var(--theme-accent,var(--accent));font-variant-numeric:tabular-nums;}
+.dossier-card progress {width:100%;height:12px;accent-color:var(--theme-accent,var(--accent));}
+.dossier-card a {margin-top:auto;min-height:44px;display:flex;align-items:center;color:var(--theme-accent,var(--accent));text-decoration:underline;text-underline-offset:3px;}
+.dossier-card a:focus-visible {outline:2px solid var(--theme-accent,var(--accent));outline-offset:3px;}
+
+/* Derived cross-mode milestones. Only rendered on the home screen. */
+.dossier-milestones{margin-top:24px}
+.dossier-milestones-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.dossier-milestones-heading h3,.dossier-milestones-heading p{margin:0 0 6px}
+.dossier-milestones-heading p,.dossier-milestone p,.dossier-milestone small{font-size:13px;line-height:1.5;color:var(--theme-muted,var(--muted))}
+.dossier-milestones-heading>strong{font:700 14px var(--mono);color:var(--theme-accent,var(--accent))}
+.dossier-milestone-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.dossier-milestone{min-width:0;display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid var(--theme-line,var(--line));border-radius:8px;background:var(--theme-panel,var(--panel));overflow-wrap:anywhere}
+.dossier-milestone[data-earned="true"]{border-color:var(--theme-accent,var(--accent))}
+.dossier-milestone h4,.dossier-milestone p{margin:0}
+.dossier-milestone-state{font:11px var(--mono);color:var(--theme-muted,var(--muted))}
+.dossier-milestone[data-earned="true"] .dossier-milestone-state{color:var(--theme-accent,var(--accent));font-weight:700}
+.dossier-milestone progress{width:100%;height:8px;accent-color:var(--theme-accent,var(--accent));margin-top:auto}

@@ -1,5 +1,7 @@
+import { playerMilestones } from '../web/ui/player-milestones.js';
 /** Training reference integrity and isolation: no command execution is exposed. */
 import test from 'node:test';
+import { summarizePlayerDossier, playerDossierTemplate } from '../web/ui/player-dossier.js';
 import assert from 'node:assert/strict';
 import { LESSONS, matchesCommand, savedLessons, saveLesson } from '../web/ui/lessons.js';
 import { trainingTemplate, trainingLibrary } from '../web/ui/training-view.js';
@@ -177,3 +179,49 @@ test('Python tooling and systemd diagnostics provide ten simulated independent s
  assert.ok(LESSONS.services.commands.some(c=>c.text==='systemctl --failed'));
  assert.match(trainingLibrary(),/9 hands-on practice courses/);
 });
+
+test('unified player dossier reads existing bounded histories without writes or metric mixing',()=>{
+ const values=new Map([
+  ['panic.lessons.v1',JSON.stringify({linux:true,windows:'true',unknown:true})],
+  ['panic.speed.results.v1',JSON.stringify([{pack:'numpad',seconds:30,wpm:100,cpm:220,accuracy:97,practiceMode:'mobile-exact'},{pack:'fake',seconds:30,wpm:999,accuracy:100}])],
+  ['panic.lyric.history',JSON.stringify([{title:'<img src=x>',artist:'Demo',date:'2026-11-28T00:00:00Z',wpm:50,accuracy:92,points:300,skipped:2}])],
+  ['panic.career.v1',JSON.stringify({runs:4,wins:2,best:100})],
+ ]);
+ const storage={getItem:k=>values.get(k)??null,setItem(){throw Error('unexpected write')},removeItem(){throw Error('unexpected removal')}};
+ const d=summarizePlayerDossier(storage,new Date('2026-11-28T12:00:00Z'));
+ assert.equal(d.completed,1);
+ assert.equal(d.courses.length,9);
+ assert.equal(d.speedCount,1);
+ assert.equal(d.speed.unit,'CPM');
+ assert.equal(d.speed.value,220);
+ assert.equal(d.speed.mode,'Phone exact');
+ assert.equal(d.activity,null);
+ assert.equal(d.storyWins,2);
+ const html=playerDossierTemplate({storage,browserEdition:true});
+ assert.match(html,/220 CPM/);
+ assert.match(html,/&lt;img src=x&gt;/);
+ assert.doesNotMatch(html,/<img src=x>/);
+ assert.match(html,/local Python edition/);
+ assert.match(html,/No new tracking/);
+ const empty=playerDossierTemplate({storage:{getItem(){throw Error('blocked')}}});
+ assert.match(empty,/No saved regular drill yet/);
+ assert.match(empty,/0 \/ 9/);
+});
+
+ test('journey achievements derive twelve bounded milestones without adding storage',()=>{
+ const d={courses:Array.from({length:9}),completed:3,speedCount:10,lyricCount:3,storyWins:5,activity:null};
+ const badges=playerMilestones(d), by=id=>badges.find(b=>b.id===id);
+ assert.equal(badges.length,12);
+ assert.equal(by('academy-three').earned,true);
+ assert.equal(by('academy-all').earned,false);
+ assert.equal(by('speed-five').value,5);
+ assert.equal(by('lyric-three').earned,true);
+ assert.equal(by('story-five').earned,true);
+ assert.equal(by('explorer').earned,true);
+ assert.equal(by('guided-three').available,false);
+ assert.equal(by('guided-three').earned,false);
+ const enabled=playerMilestones({...d,activity:{total:3,days:2}}).find(b=>b.id==='guided-three');
+ assert.equal(enabled.earned,true);
+ const cleared=playerMilestones({...d,speedCount:0}).find(b=>b.id==='explorer');
+ assert.equal(cleared.earned,false);
+ });

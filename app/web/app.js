@@ -14,7 +14,7 @@ import { setCinematicTypingProgress } from "./ui/cinematic-cuts.js?v=0.1.1";
 import { moveStoryReel } from "./ui/story-reel.js";
 import { deploymentDisplay } from "./ui/deployment.js";
 import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";
-import { createViews } from "./ui/views.js?v=0.2.3";
+import { createViews } from "./ui/views.js?v=0.2.5";
 import { describeSessionRecovery } from "./ui/session-recovery.js";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
