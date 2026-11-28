@@ -179,7 +179,7 @@ export function normalizeFocusPlan(value) {
 }
 
 export function focusPlanFromSession(session,goal=95) {
-  if(session?.status!=='complete'||session.accuracyLadder)return null;
+  if(session?.status!=='complete'||session.accuracyLadder||session.survival)return null;
   const keys=session.targetKeys?.length?session.targetKeys:session.keyReview?.keys.map(row=>row.key);
   return normalizeFocusPlan({pack:session.pack,seconds:session.seconds,
     goal:session.focusRoutine?.goal??goal,keys});
@@ -339,6 +339,31 @@ export function evaluateAccuracyLadder(ladder,metrics,interrupted=false){
   return {...ladder,status:'insufficient'};
  if(correct*100<stage.goal*characters)return {...ladder,status:'below-goal'};
  return {...ladder,status:ladder.stage===ACCURACY_LADDER.length-1?'complete':'passed'};
+}
+
+
+/** Five bounded waves; only remaining errors at completion consume budget. */
+export const SURVIVAL_WAVES=Object.freeze([8,12,16,20,24]);
+export const SURVIVAL_SECONDS=30;
+export const SURVIVAL_BUDGET=5;
+export function createSurvival(){return {wave:0,remaining:SURVIVAL_BUDGET,status:'ready'};}
+export function restartSurvival(run){
+ return run?.status==='interrupted'?{wave:run.wave,remaining:run.remaining,status:'ready'}:createSurvival();
+}
+export function nextSurvival(run){
+ return run?.status==='passed'&&run.wave<SURVIVAL_WAVES.length-1
+  ?{wave:run.wave+1,remaining:run.remaining,status:'ready'}:null;
+}
+export function evaluateSurvival(run,metrics,referenceLength,interrupted=false){
+ if(!run||run.status!=='ready'||!Number.isInteger(run.wave)||!SURVIVAL_WAVES[run.wave])return run;
+ if(interrupted)return {...run,status:'interrupted'};
+ const {correct,characters}=metrics??{};
+ if(!Number.isInteger(referenceLength)||referenceLength<1||!Number.isInteger(characters)
+   ||characters!==referenceLength||!Number.isInteger(correct)||correct<0||correct>characters)
+  return {...run,status:'timeout'};
+ const remaining=run.remaining-(characters-correct);
+ if(remaining<0)return {...run,remaining:0,status:'depleted'};
+ return {...run,remaining,status:run.wave===SURVIVAL_WAVES.length-1?'complete':'passed'};
 }
 
 export function readAccuracyGoal(storage = globalThis.localStorage) {

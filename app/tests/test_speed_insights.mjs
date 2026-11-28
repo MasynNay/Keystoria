@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity, recommendDailyPractice, summarizeTrainingMilestones, ACCURACY_LADDER, createAccuracyLadder, retryAccuracyLadder, nextAccuracyLadder, evaluateAccuracyLadder
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity, recommendDailyPractice, summarizeTrainingMilestones, ACCURACY_LADDER, createAccuracyLadder, retryAccuracyLadder, nextAccuracyLadder, evaluateAccuracyLadder, SURVIVAL_WAVES, createSurvival, restartSurvival, nextSurvival, evaluateSurvival
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -516,4 +516,30 @@ test('accuracy ladder requires three explicit qualifying rounds, exact fractions
  assert.deepEqual(retryAccuracyLadder(ladder),createAccuracyLadder());
  assert.deepEqual(ACCURACY_LADDER.map(s=>s.seconds),[15,30,60]);
  assert.equal(focusPlanFromSession({status:'complete',accuracyLadder:ladder,pack:'everyday',seconds:60,keyReview:{keys:[{key:'a'}]}},95),null);
+});
+
+test('survival shares five final mistakes across complete timed waves',()=>{
+ let run=createSurvival();
+ assert.equal(nextSurvival(run),null);
+ assert.equal(evaluateSurvival(run,{correct:9,characters:9},10).status,'timeout');
+ assert.deepEqual(evaluateSurvival(run,{correct:0,characters:10},10,true),{wave:0,remaining:5,status:'interrupted'});
+ assert.deepEqual(restartSurvival(evaluateSurvival(run,{correct:0,characters:10},10,true)),run);
+ assert.deepEqual(evaluateSurvival(run,{correct:4,characters:10},10),{wave:0,remaining:0,status:'depleted'});
+ run=evaluateSurvival(run,{correct:7,characters:10},10);
+ assert.deepEqual(run,{wave:0,remaining:2,status:'passed'});
+ assert.deepEqual(restartSurvival(run),createSurvival());
+ run=nextSurvival(run);
+ run=evaluateSurvival(run,{correct:8,characters:10},10);
+ assert.deepEqual(run,{wave:1,remaining:0,status:'passed'});
+ for(let wave=2;wave<5;wave++){
+  run=nextSurvival(run);
+  assert.equal(run.wave,wave);
+  assert.equal(evaluateSurvival(run,{correct:9,characters:10},10).status,'depleted');
+  run=evaluateSurvival(run,{correct:10,characters:10},10);
+ }
+ assert.deepEqual(run,{wave:4,remaining:0,status:'complete'});
+ assert.equal(nextSurvival(run),null);
+ assert.deepEqual(restartSurvival(run),createSurvival());
+ assert.deepEqual(SURVIVAL_WAVES,[8,12,16,20,24]);
+ assert.equal(focusPlanFromSession({status:'complete',survival:run,pack:'everyday',seconds:30,keyReview:{keys:[{key:'a'}]}},95),null);
 });

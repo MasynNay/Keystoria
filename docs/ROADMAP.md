@@ -1,3 +1,7 @@
+## Survival waves — November 28, 2026
+
+**Under CI review.** Five 30-second passages of 8, 12, 16, 20 and 24 tokens (Numpad groups). A shared budget of five final mismatches is charged only on full submission. Corrected errors are free; zero budget permits perfect waves. Incomplete passage at timeout or exceeding the budget ends the run. Explicit next advances a cleared wave; restart begins a new run except interrupted waves retain their earlier budget and wave. No new timers, persistence, record pollution or guided activity. Pure tests and text/Numpad mobile/desktop browser flows verify progression, failure and score isolation. Real-device QA remains open.
+
 ## Accuracy Ladder — November 27, 2026
 
 **Under CI review.** Optional three-round challenge in the selected Speed Lab category. Warm-up 15s/90%/20 submitted positions; Precision 30s/95%/40; Endurance 60s/98%/60. Exact final accuracy fraction and sufficient submitted positions (including spaces) are required. A paused/interrupted round does not qualify; retry keeps earlier rounds, explicit next advances, and completion permits a fresh ladder. Category or duration change and exit end the challenge. No score or activity records, persisted ladder state, mastery rating or extra per-input work. Original timer, native field and scoring remain intact. Unit and browser tests cover qualification, retry, mode exit, Numpad, phone/desktop and storage isolation. Physical-device QA remains open.

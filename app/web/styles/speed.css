@@ -292,3 +292,7 @@
 .speed-ladder-active progress{width:100%;accent-color:var(--accent)}
 .speed-ladder-active button{margin:5px 6px 5px 0}
 @media(max-width:480px){.speed-ladder-rounds{grid-template-columns:1fr}.speed-ladder-active button{width:100%;margin-right:0}}
+
+.speed-survival-rounds{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:760px){.speed-survival-rounds{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:400px){.speed-survival-rounds{grid-template-columns:1fr}}
