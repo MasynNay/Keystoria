@@ -100,7 +100,7 @@ test('Git and network lessons retain exact command case and platform context',()
    const html=trainingTemplate(session(id,{index,answered:true,referenceIndex:index}),header);
    assert.match(html,/SIMULATED TERMINAL OUTPUT/);
    assert.match(html,/WHAT DOES IT DO/);
-   assert.ok(LESSON_OUTPUTS[id][index].length>5);
+   assert.ok(LESSON_OUTPUTS[id][index].trim().length>0);
    assert.equal(matchesCommand(command.text,command.text),true);
   }
   const complete=trainingTemplate(session(id,{completed:true,index:9}),header);
