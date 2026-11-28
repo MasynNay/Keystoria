@@ -19,6 +19,42 @@ export const PACKS = Object.freeze({
     description: 'Fast cinematic prose with richer words and punctuation.',
     words: 'shadows corridor tremble midnight beacon orbit signal flicker reactor storm escape mission captain rescue danger stars dark door whisper lantern mystery evidence archive secret witness footsteps silence arrival transmission shelter station pulse breach countdown detective alibi survivor oxygen captain gravity distant flickering terminal chamber hallway locked sealed ancient hallway drawing echo voices horizon cold distant flicker quiet breath courage shield approaching search discover release protect survive unlock countdown final verify prepare urgent response courage signal escape tunnel pulse silence footsteps distant hallway gravity alert danger tremble storm endless hollow bright blue green warning system secret recover rescue protect signal hope'.split(' '),
   },
+  'home-row': {
+    title: "HOME ROW",
+    keyboard: true,
+    description: "QWERTY home-row letters A S D F G H J K L. Practice short patterns and words; accuracy before speed.",
+    words: ["asdf","fdsa","jkl","lkj","asdfg","hjkl","gfdsa","lkjh","fj","jf","dk","kd","sl","ls","ah","ha","gas","sag","glad","flag","flask","glass","hall","shall","dash","flash","ask","sad","dad","fall","all","half","lash","had","add","jag","gash","salad","lad","lads","jaja"],
+  },
+  'top-row': {
+    title: "TOP ROW",
+    keyboard: true,
+    description: "QWERTY top-row letters Q W E R T Y U I O P. Practice reaches, alternating patterns and words.",
+    words: ["qwer","rewq","tyui","iuyt","uiop","poiu","qwe","ewq","rty","ytr","yui","iuy","iop","poi","qp","pq","wu","uw","ei","ie","rt","tr","yo","oy","tie","tier","tire","wire","write","quiet","quite","type","power","poetry","pretty","upper","proper","port","pour","route","query","your","our","you","peer","tree","try","trip","riot","ripe","wipe","pit","tip","pop","pot","rope"],
+  },
+  'bottom-row': {
+    title: "BOTTOM ROW",
+    keyboard: true,
+    description: "QWERTY bottom-row letters Z X C V B N M. Practice controlled reaches with deliberate letter patterns, not ordinary words.",
+    words: ["zxc","cxz","vbn","nbv","bnm","mnb","zx","xz","cv","vc","bn","nb","nm","mn","zv","vz","xm","mx","cn","nc","vb","bv","zm","mz","xn","nx","cb","bc","vm","mv","zxcv","vcxz","cvbn","nbvc","vbnm","mnbv","zxm","mxz","xcv","vcx","cbm","mbc","bnv","vnb","nmn","mnm","zcz","xvx","bmb","nbn"],
+  },
+  'shift-keys': {
+    title: "CAPITALIZATION",
+    keyboard: true,
+    description: "Alternate uppercase and lowercase letters to practice case-sensitive typing. On a phone, switch off keyboard help for exact practice.",
+    words: ["Aa","aA","Bb","bB","Cc","cC","Dd","dD","Ee","eE","Ff","fF","Gg","gG","Hh","hH","Ii","iI","Jj","jJ","Kk","kK","Ll","lL","Mm","mM","Nn","nN","Oo","oO","Pp","pP","Qq","qQ","Rr","rR","Ss","sS","Tt","tT","Uu","uU","Vv","vV","Ww","wW","Xx","xX","Yy","yY","Zz","zZ","Alpha","Bravo","Delta","Echo","Friday","Monday","January","River","Signal","Orbit"],
+  },
+  'symbols': {
+    title: "SYMBOLS & PUNCTUATION",
+    keyboard: true,
+    description: "Practice printable punctuation and symbols, including paired brackets and quotes. These are typing patterns, not commands. For exact practice, disable phone keyboard help.",
+    words: ["!?","?!","!!!","...",",.",";:",":;","()",")(","[]","][","{}","}{","<>","><","\"\"","''","\"a\"","'b'","a-b","a_b","x+y","a=b","x/y","a\\b","x|y","@#","#@","$%","%$","^&","&*","*^","~`","`~","a,b","a.b","a:b","a;b","a!","b?","(a)","[b]","{c}","<d>"],
+  },
+  'mixed-numbers': {
+    title: "LETTERS & NUMBERS",
+    keyboard: true,
+    description: "Practice switching between letters and top-row digits using fictional, short alphanumeric patterns. This is a WPM drill, not a Numpad CPM test.",
+    words: ["a1","b2","c3","d4","e5","f6","g7","h8","i9","j0","k1","l2","m3","n4","o5","p6","q7","r8","s9","t0","u1","v2","w3","x4","y5","z6","A0","B1","C2","D3","E4","F5","G6","H7","I8","J9","A12","B34","C56","D78","E90","a01","b23","c45","d67","e89","x9y","z0x","1a2","3b4","5c6","7d8","9e0"],
+  },
   legal: {
     title: 'LEGAL',
     professional: true,

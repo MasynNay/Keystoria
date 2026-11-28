@@ -15,8 +15,8 @@ try {
   if(await welcome.count() && await welcome.isVisible())await welcome.click();
   await page.locator('[data-action="speed-open"]').first().click();
   await page.locator('#speed-input').waitFor();
-  assert.equal(await page.locator('.speed-pack-section').count(),2);
-  assert.equal(await page.locator('[data-action="speed-pack"]').count(),10);
+  assert.equal(await page.locator('.speed-pack-section').count(),3);
+  assert.equal(await page.locator('[data-action="speed-pack"]').count(),16);
   for(const id of packs) {
    const choice=page.locator('[data-action="speed-pack"][data-pack="'+id+'"]');
    await choice.click();
@@ -30,6 +30,37 @@ try {
    await input.fill('per');
    assert.equal(await input.inputValue(),'per');
    assert.match(await page.locator('#speed-wpm').locator('xpath=following-sibling::small').innerText(),/^WPM$/);
+  }
+  // Complete all keyboard challenges through the existing native input,
+  // including symbols which must render as literal characters, not markup.
+  const keyboardPacks=['home-row','top-row','bottom-row','shift-keys','symbols','mixed-numbers'];
+  for(const id of keyboardPacks){
+   const choice=page.locator('[data-action="speed-pack"][data-pack="'+id+'"]');
+   await choice.click();
+   assert.equal(await choice.getAttribute('aria-pressed'),'true');
+   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),id);
+   assert.equal(await page.locator('#speed-input').getAttribute('inputmode'),'text');
+   const passage=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   const tokens=passage.split(' ');
+   assert.equal(tokens.length,700);
+   if(id==='home-row')assert.ok(tokens.every(token=>/^[asdfghjkl]+$/.test(token)));
+   if(id==='top-row')assert.ok(tokens.every(token=>/^[qwertyuiop]+$/.test(token)));
+   if(id==='bottom-row')assert.ok(tokens.every(token=>/^[zxcvbnm]+$/.test(token)));
+   const expected=passage[0], wrong=expected==='!'?'?':'!';
+   await page.locator('#speed-input').fill(wrong+passage.slice(1));
+   await page.locator('#speed-results-heading').waitFor();
+   assert.equal(await page.locator('#speed-key-review').getAttribute('data-error-count'),'1');
+   assert.equal(await page.locator('#speed-key-review li').first().getAttribute('data-key'),expected);
+   assert.match(await page.locator('#speed-wpm').locator('xpath=following-sibling::small').innerText(),/^WPM$/);
+   const history=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
+   await page.locator('[data-action="speed-targeted"]').click();
+   const focused=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   assert.ok(focused.split(' ').every(token=>token.includes(expected)));
+   await page.locator('#speed-input').fill(focused);
+   await page.locator('#speed-results-heading').waitFor();
+   assert.equal(await page.locator('#speed-accuracy').innerText(),'100%');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),history);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
   }
   // A keyboard activation rebuilds the practice controls. Keep the freshly
   // rendered choice focused so rapid Enter/Space cannot race an earlier
@@ -70,7 +101,7 @@ try {
   await ctx.close();
  }
  assert.deepEqual(errors,[],'no runtime errors in career category selection');
- console.log('PASS: Six workplace categories, scoring, responsive grouping, and Numpad compatibility');
+ console.log('PASS: Six workplace and six keyboard categories, targeted practice, scoring, responsive grouping, and Numpad compatibility');
 } finally {
  await browser.close();
 }

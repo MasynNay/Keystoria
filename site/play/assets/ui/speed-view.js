@@ -1,8 +1,8 @@
 /** Stateless presentation for the solo Speed Lab. */
 import { safe, ico, tag } from './helpers.js';
-import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
+import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js?v=0.40.1';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS, readFocusPlan, focusPlanFromSession, sameFocusScope, readGuidedActivity, summarizeGuidedActivity, recommendDailyPractice, summarizeTrainingMilestones } from './speed-insights.js?v=0.48.10';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS, readFocusPlan, focusPlanFromSession, sameFocusScope, readGuidedActivity, summarizeGuidedActivity, recommendDailyPractice, summarizeTrainingMilestones } from './speed-insights.js?v=0.48.11';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -96,9 +96,9 @@ export function speedInsightsPanel(session) {
   </section>`;
 }
 
-function speedPackChoices(professional, selected) {
+function speedPackChoices(group, selected) {
   return Object.entries(PACKS)
-    .filter(([, pack]) => Boolean(pack.professional) === professional)
+    .filter(([, pack]) => (pack.keyboard?'keyboard':pack.professional?'workplace':'core') === group)
     .map(([id, pack]) => `<button type="button" data-action="speed-pack" data-pack="${safe(id)}" title="${safe(pack.description)}" aria-pressed="${id===selected}">${safe(pack.title)}</button>`)
     .join('');
 }
@@ -240,10 +240,10 @@ export function speedTemplate(session, header) {
   const focusedKeys=targeted?session.targetKeys.map(key=>key===' '?'Space':safe(key)).join(' · '):'';
   return `${header({inGame:true})}<main class="speed-page shell" data-speed="${safe(session.pack)}" data-word-focus="${session.focusPractice===true}" data-targeted="${targeted}">
     <div class="speed-topline"><button class="text-button" data-action="speed-home">${ico('arrow',16)} BACK TO HOME</button><span>// PERSONAL TRAINING / ZERO PRESSURE FROM TEAMMATES</span></div>
-    <div class="speed-title">${tag('THE SPEED LAB / SOLO MODE')}<h1>FIND YOUR <em>RHYTHM.</em></h1><p>${session.pack==="numpad"?"NUMPAD CHALLENGE: Practice digit groups with Space or Numpad Enter between groups. Track characters per minute (CPM) and accuracy.":"Inspired by the fast feedback of TypeNinja. The timer starts on your first keystroke. Mistakes glow red, correct characters turn green, and Backspace lets you correct errors."}</p></div>
+    <div class="speed-title">${tag('THE SPEED LAB / SOLO MODE')}<h1>FIND YOUR <em>RHYTHM.</em></h1><p>${session.pack==="numpad"?"NUMPAD CHALLENGE: Practice digit groups with Space or Numpad Enter between groups. Track characters per minute (CPM) and accuracy.":"Inspired by the fast feedback of TypeNinja. The timer starts on your first keystroke. Mistakes glow red, correct characters turn green, and Backspace lets you correct errors."}</p>${PACKS[session.pack].keyboard?`<p>${safe(PACKS[session.pack].description)}</p>`:""}</div>
     <section class="speed-console" aria-label="Timed typing test">
       <div class="speed-settings"><div class="speed-setting"><span>TIME LIMIT</span><div class="speed-choices" role="group" aria-label="Duration">${DURATIONS.map(seconds => `<button type="button" data-action="speed-duration" data-seconds="${seconds}" aria-pressed="${seconds===session.seconds}">${seconds}s</button>`).join('')}</div></div>
-      <div class="speed-setting speed-setting--packs"><span>PRACTICE CATEGORY</span><div class="speed-pack-sections"><div class="speed-pack-section"><span>CORE DRILLS</span><div class="speed-choices" role="group" aria-label="Core practice categories">${speedPackChoices(false,session.pack)}</div></div><div class="speed-pack-section"><span>WORKPLACE DRILLS</span><div class="speed-choices" role="group" aria-label="Workplace practice categories">${speedPackChoices(true,session.pack)}</div></div></div></div></div>
+      <div class="speed-setting speed-setting--packs"><span>PRACTICE CATEGORY</span><div class="speed-pack-sections"><div class="speed-pack-section"><span>CORE DRILLS</span><div class="speed-choices" role="group" aria-label="Core practice categories">${speedPackChoices("core",session.pack)}</div></div><div class="speed-pack-section"><span>KEYBOARD CHALLENGES</span><div class="speed-choices" role="group" aria-label="Keyboard practice categories">${speedPackChoices("keyboard",session.pack)}</div></div><div class="speed-pack-section"><span>WORKPLACE DRILLS</span><div class="speed-choices" role="group" aria-label="Workplace practice categories">${speedPackChoices("workplace",session.pack)}</div></div></div></div></div>
       ${targeted?`<section id="speed-targeted-banner" class="speed-targeted-banner" aria-label="Targeted key practice"><div><strong>TARGETED PRACTICE · NOT SAVED</strong><p>Focus keys: ${focusedKeys}. Extra repetitions, same timer and scoring, no personal records.</p></div><button type="button" class="btn btn-outline" data-action="speed-regular">RETURN TO REGULAR DRILL</button></section>`:""}
       ${speedFocusRoutine(session)}
       <div class="speed-metrics"><div><span>TIME REMAINING</span><strong id="speed-time" class="speed-clock">${done ? 0 : session.seconds}</strong><small>SECONDS</small></div><div><span>NET SPEED</span><strong id="speed-wpm">${done ? (session.pack==="numpad"?result.cpm:result.wpm) : 0}</strong><small>${session.pack==="numpad"?"CPM":"WPM"}</small></div><div><span>ACCURACY</span><strong id="speed-accuracy">${done ? `${result.accuracy}%` : "100%"}</strong><small>CORRECT KEYS</small></div><div><span>RAW SPEED</span><strong id="speed-raw">${done ? (session.pack==="numpad"?result.rawCpm:result.rawWpm) : 0}</strong><small>${session.pack==="numpad"?"CPM":"WPM"}</small></div></div>
