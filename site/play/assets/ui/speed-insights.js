@@ -161,6 +161,49 @@ export function advanceFocusRoutine(routine,attempt) {
       :qualifies?'qualified':enough?'below-goal':'insufficient'};
 }
 
+
+/** Explicitly saved practice configuration only. No scores, attempt counts,
+ * passages, timestamps, or keyboard logs enter this independent slot. */
+export const SAVED_FOCUS_PLAN_KEY='keystoria.speed.focusPlan.v1';
+export function normalizeFocusPlan(value) {
+  if(!value||typeof value!=='object'||Array.isArray(value)
+      ||typeof value.pack!=='string'||!Object.hasOwn(PACKS,value.pack)||!DURATIONS.includes(value.seconds)
+      ||!ACCURACY_GOALS.includes(value.goal)||!Array.isArray(value.keys)
+      ||value.keys.length<1||value.keys.length>5)return null;
+  const drill=createFocusedSpeedDrill(value.pack,value.keys,2,()=>0);
+  // Reject invalid, duplicate or out-of-category keys instead of silently
+  // changing a saved goal. The generated sample is never retained.
+  if(!drill||drill.keys.length!==value.keys.length
+      ||!drill.keys.every((key,i)=>key===value.keys[i]))return null;
+  return {pack:value.pack,seconds:value.seconds,goal:value.goal,keys:drill.keys};
+}
+
+export function focusPlanFromSession(session,goal=95) {
+  if(session?.status!=='complete')return null;
+  const keys=session.targetKeys?.length?session.targetKeys:session.keyReview?.keys.map(row=>row.key);
+  return normalizeFocusPlan({pack:session.pack,seconds:session.seconds,
+    goal:session.focusRoutine?.goal??goal,keys});
+}
+
+export function readFocusPlan(storage) {
+  try{
+    const raw=(storage===undefined?globalThis.localStorage:storage)?.getItem(SAVED_FOCUS_PLAN_KEY);
+    return typeof raw==='string'&&raw.length<=512?normalizeFocusPlan(JSON.parse(raw)):null;
+  }catch{return null;}
+}
+
+export function saveFocusPlan(value,storage) {
+  const plan=normalizeFocusPlan(value);
+  if(!plan)return false;
+  try{(storage===undefined?globalThis.localStorage:storage).setItem(SAVED_FOCUS_PLAN_KEY,JSON.stringify(plan));return true;}
+  catch{return false;}
+}
+
+export function clearFocusPlan(storage) {
+  try{(storage===undefined?globalThis.localStorage:storage).removeItem(SAVED_FOCUS_PLAN_KEY);return true;}
+  catch{return false;}
+}
+
 export function readAccuracyGoal(storage = globalThis.localStorage) {
   try {
     const value = Number(storage?.getItem(GOAL_KEY));

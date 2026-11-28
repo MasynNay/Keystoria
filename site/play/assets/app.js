@@ -1,9 +1,9 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.1";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.1";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.6";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.48.8";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.6";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel } from "./ui/speed-view.js?v=0.48.7";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.48.9";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession } from "./ui/speed-insights.js?v=0.48.7";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";
 import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.1";
@@ -569,6 +569,33 @@ app.addEventListener("click",event=>{
   case "speed-pack":if(state.speed)speedController.open({pack:item.dataset.pack,seconds:state.speed.seconds,focusChoice:event.detail===0?"speed-pack":null});break;
   case "speed-targeted":speedController.startTargeted();break;
    case "speed-guided":speedController.startTargeted({guided:true});break;
+   case "speed-plan-save": {
+     const plan=focusPlanFromSession(state.speed,readAccuracyGoal());
+     if(!plan)break;
+     if(readFocusPlan()&&!window.confirm("Replace your saved focus plan on this device?"))break;
+     if(!saveFocusPlan(plan)){toast("Could not save the focus plan in this browser.","error");break;}
+     // Replace only this panel; never detach an active typing field.
+     const panel=document.getElementById("speed-saved-focus-plan");
+     if(panel)panel.outerHTML=savedFocusPlanPanel(state.speed);
+     document.getElementById("speed-saved-focus-heading")?.focus({preventScroll:true});
+     toast("Focus plan saved on this device.");
+     break;
+   }
+   case "speed-plan-launch": {
+     const plan=readFocusPlan();
+     if(!plan){toast("No valid saved focus plan is available.","error");break;}
+     if(!speedController.launchFocusPlan(plan))toast("Finish or restart the current drill before opening your saved plan.","error");
+     break;
+   }
+   case "speed-plan-clear": {
+     if(!state.speed||!window.confirm("Remove your saved focus plan? Your score history is unchanged."))break;
+     if(!clearFocusPlan()){toast("Could not remove the focus plan in this browser.","error");break;}
+     const panel=document.getElementById("speed-saved-focus-plan");
+     if(panel)panel.outerHTML=savedFocusPlanPanel(state.speed);
+     document.getElementById("speed-saved-focus-heading")?.focus({preventScroll:true});
+     toast("Saved focus plan removed.");
+     break;
+   }
    case "speed-regular":speedController.restart({regular:true});break;
    case "speed-restart":speedController.restart();break;
   case "speed-home":speedController.close();showModal("welcome");break;

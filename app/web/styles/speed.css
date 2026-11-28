@@ -242,3 +242,15 @@
 .speed-focus-routine[data-routine-status="complete"]{border-color:var(--accent)}
 .speed-targeted-launch+.speed-targeted-launch{margin-left:6px}
 @media(max-width:480px){.speed-key-review .speed-targeted-launch{display:block;width:100%;margin:8px 0 0}}
+
+/* Explicit saved plan uses existing theme and responsive action sizing. */
+.speed-saved-focus-plan{min-width:0;margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--text)}
+.speed-saved-focus-plan h3{font:800 13px/1.4 var(--mono);margin:0;color:var(--text)}
+.speed-saved-focus-plan p{font:12px/1.6 var(--body);margin:6px 0;color:var(--text);overflow-wrap:anywhere}
+.speed-plan-summary{display:grid;gap:3px}
+.speed-plan-summary strong{color:var(--accent)}
+.speed-plan-actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.speed-saved-focus-plan button{min-height:44px;white-space:normal;max-width:100%}
+.speed-plan-save{margin:4px 0}
+.speed-saved-focus-plan .speed-plan-note{font-size:11px;margin-bottom:0}
+@media(max-width:480px){.speed-plan-actions{display:grid}.speed-plan-save{width:100%}}
