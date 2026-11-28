@@ -1,3 +1,5 @@
+import { masterySummary, mergeMastery, masteryFromRuns } from '../web/ui/story-mastery.js';
+import { reachedReelStep, reelFrame } from '../web/ui/story-reel.js';
 import { campaignSummary, campaignAtlasTemplate, CAMPAIGN_IDS } from '../web/ui/campaign-atlas.js';
 import { readCareer, recordResult, MILESTONES } from '../web/ui/progression.js';
 import { RHYTHM_CHALLENGES, rhythmOutcome } from '../web/ui/lyric-rhythm.js';
@@ -269,4 +271,32 @@ test('unified player dossier reads existing bounded histories without writes or 
  assert.equal(full.next,null);assert.deepEqual(full.groups.map(g=>g.completed),[6,6,6,6]);
  assert.match(campaignAtlasTemplate({career:c,browserEdition:true}),/local Python edition/);
  assert.doesNotMatch(campaignAtlasTemplate({career:c,browserEdition:true}),/data-action="campaign-select"/);
+ });
+
+ test('story mastery retains best grade per difficulty without promoting losses or unknown difficulty',()=>{
+ const map=new Map([['panic.history.v1',JSON.stringify([{runId:'old',won:true,mission:'station',difficulty:'story',grade:'A'},{runId:'loss',won:false,mission:'hollow',difficulty:'overdrive',grade:'S'}])]]);
+ const storage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,String(v))};
+ assert.equal(readCareer(storage).mastery.station.story,'A');
+ const submit=(id,mission,difficulty,grade,phase='won')=>recordResult({phase,runId:id,mission,difficulty,finalGrade:grade,players:[],finalScore:100},storage);
+ submit('best','station','story','S');
+ submit('worse','station','story','B');
+ submit('standard','station','standard','A');
+ submit('overdrive','station','overdrive','B');
+ submit('bad','hollow','overdrive','S','lost');
+ for(let i=0;i<25;i++)submit('extra-'+i,'hollow','standard','B');
+ const m=masterySummary(readCareer(storage));
+ assert.equal(m.mastery.station.story,'S');assert.equal(m.mastery.station.standard,'A');assert.equal(m.mastery.station.overdrive,'B');
+ assert.equal(m.mastery.hollow.overdrive,undefined);assert.equal(m.cleared,4);assert.equal(m.total,72);assert.equal(m.mastered,1);assert.equal(m.sGrades,1);
+ assert.deepEqual(mergeMastery({station:{story:'F',standard:'S',fake:'S'},unknown:{story:'S'}}),{station:{standard:'S'}});
+ assert.deepEqual(masteryFromRuns([{won:true,mission:'station',difficulty:'story'}]),{station:{story:'cleared'}});
+ assert.deepEqual(masteryFromRuns([{won:true,mission:'station',difficulty:'normal',grade:'S'}]),{});
+ });
+ test('cinematic replay never exposes future scenes after defeat',()=>{
+ assert.equal(reachedReelStep({phase:'lost',objectivesComplete:0}),0);
+ assert.equal(reachedReelStep({phase:'lost',stage:2,progress:2}),7);
+ assert.equal(reachedReelStep({phase:'lost',objectivesComplete:99}),10);
+ assert.equal(reachedReelStep({phase:'won'}),11);
+ const frame=reelFrame({phase:'lost',mission:'station',objectivesComplete:2},11);
+ assert.equal(frame.step,2);assert.equal(frame.limit,2);
+ assert.equal(reelFrame({phase:'won',mission:'station'},11).step,11);
  });
