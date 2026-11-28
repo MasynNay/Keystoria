@@ -268,6 +268,7 @@ try {
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),storageBefore,
     'even a perfect targeted drill never alters regular score history');
    assert.equal(await page.locator('[data-action="speed-targeted"]').count(),0);
+   assert.equal(await page.locator('[data-action="speed-guided"]').count(),0);
    const comparison=page.locator('#speed-focus-comparison');
    assert.equal(await comparison.getAttribute('data-comparison'),'first');
    assert.equal(await comparison.locator('li').count(),2);
@@ -304,6 +305,47 @@ try {
    assert.equal(await page.locator('#speed-time').innerText(),'15');
    assert.equal(await page.locator('#speed-input').inputValue(),'');
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),storageBefore);
+   await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();
+   // Opt into a guided routine after an ordinary missed-key result.
+   const regular=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   const focusKey=regular.match(pack==='numpad'?/[0-9]/:/[A-Za-z]/)[0];
+   const wrongKey=pack==='numpad'?(focusKey==='9'?'8':'9'):'!';
+   await page.locator('#speed-input').fill(regular.split('').map(ch=>ch===focusKey?wrongKey:ch).join(''));
+   await page.locator('#speed-results-heading').waitFor();
+   const savedBeforeRoutine=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
+   await page.locator('[data-action="speed-guided"]').click();
+   const routine=page.locator('#speed-focus-routine');
+   assert.equal(await routine.getAttribute('data-streak'),'0');
+   assert.equal(await routine.getAttribute('data-routine-status'),'ready');
+   assert.match(await routine.innerText(),/Goal: \d+% or higher/);
+   const attempt=async(correct)=>{
+    const passage=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+    await page.locator('#speed-input').fill(correct?passage:passage.split('').map(ch=>ch===focusKey?wrongKey:ch).join(''));
+    await page.locator('#speed-results-heading').waitFor();
+   };
+   await attempt(true);
+   assert.equal(await routine.getAttribute('data-streak'),'1');
+   assert.equal(await routine.getAttribute('data-routine-status'),'qualified');
+   await page.locator('[data-action="speed-restart"]').first().click();
+   await attempt(false);
+   assert.equal(await routine.getAttribute('data-streak'),'0');
+   assert.equal(await routine.getAttribute('data-routine-status'),'below-goal');
+   for(const expected of ['1','2']){
+    await page.locator('[data-action="speed-restart"]').first().click();
+    await attempt(true);
+    assert.equal(await routine.getAttribute('data-streak'),expected);
+   }
+   assert.equal(await routine.getAttribute('data-routine-status'),'complete');
+   assert.match(await routine.innerText(),/ROUTINE COMPLETE/);
+   assert.equal(await routine.locator('progress').getAttribute('value'),'2');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),savedBeforeRoutine);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=2);
+   await page.locator('[data-action="speed-duration"][data-seconds="15"]').click();
+   assert.equal(await routine.count(),0,'duration change ends the guided routine');
+   assert.equal(await banner.count(),1,'targeted free practice remains available');
+   await page.locator('[data-action="speed-regular"]').click();
+   assert.equal(await banner.count(),0);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),savedBeforeRoutine);
    await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();
   }
   await context.close();

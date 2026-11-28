@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts } from './speed-insights.js?v=0.48.5';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS } from './speed-insights.js?v=0.48.6';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -116,7 +116,7 @@ function speedKeyReview(session) {
     <p>${description}</p>
     ${review.keys.length?`<ul aria-label="Target keys with the most remaining mistakes">${review.keys.map(row=>`<li data-key="${safe(row.key)}"><kbd>${row.key===' '?'Space':safe(row.key)}</kbd><span><strong>${row.mistakes}</strong> of ${row.attempts} ${row.attempts===1?'position':'positions'} missed</span></li>`).join('')}</ul>`:''}
     ${review.otherMistakes?`<p>Other remaining mistakes: ${review.otherMistakes}.</p>`:''}
-    ${review.keys.length?`<button type="button" class="btn btn-primary speed-targeted-launch" data-action="speed-targeted">PRACTICE THESE KEYS</button><p>Start a focused drill in this category. Its results are not saved as personal records.</p>`:""}
+    ${review.keys.length?`<button type="button" class="btn btn-primary speed-targeted-launch" data-action="speed-targeted">PRACTICE THESE KEYS</button><button type="button" class="btn btn-outline speed-targeted-launch" data-action="speed-guided">START GUIDED ROUTINE</button><p>Practice freely or aim for two qualifying attempts at your selected accuracy goal (${readAccuracyGoal()}%). Neither option saves personal records.</p>`:""}
     <p class="speed-key-review-note">Based on the final submitted text${session.result?.keyboardAssisted?' after native keyboard assistance':''}. Corrected mistakes and untyped characters are not counted. This is a practice recap, not a keystroke log. The key breakdown is not saved or exported.</p>
   </section>`;
 }
@@ -140,6 +140,27 @@ function speedFocusedComparison(session) {
   </section>`;
 }
 
+function speedFocusRoutine(session) {
+  const routine=session.focusRoutine;
+  if(!routine)return '';
+  const done=session.status==='complete';
+  const notes={ready:'Type at a comfortable pace and aim for accuracy on every focus key.',
+    qualified:'First qualifying attempt complete. Repeat this drill in the same keyboard mode.',
+    'below-goal':'At least one focus key missed the accuracy goal. The qualifying streak resets; try again at a comfortable pace.',
+    insufficient:'At least one focus key had fewer than five submitted positions. This attempt resets the streak. Try a longer drill if needed.',
+    interrupted:'This interrupted attempt does not count. Your previous qualifying streak is unchanged.',
+    complete:'Routine complete. You reached the goal on every focus key in two consecutive qualifying attempts.'};
+  const label=routine.status==='complete'?'ROUTINE COMPLETE':'GUIDED ACCURACY ROUTINE';
+  const message=done||routine.status==='complete'?notes[routine.status]:'Reach the goal on every focus key. Keep the same keyboard mode for both qualifying attempts.';
+  return `<section id="speed-focus-routine" class="speed-focus-routine" aria-labelledby="speed-focus-routine-heading" data-streak="${routine.streak}" data-routine-status="${routine.status}">
+    <div class="speed-routine-heading"><h3 id="speed-focus-routine-heading">${label}</h3><strong>${routine.streak}/${FOCUS_ROUTINE_ATTEMPTS} qualifying attempts</strong></div>
+    <progress max="${FOCUS_ROUTINE_ATTEMPTS}" value="${routine.streak}" aria-label="Qualifying attempts"></progress>
+    <p>Goal: ${routine.goal}% or higher on each focus key, with at least five positions per key in each attempt. Changing the duration or category ends this routine.</p>
+    <p role="status">${message}</p>
+    ${done&&routine.status==='complete'?'<p>Return to a regular drill whenever you are ready. No practice records or mastery awards are saved.</p>':''}
+  </section>`;
+}
+
 export function speedTemplate(session, header) {
   const done = session.status === 'complete';
   const result = session.result;
@@ -152,6 +173,7 @@ export function speedTemplate(session, header) {
       <div class="speed-settings"><div class="speed-setting"><span>TIME LIMIT</span><div class="speed-choices" role="group" aria-label="Duration">${DURATIONS.map(seconds => `<button type="button" data-action="speed-duration" data-seconds="${seconds}" aria-pressed="${seconds===session.seconds}">${seconds}s</button>`).join('')}</div></div>
       <div class="speed-setting speed-setting--packs"><span>PRACTICE CATEGORY</span><div class="speed-pack-sections"><div class="speed-pack-section"><span>CORE DRILLS</span><div class="speed-choices" role="group" aria-label="Core practice categories">${speedPackChoices(false,session.pack)}</div></div><div class="speed-pack-section"><span>WORKPLACE DRILLS</span><div class="speed-choices" role="group" aria-label="Workplace practice categories">${speedPackChoices(true,session.pack)}</div></div></div></div></div>
       ${targeted?`<section id="speed-targeted-banner" class="speed-targeted-banner" aria-label="Targeted key practice"><div><strong>TARGETED PRACTICE · NOT SAVED</strong><p>Focus keys: ${focusedKeys}. Extra repetitions, same timer and scoring, no personal records.</p></div><button type="button" class="btn btn-outline" data-action="speed-regular">RETURN TO REGULAR DRILL</button></section>`:""}
+      ${speedFocusRoutine(session)}
       <div class="speed-metrics"><div><span>TIME REMAINING</span><strong id="speed-time" class="speed-clock">${done ? 0 : session.seconds}</strong><small>SECONDS</small></div><div><span>NET SPEED</span><strong id="speed-wpm">${done ? (session.pack==="numpad"?result.cpm:result.wpm) : 0}</strong><small>${session.pack==="numpad"?"CPM":"WPM"}</small></div><div><span>ACCURACY</span><strong id="speed-accuracy">${done ? `${result.accuracy}%` : "100%"}</strong><small>CORRECT KEYS</small></div><div><span>RAW SPEED</span><strong id="speed-raw">${done ? (session.pack==="numpad"?result.rawCpm:result.rawWpm) : 0}</strong><small>${session.pack==="numpad"?"CPM":"WPM"}</small></div></div>
       ${done ? `<div class="speed-results" role="status" aria-live="polite"><p class="speed-assist-result-label">${result.keyboardAssisted===true?"MOBILE ASSISTED":"EXACT TYPING"} · ${session.phoneLayout?"PHONE LAYOUT":"DESKTOP LAYOUT"}${session.interrupted?" · INTERRUPTED PRACTICE (NOT SAVED)":""}${targeted?" · TARGETED PRACTICE (NOT SAVED)":""}</p>${tag('SESSION FINISHED')}<h2 id="speed-results-heading" tabindex="-1">YOU FOUND YOUR PACE.</h2><div class="speed-result-hero"><strong>${session.pack==="numpad"?result.cpm:result.wpm} <small>${session.pack==="numpad"?"CPM":"WPM"}</small></strong><div><span>ACCURACY <b>${result.accuracy}%</b></span><span>RAW SPEED <b>${session.pack==="numpad"?result.rawCpm:result.rawWpm} ${session.pack==="numpad"?"CPM":"WPM"}</b></span><span>CORRECT CHARACTERS <b>${result.correct}</b></span><span>MISTAKES REMAINING <b>${result.incorrect}</b></span></div></div><p>${session.pack==="numpad"?"CPM measures correctly typed digits per minute.":"Results measure correctly typed characters."} ${session.interrupted?"This run was paused during practice. Its score is practice-only and was not added to personal records.":targeted?"This targeted score is practice-only and was not added to personal records.":"Mobile assistance is labeled separately from exact typing."} Press Ctrl + Enter or click Test Again to try again.</p>${speedFocusedComparison(session)}${speedKeyReview(session)}<button class="btn btn-primary btn-large" data-action="speed-restart">${ico('refresh',18)} TEST AGAIN</button></div>` : `<div class="speed-prompt-wrap"><div class="speed-prompt-label"><span><i class="command-live"></i> ${session.pack==="numpad"?"NUMPAD / DIGIT ACCURACY":"LIVE CHARACTER FEEDBACK"}</span><span id="speed-mode">${session.status==='running'?'SESSION LIVE':'TIMER STARTS WHEN YOU TYPE'}</span></div>
         <div id="speed-letters" class="typing-feedback speed-letters" aria-live="off"></div>

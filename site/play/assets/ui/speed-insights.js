@@ -139,6 +139,28 @@ export function compareFocusedAttempts(current,previous) {
   return {reason,rows};
 }
 
+
+/** An optional, bounded two-attempt accuracy routine. Its goal is fixed
+ * when launched; the exact fraction (not rounded display accuracy) qualifies
+ * each key. This is session practice, not a saved mastery or skill award. */
+export const FOCUS_ROUTINE_ATTEMPTS=2;
+export function createFocusRoutine(goal) {
+  return {goal:ACCURACY_GOALS.includes(goal)?goal:95, streak:0, mode:null,status:'ready'};
+}
+
+export function advanceFocusRoutine(routine,attempt) {
+  if(!routine||!attempt||routine.status==='complete')return routine;
+  if(attempt.interrupted)return {...routine,status:'interrupted'};
+  // A mode switch starts a fresh streak, even if the new attempt qualifies.
+  const streak=routine.mode===attempt.mode?routine.streak:0;
+  const enough=attempt.rows.length>0&&attempt.rows.every(row=>row.attempted>=FOCUS_COMPARISON_MIN_POSITIONS);
+  const qualifies=enough&&attempt.rows.every(row=>row.correct*100>=routine.goal*row.attempted);
+  const nextStreak=qualifies?Math.min(FOCUS_ROUTINE_ATTEMPTS,streak+1):0;
+  return {...routine,mode:attempt.mode,streak:nextStreak,
+    status:nextStreak===FOCUS_ROUTINE_ATTEMPTS?'complete'
+      :qualifies?'qualified':enough?'below-goal':'insufficient'};
+}
+
 export function readAccuracyGoal(storage = globalThis.localStorage) {
   try {
     const value = Number(storage?.getItem(GOAL_KEY));
