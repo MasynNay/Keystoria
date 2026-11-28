@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { LESSONS, matchesCommand, savedLessons, saveLesson } from '../web/ui/lessons.js';
 import { trainingTemplate, trainingLibrary } from '../web/ui/training-view.js';
 import { LESSON_OUTPUTS } from '../web/ui/lesson-output.js';
+import { COMMAND_GUIDES } from '../web/ui/command-guides.js';
 
 const saved = new Map();
 globalThis.localStorage = {
@@ -15,10 +16,10 @@ const session = (os, overrides = {}) => ({
   os, index:0, answered:false, errors:0, completed:false, review:false, errorMessage:'', draft:'', ...overrides,
 });
 
-test('five separate courses teach curated real commands with context', () => {
-  assert.deepEqual(Object.keys(LESSONS).sort(), ['git','linux','macos','network','windows']);
+test('seven separate courses teach curated real commands with context', () => {
+  assert.deepEqual(Object.keys(LESSONS).sort(), ['docker','git','linux','macos','network','sql','windows']);
   for (const [id,lesson] of Object.entries(LESSONS)) {
-    const count=['git','network'].includes(id)?10:14;
+    const count=['git','network','docker','sql'].includes(id)?10:14;
     assert.equal(lesson.commands.length,count);
     assert.ok(lesson.story.length>60);
     for (const command of lesson.commands) {
@@ -46,7 +47,7 @@ test('typing preserves meaningful case, ignores only accidental whitespace', () 
   assert.equal(matchesCommand('rm -rf /','pwd'),false);
 });
 
-test('all 62 real commands have clearly fictionalized example output', () => {
+test('all 82 real commands have clearly fictionalized example output', () => {
   for (const [os, lesson] of Object.entries(LESSONS)) {
     assert.equal(LESSON_OUTPUTS[os].length, lesson.commands.length);
     for (const output of LESSON_OUTPUTS[os]) assert.ok(output.length >= 4);
@@ -110,5 +111,48 @@ test('Git and network lessons retain exact command case and platform context',()
  assert.ok(LESSONS.network.commands.some(c=>c.text==='ping -n 4 192.0.2.1'));
  assert.ok(LESSONS.network.commands.some(c=>c.text==='ping -c 4 192.0.2.1'));
  assert.ok(LESSONS.git.commands.some(c=>c.text==='git diff --staged'));
- assert.match(trainingLibrary(),/Five hands-on practice courses/);
+ assert.match(trainingLibrary(),/7 hands-on practice courses/);
+});
+
+test('Docker and SQL courses teach inspection only, with aligned simulated output and reference',()=>{
+ for(const id of ['docker','sql']){
+  const lesson=LESSONS[id];
+  assert.equal(lesson.commands.length,10);
+  assert.match(lesson.note,/simulated/);
+  for(let index=0;index<lesson.commands.length;index++){
+   const command=lesson.commands[index];
+   assert.match(command.text,id==='docker'?/^docker /:/^SELECT .*;$/);
+   const html=trainingTemplate(session(id,{index,answered:true,referenceIndex:index}),header);
+   assert.match(html,/SIMULATED TERMINAL OUTPUT/);
+   assert.match(html,/WHAT DOES IT DO/);
+   assert.ok(LESSON_OUTPUTS[id][index].trim().length>0);
+   assert.equal(matchesCommand(command.text,command.text),true);
+   if(id==='sql')assert.match(html,/sqlite>/);
+  }
+  assert.match(trainingTemplate(session(id,{completed:true,index:9}),header),/All 10 commands completed/);
+ }
+ assert.ok(LESSONS.docker.commands.some(c=>c.text==='docker compose ps -a'));
+ assert.ok(LESSONS.sql.commands.some(c=>c.text.includes(' JOIN ')));
+ assert.match(trainingLibrary(),/7 hands-on practice courses/);
+});
+
+test('every Academy command has one matching guide and nonempty illustrative output',()=>{
+ assert.deepEqual(Object.keys(COMMAND_GUIDES).sort(),Object.keys(LESSONS).sort());
+ assert.deepEqual(Object.keys(LESSON_OUTPUTS).sort(),Object.keys(LESSONS).sort());
+ for(const [id,lesson] of Object.entries(LESSONS)){
+  assert.equal(COMMAND_GUIDES[id].length,lesson.commands.length);
+  assert.equal(LESSON_OUTPUTS[id].length,lesson.commands.length);
+  for(const guide of COMMAND_GUIDES[id])for(const field of ['use','benefit','caution'])
+   assert.ok(typeof guide[field]==='string'&&guide[field].trim().length>10,id+' has contextual '+field);
+  for(const output of LESSON_OUTPUTS[id])assert.ok(output.trim().length>0);
+ }
+});
+test('SQL sample outputs refer to the same five fictional inventory records',()=>{
+ const rows=LESSON_OUTPUTS.sql[0].split('\n').slice(1).map(line=>line.split('|').map(value=>value.trim()));
+ assert.equal(rows.length,5);
+ assert.equal(rows.reduce((sum,row)=>sum+Number(row[1]),0),58);
+ assert.equal(LESSON_OUTPUTS.sql[5].trim().split('\n').at(-1),'5');
+ assert.equal(LESSON_OUTPUTS.sql[6].trim().split('\n').at(-1),'58');
+ assert.deepEqual(LESSON_OUTPUTS.sql[1].split('\n').slice(1),rows.filter(row=>Number(row[1])<10).map(row=>row[0]));
+ assert.equal(LESSON_OUTPUTS.sql[9].split('\n').length,6);
 });

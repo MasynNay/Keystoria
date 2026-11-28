@@ -1,8 +1,8 @@
 /** Stateless presentation for optional self-paced terminal lessons. */
-import { LESSONS, savedLessons, activeCommandIndex } from "./lessons.js?v=0.2.0";
-import { readAcademyCheckpoints } from "./academy-checkpoint.js?v=0.1.2";
-import { LESSON_OUTPUTS } from "./lesson-output.js?v=0.2.0";
-import { COMMAND_GUIDES } from "./command-guides.js?v=0.2.0";
+import { LESSONS, savedLessons, activeCommandIndex } from "./lessons.js?v=0.2.1";
+import { readAcademyCheckpoints } from "./academy-checkpoint.js?v=0.1.3";
+import { LESSON_OUTPUTS } from "./lesson-output.js?v=0.2.1";
+import { COMMAND_GUIDES } from "./command-guides.js?v=0.2.1";
 import { renderTypingFeedback } from "./typing-feedback.js";
 import { safe, ico, tag } from "./helpers.js";
 
@@ -12,7 +12,7 @@ export function trainingLibrary() {
   return `<section class="academy shell" id="academy">
     <div class="academy-heading">${tag("THE FIELD ACADEMY / NO TIMER, NO PRESSURE")}
       <h2 id="academy-course-heading" tabindex="-1">LEARN THE <em>REAL COMMANDS.</em></h2>
-      <p>Five hands-on practice courses, including Git and network diagnostics. Type everyday commands, consult the optional reference panel, and review a complete command guide when you finish. <strong>Everything is simulated — nothing runs on your machine.</strong> Your course progress resumes on this device; command drafts are never saved.</p></div>
+      <p>${Object.keys(LESSONS).length} hands-on practice courses, including Git, network diagnostics, Docker and SQL. Type everyday commands, consult the optional reference panel, and review a complete command guide when you finish. <strong>Everything is simulated — nothing runs on your machine.</strong> Your course progress resumes on this device; command drafts are never saved.</p></div>
     <div class="academy-grid">${Object.entries(LESSONS).map(([id,lesson]) => `<button class="academy-card" data-action="learn" data-os="${id}"><span class="academy-number">COURSE ${lesson.number} ${checkpoints[id] ? `· IN PROGRESS ${checkpoints[id].index+(checkpoints[id].answered?1:0)}/${lesson.commands.length}` : completed[id] ? "· COMPLETED ✓" : `· ${lesson.commands.length} COMMANDS`}</span><span class="academy-icon">${lesson.icon}</span><strong>${safe(lesson.name)}</strong><small>${safe(lesson.objective)}</small><span class="academy-open">${checkpoints[id] ? "CONTINUE COURSE" : "OPEN TERMINAL"} ${ico("arrow", 16)}</span></button>`).join("")}</div>
     ${Object.keys(checkpoints).length ? `<div class="academy-progress-controls">
       <button type="button" class="btn btn-outline" data-action="academy-clear-progress">CLEAR UNFINISHED COURSE PROGRESS</button>
@@ -50,7 +50,7 @@ export function trainingTemplate(state, header) {
     ${done ? `<div class="training-complete">${tag("CURRICULUM COMPLETE")}<h2 id="academy-complete-heading" tabindex="-1">MISSION ACCOMPLISHED.</h2><p>All ${commands.length} commands completed. Select any command on the right to review how it works and when to use it.</p><div class="training-buttons"><button class="btn btn-primary" data-action="training-restart">REPLAY LESSON</button><button class="btn btn-outline" data-action="training-home">EXPLORE MORE MISSIONS</button></div></div>` : `
       <div class="terminal-bar"><span>● ● ●</span><strong>SIMULATED CONSOLE</strong><span>STEP ${String(state.index+1).padStart(2,"0")} / ${commands.length}</span></div>
       <div class="terminal-inner">${tag("YOUR NEXT COMMAND")}<h2>${safe(task.title)}</h2><p>${safe(task.summary)}</p>
-       <div class="terminal-prompt"><small>${state.os === "windows" ? "PS C:\\Training>" : "operator@academy ~ %"}</small><code class="typing-feedback academy-target" id="lesson-target-text" aria-live="off">${renderTypingFeedback(task.text, correct ? task.text : state.draft || "", {caseSensitive:true})}</code></div>
+       <div class="terminal-prompt"><small>${state.os === "windows" ? "PS C:\\Training>" : state.os === "sql" ? "sqlite>" : "operator@academy ~ %"}</small><code class="typing-feedback academy-target" id="lesson-target-text" aria-live="off">${renderTypingFeedback(task.text, correct ? task.text : state.draft || "", {caseSensitive:true})}</code></div>
        <div class="typing-legend"><span><i class="legend-correct"></i> CORRECT</span><span><i class="legend-incorrect"></i> INCORRECT</span><span><i class="legend-caret"></i> NEXT KEY</span></div>
        <div class="academy-mobile-entry mobile-typing-entry" id="academy-mobile-entry">
          <div class="mobile-academy-target" aria-hidden="true"><small>YOUR COMMAND · TYPE EXACTLY</small><code id="lesson-mobile-target" class="typing-feedback">${renderTypingFeedback(task.text,correct?task.text:state.draft||"",{caseSensitive:true})}</code></div>

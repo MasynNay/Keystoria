@@ -104,6 +104,42 @@ export const LESSONS = {
       command("Test-NetConnection example.com -Port 443", "Windows TCP connectivity", "Check connectivity to a specified TCP port using PowerShell.", "The cmdlet can report DNS, remote address and whether the TCP connection succeeded."),
     ],
   },
+  docker: {
+    name: "DOCKER OPERATIONS", label: "CONTAINERS / DOCKER CLI", icon: "CTR", number: "06",
+    story: "A fictional application is deployed in containers. You have been asked to investigate its health, image versions, service logs and resource usage before proposing any changes.",
+    objective: "Inspect containers, images, networks, volumes and Compose services without modifying a live deployment.",
+    note: "These commands require Docker and some require a running daemon or the Compose plugin. Every example is simulated; no container, daemon or network is contacted.",
+    commands: [
+      command("docker version", "Check client and engine", "Display Docker client and server version information.", "The server section requires access to a reachable Docker daemon. A client version alone does not establish that the daemon is working."),
+      command("docker ps -a", "Inspect containers", "List running and stopped containers.", "The -a option includes stopped containers. Without it, Docker normally lists only running containers."),
+      command("docker images", "List local images", "Display locally available images and tags.", "Image tags identify references, not necessarily immutable content. Multiple tags can reference the same image."),
+      command("docker logs --tail 20 academy-web", "Read recent container logs", "Show up to the last twenty log lines for a container.", "The --tail option limits returned lines. The container name in this example is fictional."),
+      command("docker inspect --format '{{.State.Status}}' academy-web", "Inspect container state", "Display the container state using a Go template.", "The format expression selects a specific field from Docker inspection data; single quotes work in POSIX shells and PowerShell."),
+      command("docker stats --no-stream", "Inspect resource usage", "Display one snapshot of container resource usage.", "The --no-stream flag prevents the ongoing live display, returning a single sample instead."),
+      command("docker network ls", "List Docker networks", "Display networks known to the selected Docker engine.", "Shows network names, identifiers, drivers and scope."),
+      command("docker volume ls", "List Docker volumes", "Display named and anonymous volumes known to Docker.", "The command lists volume objects, not their file contents or backups."),
+      command("docker compose ps -a", "Inspect Compose services", "List containers belonging to the current Compose project.", "The -a option includes stopped project containers. Requires the Compose plugin and a project configuration."),
+      command("docker system df", "Review Docker disk usage", "Summarize engine disk usage for images, containers, volumes and build cache.", "Reports used and potentially reclaimable storage without removing anything."),
+    ],
+  },
+  sql: {
+    name: "SQL QUERY BASICS", label: "DATA / SQLITE-STYLE SQL", icon: "SQL", number: "07",
+    story: "A fictional inventory team needs a small report. Practice reading rows, filtering records, summarizing totals and connecting tables using a tiny imaginary database.",
+    objective: "Learn read-only SELECT queries, filtering, ordering, aggregation and joins using fictional inventory data.",
+    note: "Examples use SQLite-compatible SELECT syntax and a fictional items table (id, name, category, quantity, price) plus categories (name, label). Each query is independent and simulated; no database is accessed.",
+    commands: [
+      command("SELECT name, quantity FROM items;", "Select specific columns", "Return item names and quantities.", "SELECT identifies output columns, and FROM identifies the source table. The query does not modify stored rows."),
+      command("SELECT name FROM items WHERE quantity < 10;", "Filter rows", "Return names of items with quantity below ten.", "WHERE applies a condition before rows appear in the result. Rows with NULL quantity do not satisfy this comparison."),
+      command("SELECT name, price FROM items ORDER BY price DESC;", "Sort results", "Sort item names and prices from highest to lowest price.", "ORDER BY defines result ordering; DESC means descending. Rows tied on price have no guaranteed relative order without a tie-breaker."),
+      command("SELECT name FROM items ORDER BY id LIMIT 5;", "Limit results", "Return at most five rows in item-ID order.", "LIMIT caps result rows in SQLite. ORDER BY id determines which rows are selected."),
+      command("SELECT DISTINCT category FROM items;", "Find unique categories", "Return each distinct category value once.", "DISTINCT eliminates duplicate result rows. Here it operates on the category column alone."),
+      command("SELECT COUNT(*) AS total FROM items;", "Count rows", "Return the number of rows in the table.", "COUNT(*) includes rows containing NULL values. AS assigns a readable name to the output column."),
+      command("SELECT SUM(quantity) AS units FROM items;", "Sum quantities", "Add the numeric quantities in the inventory.", "SUM ignores NULL inputs; if no non-NULL values exist, SQLite SUM returns NULL."),
+      command("SELECT category, COUNT(*) FROM items GROUP BY category;", "Group records", "Count the number of rows in each category.", "GROUP BY combines rows with the same category; COUNT(*) counts rows within each group."),
+      command("SELECT name FROM items WHERE name LIKE 'P%';", "Match a text pattern", "Return names beginning with P under SQLite's usual LIKE behavior.", "The percent wildcard matches zero or more characters. SQLite LIKE is normally case-insensitive for ASCII characters."),
+      command("SELECT items.name, categories.label FROM items JOIN categories ON items.category = categories.name;", "Join related tables", "Match inventory items with their category labels.", "An inner JOIN returns matching row combinations according to the ON condition. Unmatched items are excluded."),
+    ],
+  },
 };
 
 /** Generate an independent course order for each attempt. Reference materials keep
