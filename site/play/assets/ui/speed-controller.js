@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.1';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.4';
-import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope, readAccuracyGoal, createFocusRoutine, advanceFocusRoutine, normalizeFocusPlan, recordGuidedCompletion } from './speed-insights.js?v=0.48.11';
+import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope, readAccuracyGoal, createFocusRoutine, advanceFocusRoutine, normalizeFocusPlan, recordGuidedCompletion, ACCURACY_LADDER, createAccuracyLadder, retryAccuracyLadder, nextAccuracyLadder, evaluateAccuracyLadder } from './speed-insights.js?v=0.48.12';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
 
 const node = id => document.getElementById(id);
@@ -71,7 +71,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     interval=null;
   }
 
-  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[], guidedGoal=null, keepRoutine=false } = {}) {
+  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[], guidedGoal=null, keepRoutine=false, accuracyLadder=null } = {}) {
     const enteringFromAnotherMode=!state.speed;
     const leavingResults=state.speed?.status==='complete';
     const priorSession=state.speed;
@@ -83,6 +83,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     focusWordSignature=null;
     lastGuidance=null;
     const selectedPack=Object.hasOwn(PACKS,pack) ? pack : 'everyday';
+    if(accuracyLadder){seconds=ACCURACY_LADDER[accuracyLadder.stage].seconds;targetKeys=[];guidedGoal=null;keepRoutine=false;}
     const focusedDrill=createFocusedSpeedDrill(selectedPack,targetKeys);
     const compact=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
     // Browser zoom can shrink a mouse desktop to 320 CSS pixels. Keep the
@@ -104,7 +105,7 @@ export function createSpeedController({ state, onRender, playSound }) {
       pack:selectedPack,
       seconds:DURATIONS.includes(seconds) ? seconds : 30,
       reference:focusedDrill?.reference??createWordStream(selectedPack),
-      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,focusRoutine:routine,
+      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,focusRoutine:routine,accuracyLadder,
       typed:'',startedAt:null,pausedAt:null,interrupted:false,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
       focusPractice:phoneLayout && preferredFocus(),
@@ -143,7 +144,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   // The previous draft and key review never enter browser storage.
   function startTargeted({guided=false}={}) {
     const session=state.speed;
-    if(session?.status!=='complete'||!session.keyReview?.keys.length)return;
+    if(session?.status!=='complete'||session.accuracyLadder||!session.keyReview?.keys.length)return;
     open({pack:session.pack,seconds:session.seconds,targetKeys:session.keyReview.keys.map(row=>row.key),guidedGoal:guided?readAccuracyGoal():null});
   }
 
@@ -154,9 +155,26 @@ export function createSpeedController({ state, onRender, playSound }) {
     return true;
   }
 
+  function launchAccuracyLadder(){
+    const session=state.speed;
+    if(!session||!['idle','complete'].includes(session.status)||session.accuracyLadder)return false;
+    open({pack:session.pack,accuracyLadder:createAccuracyLadder()});
+    return true;
+  }
+
+  function advanceAccuracyLadder(){
+    const session=state.speed;
+    if(session?.status!=='complete')return false;
+    const ladder=nextAccuracyLadder(session.accuracyLadder);
+    if(!ladder)return false;
+    open({pack:session.pack,accuracyLadder:ladder});
+    return true;
+  }
+
   function restart({regular=false}={}) {
     const session=state.speed;
     if(!session)return;
+    if(session.accuracyLadder&&!regular){open({pack:session.pack,accuracyLadder:retryAccuracyLadder(session.accuracyLadder)});return;}
     open({pack:session.pack,seconds:session.seconds,targetKeys:regular?[]:session.targetKeys,keepRoutine:!regular});
   }
 
@@ -342,10 +360,11 @@ export function createSpeedController({ state, onRender, playSound }) {
     const previousRoutine=session.focusRoutine;
     session.focusRoutine=advanceFocusRoutine(previousRoutine,session.focusAttempt);
     recordGuidedCompletion(previousRoutine,session.focusRoutine);
+    session.accuracyLadder=evaluateAccuracyLadder(session.accuracyLadder,metrics,session.interrupted);
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.
-    if(!session.interrupted&&!session.targetKeys?.length)saveSpeedResult(session.result);
+    if(!session.interrupted&&!session.targetKeys?.length&&!session.accuracyLadder)saveSpeedResult(session.result);
     releaseLiveScore(); // Drop transient previous input after final scoring.
     playSound('success');
     onRender();
@@ -468,5 +487,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,startTargeted,launchFocusPlan,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
+  return {open,close,startTargeted,launchFocusPlan,launchAccuracyLadder,advanceAccuracyLadder,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
 }
