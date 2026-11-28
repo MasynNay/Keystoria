@@ -416,9 +416,9 @@ try {
    await page.locator('[data-action="speed-regular"]').click();
    assert.equal(await daily.getAttribute('data-suggestion'),'regular');
    await page.locator('#speed-input').fill('1');
-   const draft=await page.locator('#speed-input').inputValue();
+   const dailyDraft=await page.locator('#speed-input').inputValue();
    await daily.locator('[data-action="speed-daily-start"]').click();
-   assert.equal(await page.locator('#speed-input').inputValue(),draft,'daily recommendation cannot replace active typing');
+   assert.equal(await page.locator('#speed-input').inputValue(),dailyDraft,'daily recommendation cannot replace active typing');
    await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();
   }
   await context.close();
