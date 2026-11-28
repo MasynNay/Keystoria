@@ -1,3 +1,7 @@
+## Daily and weekly calendar challenges — November 28, 2026
+
+**Proposed; CI pending.** Deterministic local-date daily and Monday-start weekly passages rotate seven existing categories. Daily: ten tokens, 30 seconds, exact 95% final accuracy; weekly: twenty tokens, 60 seconds, exact 98%. Both require full submission, no interruption, and a current calendar period. Explicit remember stores at most two current completion markers in a separate key; no scores, dates of attempts, input logs, rankings or streaks. Clear is confirmed. Uses existing timer and input path; no new per-key calculations. Unit and browser regressions cover calendar boundaries, qualification, optional memory and score isolation. Physical-device QA remains open.
+
 ## Cross-mode journey achievements — November 28, 2026
 
 **Proposed; integrated CI pending.** Twelve responsive milestones derive from existing validated Academy, regular Speed Lab, recent Lyric Lab, local story and opt-in guided activity records. Progress bars and reached/optional-off states make goals visible without new persistence, telemetry, scores or typing overhead. Retention and clearing can change derived milestones; no permanent awards are claimed. Story play remains local only. Includes unit and browser regressions for empty and populated states, retention, privacy, and mobile layout. Integrated with the merged Pace Race; physical-device QA remains open.

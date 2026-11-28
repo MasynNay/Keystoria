@@ -595,6 +595,26 @@ try {
   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),beforeGhost);
   await ghost.locator('[data-action="speed-regular"]').click();
   assert.equal(await ghost.locator('[data-action="speed-ghost-start"]').count(),1);
+  const calendar=page.locator('#speed-calendar-challenges');
+  assert.equal(await calendar.locator('[data-calendar-kind]').count(),2);
+  const calendarBefore=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
+  for(const kind of ['daily','weekly']){
+    await calendar.locator('[data-action="speed-calendar-start"][data-kind="'+kind+'"]').click();
+    const ref=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+    assert.equal(ref.split(' ').length,kind==='daily'?10:20);
+    await page.locator('#speed-input').fill(ref);
+    await page.locator('#speed-results-heading').waitFor();
+    assert.equal(await calendar.getAttribute('data-calendar-status'),'passed');
+    const prior=await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.speed.calendar.v1')||'{}'));
+    assert.equal(prior[kind],undefined);
+    await calendar.locator('[data-action="speed-calendar-save"]').click();
+    assert.match(await calendar.innerText(),/Completion remembered/);
+    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),calendarBefore);
+    await calendar.locator('[data-action="speed-regular"]').click();
+  }
+  page.once('dialog',dialog=>dialog.accept());
+  await calendar.locator('[data-action="speed-calendar-clear"]').click();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.calendar.v1')),null);
   await context.close();
  }
  assert.deepEqual(errors,[],'practice progress browser actions must be error-free');
