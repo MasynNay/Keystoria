@@ -1,9 +1,9 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.1";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.1";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.2";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.48.4";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.2";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel } from "./ui/speed-view.js?v=0.48.3";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.48.5";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES } from "./ui/speed-insights.js?v=0.48.3";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";
 import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.1";

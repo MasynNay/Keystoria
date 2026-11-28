@@ -7,6 +7,35 @@ export const ACCURACY_GOALS = Object.freeze([90, 95, 98]);
 const GOAL_KEY = 'keystoria.speed.accuracyGoal.v1';
 const RESULTS_KEY = 'panic.speed.results.v1';
 
+
+/** End-of-session target-key review. Inspect only submitted positions
+ * using the same case-sensitive comparison as Speed Lab scoring.
+ * No keystroke recording, persistence or per-input processing.
+ * Built-in passages contain printable ASCII (Numpad: digits and space).
+ */
+export function reviewSpeedKeys(reference, typed, {numpad=false}={}) {
+  const source=String(reference??''), value=String(typed??'');
+  const attempted=Math.min(source.length,value.length), counts=new Map();
+  let mistakes=0;
+  for(let i=0;i<attempted;i++){
+    const key=source[i], missed=value[i]!==key;
+    if(missed)mistakes++;
+    if(!(numpad ? /^[0-9 ]$/ : /^[\x20-\x7e]$/).test(key))continue;
+    let row=counts.get(key);
+    if(!row){row={key,attempts:0,mistakes:0};counts.set(key,row);}
+    row.attempts++;
+    if(missed)row.mistakes++;
+  }
+  // Rank by remaining misses, then error rate, then deterministic key order.
+  // Five rows is enough to suggest a next practice focus on small screens.
+  const keys=[...counts.values()].filter(row=>row.mistakes>0)
+    .sort((a,b)=>b.mistakes-a.mistakes
+      || b.mistakes*a.attempts-a.mistakes*b.attempts
+      || (a.key<b.key?-1:a.key>b.key?1:0)).slice(0,5);
+  return {attempted,mistakes,keys,
+    otherMistakes:mistakes-keys.reduce((total,row)=>total+row.mistakes,0)};
+}
+
 export function practiceMode(session = {}) {
   // An explicit mode is authoritative for new saved runs. Older exports can
   // carry the assisted flag without phoneLayout or a practiceMode string:

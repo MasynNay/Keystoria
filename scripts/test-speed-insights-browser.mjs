@@ -55,6 +55,10 @@ try {
   await input.fill(reference);
   await page.locator('#speed-results-heading').waitFor();
   assert.equal(await insight.getAttribute('data-matches'),'1','saved run appears as a comparable insight');
+  const review=page.locator('#speed-key-review');
+  assert.equal(await review.getAttribute('data-error-count'),'0');
+  assert.match(await review.innerText(),/No mistakes remain/);
+  assert.equal(await review.locator('li').count(),0);
   assert.equal(await week.getAttribute('data-active-days'),'1','a finished run counts once today');
   assert.equal(await week.getAttribute('data-saved-runs'),'1');
   assert.equal(await week.locator('li').last().getAttribute('data-runs'),'1');
@@ -207,6 +211,43 @@ try {
     'legacy assisted and exact sessions must not cross-contaminate comparison scopes');
   assert.equal(await page.locator('#speed-input').inputValue(),'',
     'mode label refresh must not change the new typing field');
+  // Test remaining mistakes in text and numeric drills, without persisting
+  // any detailed key breakdown, native draft, or target passage.
+  for(const pack of ['everyday','numpad']){
+   if(pack==='numpad')await page.locator('[data-action="speed-pack"][data-pack="numpad"]').click();
+   assert.equal(await review.count(),0,'no recap during active typing');
+   const full=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   // Pick a repeated character rather than relying on the random first word.
+   const candidates=[...new Set(full.match(pack==='numpad'?/[0-9]/g:/[A-Za-z]/g))];
+   const key=candidates.find(ch=>full.split(ch).length>=3);
+   assert.ok(key,'the long drill contains a repeated target character');
+   const positions=[];for(let i=0;i<full.length;i++)if(full[i]===key)positions.push(i);
+   assert.ok(positions.length>=2);
+   const draft=full.split('');
+   const wrong=pack==='numpad'?(key==='9'?'8':'9'):'!';
+   draft[positions[0]]=wrong;draft[positions[1]]=wrong;
+   draft[full.indexOf(' ')]=pack==='numpad'?'7':'!';
+   await page.locator('#speed-input').fill(draft.join(''));
+   await page.locator('#speed-results-heading').waitFor();
+   assert.equal(await review.getAttribute('data-error-count'),'3');
+   const rows=await review.locator('li').evaluateAll(items=>items.map(el=>({key:el.dataset.key,text:el.textContent})));
+   assert.equal(rows.length,2);
+   assert.equal(rows[0].key,key);
+   assert.match(rows[0].text,new RegExp('2 of '+positions.length+' positions missed'));
+   assert.equal(rows[1].key,' ');
+   assert.match(rows[1].text,/Space/);
+   assert.match(await review.innerText(),/Corrected mistakes and untyped characters are not counted/);
+   assert.match(await review.innerText(),/not saved or exported/);
+   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('panic.speed.results.v1')||'[]'));
+   assert.ok(saved.length>0);
+   assert.equal(saved[0].incorrect,3);
+   assert.equal(saved[0].keyReview,undefined);
+   assert.equal(saved[0].reference,undefined);
+   assert.equal(saved[0].typed,undefined);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=2);
+   await page.locator('[data-action="speed-restart"]').first().click();
+   assert.equal(await review.count(),0,'next run discards the previous recap');
+  }
   await context.close();
  }
  assert.deepEqual(errors,[],'practice progress browser actions must be error-free');
