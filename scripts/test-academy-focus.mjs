@@ -26,6 +26,9 @@ try {
   assert.equal(await atlas.locator('.campaign-chapter').count(),4);
   assert.equal(await atlas.locator('[data-campaign-mission]').count(),24);
   assert.match(await atlas.innerText(),/0 \/ 24/);
+  assert.match(await atlas.innerText(),/0 \/ 72/);
+  assert.equal(await atlas.locator('.campaign-mastery-slot').count(),72);
+  assert.equal(await atlas.locator('.campaign-mastery-slot[data-won="true"]').count(),0);
   assert.equal(await atlas.locator('[data-action="campaign-select"]').count(),0);
   assert.ok(await atlas.evaluate(el=>el.scrollWidth<=el.clientWidth+2));
   const dossier=page.locator('#player-dossier');

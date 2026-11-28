@@ -1,6 +1,7 @@
+import { masterySummary, STORY_DIFFICULTIES } from './story-mastery.js?v=0.1.0';
 /** A spoiler-free collection of all existing operations. No mission rules or artwork change. */
 import { MISSIONS } from './missions.js';
-import { readCareer } from './progression.js?v=0.2.0';
+import { readCareer } from './progression.js?v=0.2.1';
 import { safe, tag, ico } from './helpers.js';
 const chapters=Object.freeze([
  {title:'First contact',detail:'The original operations and the first rescue assignments.'},
@@ -18,15 +19,17 @@ export function campaignSummary(career={}){
  return {groups,total:CAMPAIGN_IDS.length,completed:completed.size,next:CAMPAIGN_IDS.find(id=>!completed.has(id))??null,completedIds:[...completed]};
 }
 export function campaignAtlasTemplate({career=readCareer(),browserEdition=false,selectedMission='station'}={}){
- const atlas=campaignSummary(career);
+ const atlas=campaignSummary(career), mastery=masterySummary(career);
  return `<section class="campaign-atlas shell" id="campaign-atlas" aria-labelledby="campaign-atlas-heading">
  <div class="record-head">${tag('STORY CAMPAIGN / FOUR COLLECTIONS')}<h2 id="campaign-atlas-heading" tabindex="-1">CAMPAIGN <em>ATLAS.</em></h2><p>Explore all twenty-four existing stories in operation order. Every story remains available; collections are optional goals, not locked levels. Successful extractions are remembered on this device. Older victories may be missing if their records were already discarded.</p></div>
  <div class="campaign-summary"><div><strong>${atlas.completed} / ${atlas.total}</strong><p>Distinct worlds cleared</p></div><progress aria-label="Distinct story worlds cleared" value="${atlas.completed}" max="${atlas.total}"></progress>
  ${atlas.next?`<div><strong>Suggested next: ${safe(MISSIONS[atlas.next].name)}</strong><p>First operation without a recorded win.</p>${browserEdition?'<p>Play story missions in the local Python edition.</p>':`<button type="button" class="btn btn-primary" data-action="campaign-select" data-mission="${atlas.next}">SELECT NEXT OPERATION ${ico('arrow',16)}</button>`}</div>`:'<p>Every world has a recorded victory. Replay any operation or difficulty.</p>'}
  </div>
+ <div class="campaign-summary"><h3>DIFFICULTY MASTERY</h3><p>Record a victory on each difficulty. The highest confirmed grade stays even when recent history rolls over. Older wins may have an unknown difficulty or grade.</p><div class="campaign-mastery-overview"><div><strong>${mastery.cleared} / ${mastery.total}</strong><p>Difficulty victories</p></div><div><strong>${mastery.mastered} / ${mastery.worlds}</strong><p>All difficulties cleared</p></div><div><strong>${mastery.sGrades}</strong><p>S grades across difficulty slots</p></div></div><progress value="${mastery.cleared}" max="${mastery.total}" aria-label="Difficulty victories"></progress></div>
  <div class="campaign-chapters">${atlas.groups.map(group=>`<article class="campaign-chapter"><header><span>COLLECTION ${group.number}</span><h3>${group.title}</h3><p>${group.detail}</p><progress value="${group.completed}" max="${group.ids.length}" aria-label="${group.title} completed"></progress><small>${group.completed} / ${group.ids.length} cleared</small></header><ol>${group.ids.map(id=>{
  const mission=MISSIONS[id],won=atlas.completedIds.includes(id),selected=id===selectedMission;
- const body=`<span class="campaign-operation-number">${mission.no}</span><span><strong>${safe(mission.name)}</strong><small>${won?'CLEARED':'NOT YET CLEARED'}${selected?' · SELECTED':''}</small></span>`;
+ const slots=STORY_DIFFICULTIES.map(d=>{const grade=mastery.mastery[id]?.[d.id];return `<span class="campaign-mastery-slot" data-won="${Boolean(grade)}">${d.label}: ${grade==='cleared'?'Win':grade??'—'}</span>`;}).join('');
+ const body=`<span class="campaign-operation-number">${mission.no}</span><span><strong>${safe(mission.name)}</strong><small>${won?'CLEARED':'NOT YET CLEARED'}${selected?' · SELECTED':''}</small><span class="campaign-mastery-slots">${slots}</span></span>`;
  return `<li data-campaign-mission="${id}" data-cleared="${won}">${browserEdition?`<div class="campaign-operation">${body}</div>`:`<button type="button" class="campaign-operation" data-action="campaign-select" data-mission="${id}" aria-pressed="${selected}">${body}</button>`}</li>`;
  }).join('')}</ol></article>`).join('')}</div>
  </section>`;

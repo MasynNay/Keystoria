@@ -12,11 +12,11 @@ import { sound, toggleSound, isSoundOn } from "./sound.js";
 import { MISSIONS } from "./ui/missions.js";
 import { updateMissionScene } from "./ui/mission-scenes.js";
 import { setCinematicTypingProgress } from "./ui/cinematic-cuts.js?v=0.1.1";
-import { moveStoryReel } from "./ui/story-reel.js";
+import { moveStoryReel, jumpStoryReel } from "./ui/story-reel.js?v=0.2.0";
 import { deploymentDisplay } from "./ui/deployment.js";
 import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";
-import { createViews } from "./ui/views.js?v=0.2.6";
-import { recordResult } from "./ui/progression.js?v=0.2.0";
+import { createViews } from "./ui/views.js?v=0.2.7";
+import { recordResult } from "./ui/progression.js?v=0.2.1";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
 import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.50.1";
@@ -491,6 +491,7 @@ app.addEventListener("click",event=>{
  switch(action){
   case "reel-prev":moveStoryReel(state.room,-1);break;
   case "reel-next":moveStoryReel(state.room,1);break;
+  case "reel-jump":jumpStoryReel(state.room,Number(item.dataset.index));break;
   case "settings":showModal("settings");break;
   case "perf-start":{
     if(!performanceCheck.start())break;

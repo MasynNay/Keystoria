@@ -1,4 +1,4 @@
-import { campaignAtlasTemplate } from "./campaign-atlas.js?v=0.1.0";
+import { campaignAtlasTemplate } from "./campaign-atlas.js?v=0.1.1";
 /** Static page composition. View templates depend only on state and shared presentation helpers. */
 import { MISSIONS } from "./missions.js";
 import { missionIcon } from "./mission-icons.js";
@@ -12,10 +12,10 @@ import { THEMES } from "./themes.js";
 import { playerDossierTemplate } from "./player-dossier.js?v=0.1.1";
 import { trainingLibrary } from "./training-view.js?v=0.50.4";
 import { speedLibrary } from "./speed-view.js";
-import { readHistory, readCareer, summarizeHistory, MILESTONES } from "./progression.js?v=0.2.0";
+import { readHistory, readCareer, summarizeHistory, MILESTONES } from "./progression.js?v=0.2.1";
 import { deploymentDisplay } from "./deployment.js";
 import { sessionRecoveryPanel } from "./session-recovery.js";
-import { storyReelTemplate } from "./story-reel.js";
+import { storyReelTemplate } from "./story-reel.js?v=0.2.0";
 
 export function createViews(state) {
 function header({inGame=false} = {}) {

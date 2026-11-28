@@ -17,3 +17,17 @@
 .campaign-operation[aria-pressed="true"],[data-cleared="true"] .campaign-operation{border-color:var(--accent)}
 [data-cleared="true"] .campaign-operation small{color:var(--accent)}
 .campaign-operation:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Difficulty mastery and manual story-scene navigation. No active-game layout changes. */
+.campaign-mastery-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:8px}
+.campaign-mastery-overview>div{padding:10px;border:1px solid var(--line);border-radius:6px;min-width:0}
+.campaign-mastery-overview strong{font:700 17px/1.4 var(--mono)}
+.campaign-mastery-slots{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.campaign-mastery-slot{font:10px/1.4 var(--mono);border:1px solid var(--line);padding:3px 5px;border-radius:4px;color:var(--muted)}
+.campaign-mastery-slot[data-won="true"]{border-color:var(--accent);color:var(--accent)}
+.story-reel-chapters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:12px}
+.story-reel-chapters button{min-height:44px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font:700 12px var(--mono)}
+.story-reel-chapters button[aria-current="step"]{border-color:var(--accent);color:var(--accent)}
+.story-reel-chapters button:disabled{opacity:.45}
+.story-reel-chapters button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:420px){.story-reel-chapters{grid-template-columns:repeat(4,minmax(0,1fr))}}

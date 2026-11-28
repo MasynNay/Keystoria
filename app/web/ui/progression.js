@@ -1,3 +1,4 @@
+import { mergeMastery, masteryFromRuns } from './story-mastery.js?v=0.1.0';
 import { MISSIONS } from './missions.js';
 /** Local-only progression, retained independently of active room state. */
 const HISTORY_KEY = "panic.history.v1";
@@ -24,6 +25,7 @@ function fromHistory(history) {
     best: history.reduce((max, run) => Math.max(max, run.score || 0), 0),
     worlds: [...new Set(wins.map(run => run.mission).filter(id => WORLDS.includes(id)))],
     completedMissions: validMissions(wins.filter(run=>run.won===true).map(run=>run.mission)),
+    mastery: masteryFromRuns(history),
     overdriveWin: wins.some(run => run.difficulty === "overdrive"),
     cleanWin: wins.some(run => run.mistakes === 0),
     pulseUsed: history.some(run => run.pulses > 0),
@@ -40,7 +42,8 @@ export function readCareer(storage = globalThis.localStorage) {
       wins: Number.isSafeInteger(value.wins) ? Math.max(0, value.wins) : 0,
       best: Number.isFinite(value.best) ? Math.max(0, value.best) : 0,
       worlds: validMissions([...(Array.isArray(value.worlds)?value.worlds:[]),...fallback.worlds]).filter(id=>WORLDS.includes(id)),
-      completedMissions: validMissions([...validMissions(value.completedMissions),...validMissions(value.worlds),...fallback.completedMissions]),
+      completedMissions: validMissions([...validMissions(value.completedMissions),...validMissions(value.worlds),...fallback.completedMissions,...Object.keys(mergeMastery(value.mastery))]),
+      mastery: mergeMastery(value.mastery,fallback.mastery),
       overdriveWin: value.overdriveWin === true,
       cleanWin: value.cleanWin === true,
       pulseUsed: value.pulseUsed === true,
@@ -72,6 +75,7 @@ export function recordResult(room, storage = globalThis.localStorage) {
     best: Math.max(career.best, record.score),
     worlds: validMissions([...career.worlds,...(record.won?[record.mission]:[])]).filter(id=>WORLDS.includes(id)),
     completedMissions: validMissions([...career.completedMissions,...(record.won?[record.mission]:[])]),
+    mastery: mergeMastery(career.mastery,masteryFromRuns([record])),
     overdriveWin: career.overdriveWin || (record.won && record.difficulty === "overdrive"),
     cleanWin: career.cleanWin || (record.won && record.mistakes === 0),
     pulseUsed: career.pulseUsed || record.pulses > 0,
