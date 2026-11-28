@@ -216,5 +216,109 @@ export const COMMAND_GUIDES = {
       "benefit": "man open displays the local documentation for the exact command installed on your Mac.",
       "caution": "macOS tools may have flags that differ from Linux. Press q to leave the manual."
     }
-  ]
+  ],
+  git: [
+  {
+    "use": "Before following Git documentation, check the installed version.",
+    "benefit": "Helps identify compatibility with command options.",
+    "caution": "A version number does not confirm a repository is initialized."
+  },
+  {
+    "use": "Before a commit, inspect what has changed.",
+    "benefit": "Quickly identifies work that needs review.",
+    "caution": "This does not show the actual edits or stage anything."
+  },
+  {
+    "use": "Before editing a shared project, verify your branch.",
+    "benefit": "Reduces confusion about where changes will land.",
+    "caution": "An empty result may mean detached HEAD."
+  },
+  {
+    "use": "Inspect existing branch names before starting a task.",
+    "benefit": "Shows local and known remote-tracking branches.",
+    "caution": "It does not fetch the latest remote state."
+  },
+  {
+    "use": "Find a recent change relevant to a bug.",
+    "benefit": "Provides a quick history overview.",
+    "caution": "Short hashes are abbreviations, not full commit IDs."
+  },
+  {
+    "use": "Review your unstaged edits before deciding what to stage.",
+    "benefit": "Shows exact changed lines in tracked files.",
+    "caution": "Untracked content and already staged changes are not shown by default."
+  },
+  {
+    "use": "Double-check the content of a planned commit.",
+    "benefit": "Helps catch accidental staged changes.",
+    "caution": "Do not assume the staging area includes every working-tree change."
+  },
+  {
+    "use": "Confirm a project's configured remote before network operations.",
+    "benefit": "Distinguishes similarly named repositories.",
+    "caution": "Remote URLs can contain credentials; do not share them unreviewed."
+  },
+  {
+    "use": "Check whether a file is tracked by Git.",
+    "benefit": "Separates tracked paths from ignored or untracked content.",
+    "caution": "It does not show every file on disk."
+  },
+  {
+    "use": "Review the scope of the latest commit.",
+    "benefit": "Useful for quickly understanding a change.",
+    "caution": "A stat summary does not reveal the full diff."
+  }
+],
+  network: [
+  {
+    "use": "On Linux, check which address is assigned to an interface.",
+    "benefit": "Helps distinguish local configuration problems.",
+    "caution": "Requires iproute2; an assigned address does not guarantee connectivity."
+  },
+  {
+    "use": "Check whether a Linux machine has a default gateway.",
+    "benefit": "Shows the route selection context.",
+    "caution": "A listed gateway may still be unreachable."
+  },
+  {
+    "use": "Review the configuration of a Windows workstation.",
+    "benefit": "Helps compare expected DHCP and DNS settings.",
+    "caution": "This can reveal local network details; review before sharing."
+  },
+  {
+    "use": "Inspect adapter settings from PowerShell.",
+    "benefit": "Provides structured configuration information.",
+    "caution": "This Windows cmdlet is not generally available on Linux or macOS."
+  },
+  {
+    "use": "Inspect the active interface on a Mac.",
+    "benefit": "Helps identify address and link state.",
+    "caution": "Linux may use ip instead; this example uses macOS-style output."
+  },
+  {
+    "use": "Find the default gateway on a Mac.",
+    "benefit": "Clarifies which interface carries ordinary traffic.",
+    "caution": "This syntax is macOS/BSD-specific, not Linux ip route."
+  },
+  {
+    "use": "Check whether a hostname can be resolved.",
+    "benefit": "Helps separate DNS problems from other connection failures.",
+    "caution": "DNS results may vary; a resolved address does not prove service availability."
+  },
+  {
+    "use": "For an authorized network, check basic reachability.",
+    "benefit": "Provides a simple latency and packet-loss indication.",
+    "caution": "ICMP may be blocked; failure alone does not establish that a host is offline."
+  },
+  {
+    "use": "Compare the Windows syntax with Linux/macOS.",
+    "benefit": "Prevents using the wrong platform-specific flag.",
+    "caution": "Only test devices you are authorized to contact."
+  },
+  {
+    "use": "On Windows, distinguish TCP connection issues from basic ping results.",
+    "benefit": "Tests a specific service port rather than only ICMP.",
+    "caution": "A successful TCP connection does not verify application behavior, authentication or TLS trust."
+  }
+],
 };

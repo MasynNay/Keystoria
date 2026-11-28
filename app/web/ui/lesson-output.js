@@ -53,4 +53,28 @@ export const LESSON_OUTPUTS = {
     '(interactive region selector appears; a screenshot is saved)',
     'OPEN(1)                 General Commands\nNAME\n    open - open files and directories',
   ],
+  git: [
+  "git version 2.48.1",
+  " M README.md\n?? notes.txt",
+  "main",
+  "* main\n  feature/docs\n  remotes/origin/main",
+  "a1b2c3d Update guide\nb2c3d4e Add tests\nc3d4e5f Initial project",
+  "diff --git a/README.md b/README.md\n-Old guide\n+Updated guide",
+  "diff --git a/guide.md b/guide.md\n-Example A\n+Example B",
+  "origin  https://example.invalid/team/project.git (fetch)\norigin  https://example.invalid/team/project.git (push)",
+  "README.md\nsrc/app.js\ntests/app.test.js",
+  "commit a1b2c3d\n    Update guide\n README.md | 2 +-\n 1 file changed"
+],
+  network: [
+  "2: eth0: <UP,BROADCAST,RUNNING>\n    inet 192.0.2.10/24",
+  "default via 192.0.2.1 dev eth0\n192.0.2.0/24 dev eth0 scope link",
+  "Ethernet adapter Ethernet:\n   IPv4 Address. . . : 192.0.2.10\n   Default Gateway . : 192.0.2.1",
+  "InterfaceAlias : Ethernet\nIPv4Address    : 192.0.2.10",
+  "en0: flags=8863<UP,BROADCAST,RUNNING>\n    inet 192.0.2.10 netmask 0xffffff00",
+  "   route to: default\n    gateway: 192.0.2.1\n  interface: en0",
+  "Server: 192.0.2.53\nName: example.com\nAddress: 192.0.2.80",
+  "4 packets transmitted, 4 received, 0% packet loss",
+  "Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)",
+  "ComputerName     : example.com\nRemotePort       : 443\nTcpTestSucceeded : True"
+],
 };

@@ -15,17 +15,18 @@ const session = (os, overrides = {}) => ({
   os, index:0, answered:false, errors:0, completed:false, review:false, errorMessage:'', draft:'', ...overrides,
 });
 
-test('three separate courses each teach fourteen real commands with context', () => {
-  assert.deepEqual(Object.keys(LESSONS).sort(), ['linux','macos','windows']);
-  for (const lesson of Object.values(LESSONS)) {
-    assert.equal(lesson.commands.length,14);
+test('five separate courses teach curated real commands with context', () => {
+  assert.deepEqual(Object.keys(LESSONS).sort(), ['git','linux','macos','network','windows']);
+  for (const [id,lesson] of Object.entries(LESSONS)) {
+    const count=['git','network'].includes(id)?10:14;
+    assert.equal(lesson.commands.length,count);
     assert.ok(lesson.story.length>60);
     for (const command of lesson.commands) {
       assert.ok(command.text.length>1);
       assert.ok(command.title.length>3);
       assert.ok(command.detail.length>25);
     }
-    assert.equal(new Set(lesson.commands.map(c=>c.text)).size,14);
+    assert.equal(new Set(lesson.commands.map(c=>c.text)).size,count);
   }
 });
 
@@ -45,7 +46,7 @@ test('typing preserves meaningful case, ignores only accidental whitespace', () 
   assert.equal(matchesCommand('rm -rf /','pwd'),false);
 });
 
-test('all 42 real commands have clearly fictionalized example output', () => {
+test('all 62 real commands have clearly fictionalized example output', () => {
   for (const [os, lesson] of Object.entries(LESSONS)) {
     assert.equal(LESSON_OUTPUTS[os].length, lesson.commands.length);
     for (const output of LESSON_OUTPUTS[os]) assert.ok(output.length >= 4);
@@ -87,4 +88,27 @@ test('completion is stored locally and corrupt browser storage is tolerated', ()
   assert.match(trainingLibrary(),/COMPLETED ✓/);
   saved.set('panic.lessons.v1','{not-json');
   assert.deepEqual(savedLessons(),{});
+});
+
+test('Git and network lessons retain exact command case and platform context',()=>{
+ for(const id of ['git','network']){
+  const lesson=LESSONS[id];
+  assert.equal(lesson.commands.length,10);
+  assert.match(lesson.note,/simulated|never sends traffic/);
+  for(let index=0;index<lesson.commands.length;index++){
+   const command=lesson.commands[index];
+   const html=trainingTemplate(session(id,{index,answered:true,referenceIndex:index}),header);
+   assert.match(html,/SIMULATED TERMINAL OUTPUT/);
+   assert.match(html,/WHAT DOES IT DO/);
+   assert.ok(LESSON_OUTPUTS[id][index].trim().length>0);
+   assert.equal(matchesCommand(command.text,command.text),true);
+  }
+  const complete=trainingTemplate(session(id,{completed:true,index:9}),header);
+  assert.match(complete,/All 10 commands completed/);
+  assert.match(complete,/YOUR FIELD MANUAL/);
+ }
+ assert.ok(LESSONS.network.commands.some(c=>c.text==='ping -n 4 192.0.2.1'));
+ assert.ok(LESSONS.network.commands.some(c=>c.text==='ping -c 4 192.0.2.1'));
+ assert.ok(LESSONS.git.commands.some(c=>c.text==='git diff --staged'));
+ assert.match(trainingLibrary(),/Five hands-on practice courses/);
 });
