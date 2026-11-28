@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -225,4 +225,31 @@ test('legacy phone-assisted results never become desktop exact comparisons',()=>
  const exactPhone=summarizeSpeedPractice(rows,{pack:'everyday',seconds:30,phoneLayout:true,keyboardAssisted:false},95);
  assert.equal(exactPhone.count,1,'mobile exact and assisted scores remain distinct');
  assert.equal(exactPhone.best,44);
+});
+
+test('end-of-run key review counts final positional mistakes only',()=>{
+ assert.deepEqual(reviewSpeedKeys('aab a','xay z'),{
+  attempted:5,mistakes:3,
+  keys:[{key:'a',attempts:3,mistakes:2},{key:'b',attempts:1,mistakes:1}],otherMistakes:0,
+ });
+ assert.deepEqual(reviewSpeedKeys('abcde','aX'),{
+  attempted:2,mistakes:1,keys:[{key:'b',attempts:1,mistakes:1}],otherMistakes:0,
+ },'untyped targets never count as failures');
+ assert.deepEqual(reviewSpeedKeys('abc','abc'),{attempted:3,mistakes:0,keys:[],otherMistakes:0});
+ assert.deepEqual(reviewSpeedKeys('abc',''),{attempted:0,mistakes:0,keys:[],otherMistakes:0});
+ assert.equal(reviewSpeedKeys('abc','abcXYZ').attempted,3);
+});
+
+test('review is bounded, deterministic, case-sensitive and Numpad-aware',()=>{
+ const capped=reviewSpeedKeys('abcde f','!!!!!!!');
+ assert.equal(capped.mistakes,7);
+ assert.equal(capped.keys.length,5);
+ assert.deepEqual(capped.keys.map(x=>x.key),[' ','a','b','c','d']);
+ assert.equal(capped.otherMistakes,2);
+ assert.deepEqual(reviewSpeedKeys('aaabb','xaazb').keys.map(x=>x.key),['b','a'],'higher error rate breaks a tie');
+ assert.deepEqual(reviewSpeedKeys('aA','AA').keys,[{key:'a',attempts:1,mistakes:1}]);
+ assert.deepEqual(reviewSpeedKeys('12 12','92 10',{numpad:true}),{
+  attempted:5,mistakes:2,keys:[{key:'1',attempts:2,mistakes:1},{key:'2',attempts:2,mistakes:1}],otherMistakes:0,
+ });
+ assert.deepEqual(reviewSpeedKeys('éa','za'),{attempted:2,mistakes:1,keys:[],otherMistakes:1});
 });

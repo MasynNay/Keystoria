@@ -5,6 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.0';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.4';
+import { reviewSpeedKeys } from './speed-insights.js?v=0.48.3';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
 
 const node = id => document.getElementById(id);
@@ -299,6 +300,9 @@ export function createSpeedController({ state, onRender, playSound }) {
       keyboardAssisted:session.keyboardAssistedEver===true,
       practiceMode:session.phoneLayout ? (session.keyboardAssistedEver?'mobile-assisted':'mobile-exact') : 'standard-exact',
     };
+    // The private learning recap is computed once, after the clock stops.
+    // Keep it separate from the persisted/exported result object.
+    session.keyReview=reviewSpeedKeys(session.reference,session.typed,{numpad:session.pack==='numpad'});
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.

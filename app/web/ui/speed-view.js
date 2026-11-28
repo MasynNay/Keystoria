@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode } from './speed-insights.js?v=0.48.2';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode } from './speed-insights.js?v=0.48.3';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -103,6 +103,23 @@ function speedPackChoices(professional, selected) {
     .join('');
 }
 
+function speedKeyReview(session) {
+  const review=session.keyReview;
+  if(!review)return '';
+  const description=review.attempted===0
+    ? 'No target characters were submitted in this run.'
+    : review.mistakes===0
+      ? 'No mistakes remain in your submitted text.'
+      : 'Use these target characters as a focus for your next practice session.';
+  return `<section id="speed-key-review" class="speed-key-review" aria-labelledby="speed-key-review-heading" data-error-count="${review.mistakes}">
+    <h3 id="speed-key-review-heading">KEYS TO PRACTICE</h3>
+    <p>${description}</p>
+    ${review.keys.length?`<ul aria-label="Target keys with the most remaining mistakes">${review.keys.map(row=>`<li data-key="${safe(row.key)}"><kbd>${row.key===' '?'Space':safe(row.key)}</kbd><span><strong>${row.mistakes}</strong> of ${row.attempts} ${row.attempts===1?'position':'positions'} missed</span></li>`).join('')}</ul>`:''}
+    ${review.otherMistakes?`<p>Other remaining mistakes: ${review.otherMistakes}.</p>`:''}
+    <p class="speed-key-review-note">Based on the final submitted text${session.result?.keyboardAssisted?' after native keyboard assistance':''}. Corrected mistakes and untyped characters are not counted. This is a practice recap, not a keystroke log. The key breakdown is not saved or exported.</p>
+  </section>`;
+}
+
 export function speedTemplate(session, header) {
   const done = session.status === 'complete';
   const result = session.result;
@@ -113,7 +130,7 @@ export function speedTemplate(session, header) {
       <div class="speed-settings"><div class="speed-setting"><span>TIME LIMIT</span><div class="speed-choices" role="group" aria-label="Duration">${DURATIONS.map(seconds => `<button type="button" data-action="speed-duration" data-seconds="${seconds}" aria-pressed="${seconds===session.seconds}">${seconds}s</button>`).join('')}</div></div>
       <div class="speed-setting speed-setting--packs"><span>PRACTICE CATEGORY</span><div class="speed-pack-sections"><div class="speed-pack-section"><span>CORE DRILLS</span><div class="speed-choices" role="group" aria-label="Core practice categories">${speedPackChoices(false,session.pack)}</div></div><div class="speed-pack-section"><span>WORKPLACE DRILLS</span><div class="speed-choices" role="group" aria-label="Workplace practice categories">${speedPackChoices(true,session.pack)}</div></div></div></div></div>
       <div class="speed-metrics"><div><span>TIME REMAINING</span><strong id="speed-time" class="speed-clock">${done ? 0 : session.seconds}</strong><small>SECONDS</small></div><div><span>NET SPEED</span><strong id="speed-wpm">${done ? (session.pack==="numpad"?result.cpm:result.wpm) : 0}</strong><small>${session.pack==="numpad"?"CPM":"WPM"}</small></div><div><span>ACCURACY</span><strong id="speed-accuracy">${done ? `${result.accuracy}%` : "100%"}</strong><small>CORRECT KEYS</small></div><div><span>RAW SPEED</span><strong id="speed-raw">${done ? (session.pack==="numpad"?result.rawCpm:result.rawWpm) : 0}</strong><small>${session.pack==="numpad"?"CPM":"WPM"}</small></div></div>
-      ${done ? `<div class="speed-results" role="status" aria-live="polite"><p class="speed-assist-result-label">${result.keyboardAssisted===true?"MOBILE ASSISTED":"EXACT TYPING"} · ${session.phoneLayout?"PHONE LAYOUT":"DESKTOP LAYOUT"}${session.interrupted?" · INTERRUPTED PRACTICE (NOT SAVED)":""}</p>${tag('SESSION FINISHED')}<h2 id="speed-results-heading" tabindex="-1">YOU FOUND YOUR PACE.</h2><div class="speed-result-hero"><strong>${session.pack==="numpad"?result.cpm:result.wpm} <small>${session.pack==="numpad"?"CPM":"WPM"}</small></strong><div><span>ACCURACY <b>${result.accuracy}%</b></span><span>RAW SPEED <b>${session.pack==="numpad"?result.rawCpm:result.rawWpm} ${session.pack==="numpad"?"CPM":"WPM"}</b></span><span>CORRECT CHARACTERS <b>${result.correct}</b></span><span>MISTAKES REMAINING <b>${result.incorrect}</b></span></div></div><p>${session.pack==="numpad"?"CPM measures correctly typed digits per minute.":"Results measure correctly typed characters."} ${session.interrupted?"This run was paused during practice. Its score is practice-only and was not added to personal records.":"Mobile assistance is labeled separately from exact typing."} Press Ctrl + Enter or click Test Again to try again.</p><button class="btn btn-primary btn-large" data-action="speed-restart">${ico('refresh',18)} TEST AGAIN</button></div>` : `<div class="speed-prompt-wrap"><div class="speed-prompt-label"><span><i class="command-live"></i> ${session.pack==="numpad"?"NUMPAD / DIGIT ACCURACY":"LIVE CHARACTER FEEDBACK"}</span><span id="speed-mode">${session.status==='running'?'SESSION LIVE':'TIMER STARTS WHEN YOU TYPE'}</span></div>
+      ${done ? `<div class="speed-results" role="status" aria-live="polite"><p class="speed-assist-result-label">${result.keyboardAssisted===true?"MOBILE ASSISTED":"EXACT TYPING"} · ${session.phoneLayout?"PHONE LAYOUT":"DESKTOP LAYOUT"}${session.interrupted?" · INTERRUPTED PRACTICE (NOT SAVED)":""}</p>${tag('SESSION FINISHED')}<h2 id="speed-results-heading" tabindex="-1">YOU FOUND YOUR PACE.</h2><div class="speed-result-hero"><strong>${session.pack==="numpad"?result.cpm:result.wpm} <small>${session.pack==="numpad"?"CPM":"WPM"}</small></strong><div><span>ACCURACY <b>${result.accuracy}%</b></span><span>RAW SPEED <b>${session.pack==="numpad"?result.rawCpm:result.rawWpm} ${session.pack==="numpad"?"CPM":"WPM"}</b></span><span>CORRECT CHARACTERS <b>${result.correct}</b></span><span>MISTAKES REMAINING <b>${result.incorrect}</b></span></div></div><p>${session.pack==="numpad"?"CPM measures correctly typed digits per minute.":"Results measure correctly typed characters."} ${session.interrupted?"This run was paused during practice. Its score is practice-only and was not added to personal records.":"Mobile assistance is labeled separately from exact typing."} Press Ctrl + Enter or click Test Again to try again.</p>${speedKeyReview(session)}<button class="btn btn-primary btn-large" data-action="speed-restart">${ico('refresh',18)} TEST AGAIN</button></div>` : `<div class="speed-prompt-wrap"><div class="speed-prompt-label"><span><i class="command-live"></i> ${session.pack==="numpad"?"NUMPAD / DIGIT ACCURACY":"LIVE CHARACTER FEEDBACK"}</span><span id="speed-mode">${session.status==='running'?'SESSION LIVE':'TIMER STARTS WHEN YOU TYPE'}</span></div>
         <div id="speed-letters" class="typing-feedback speed-letters" aria-live="off"></div>
         <div class="speed-page-indicator">CONTINUOUS PASSAGE · <span id="speed-progress">${session.pack==="numpad"?"0 digits typed":"0 characters typed"}</span> · ${session.pack==="numpad"?"SPACE OR NUMPAD ENTER BETWEEN GROUPS":"WORDS ADVANCE UPWARD ONLY"}</div>
         <div class="typing-legend"><span><i class="legend-correct"></i> CORRECT</span><span><i class="legend-incorrect"></i> INCORRECT</span><span><i class="legend-caret"></i> NEXT KEY</span></div></div>
