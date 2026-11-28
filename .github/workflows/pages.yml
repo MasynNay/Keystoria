@@ -36,6 +36,10 @@ jobs:
           node --test app/tests/test_performance_check.mjs
           node --check app/web/ui/session-recovery.js
           node --test app/tests/test_session_recovery.mjs
+          node --test app/tests/test_lessons.mjs
+          diff app/web/ui/lessons.js site/play/assets/ui/lessons.js
+          diff app/web/ui/lesson-output.js site/play/assets/ui/lesson-output.js
+          diff app/web/ui/command-guides.js site/play/assets/ui/command-guides.js
           node --test app/tests/test_academy_checkpoint.mjs app/tests/test_lyric_word_feedback.mjs app/tests/test_lyric_history.mjs app/tests/test_mobile_typing.mjs app/tests/test_numpad.mjs app/tests/test_vocabulary.mjs app/tests/test_lyric_provider.mjs app/tests/test_video_match.mjs app/tests/test_theme_contrast.mjs app/tests/test_speed_insights.mjs app/tests/test_speed_activity.mjs app/tests/test_speed_history_restore.mjs
           diff app/web/ui/academy-checkpoint.js site/play/assets/ui/academy-checkpoint.js
           diff app/web/styles.css site/play/assets/styles.css

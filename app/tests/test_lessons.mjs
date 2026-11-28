@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { LESSONS, matchesCommand, savedLessons, saveLesson } from '../web/ui/lessons.js';
 import { trainingTemplate, trainingLibrary } from '../web/ui/training-view.js';
 import { LESSON_OUTPUTS } from '../web/ui/lesson-output.js';
+import { COMMAND_GUIDES } from '../web/ui/command-guides.js';
 
 const saved = new Map();
 globalThis.localStorage = {
@@ -133,4 +134,25 @@ test('Docker and SQL courses teach inspection only, with aligned simulated outpu
  assert.ok(LESSONS.docker.commands.some(c=>c.text==='docker compose ps -a'));
  assert.ok(LESSONS.sql.commands.some(c=>c.text.includes(' JOIN ')));
  assert.match(trainingLibrary(),/7 hands-on practice courses/);
+});
+
+test('every Academy command has one matching guide and nonempty illustrative output',()=>{
+ assert.deepEqual(Object.keys(COMMAND_GUIDES).sort(),Object.keys(LESSONS).sort());
+ assert.deepEqual(Object.keys(LESSON_OUTPUTS).sort(),Object.keys(LESSONS).sort());
+ for(const [id,lesson] of Object.entries(LESSONS)){
+  assert.equal(COMMAND_GUIDES[id].length,lesson.commands.length);
+  assert.equal(LESSON_OUTPUTS[id].length,lesson.commands.length);
+  for(const guide of COMMAND_GUIDES[id])for(const field of ['use','benefit','caution'])
+   assert.ok(typeof guide[field]==='string'&&guide[field].trim().length>10,id+' has contextual '+field);
+  for(const output of LESSON_OUTPUTS[id])assert.ok(output.trim().length>0);
+ }
+});
+test('SQL sample outputs refer to the same five fictional inventory records',()=>{
+ const rows=LESSON_OUTPUTS.sql[0].split('\n').slice(1).map(line=>line.split('|').map(value=>value.trim()));
+ assert.equal(rows.length,5);
+ assert.equal(rows.reduce((sum,row)=>sum+Number(row[1]),0),58);
+ assert.equal(LESSON_OUTPUTS.sql[5].trim().split('\n').at(-1),'5');
+ assert.equal(LESSON_OUTPUTS.sql[6].trim().split('\n').at(-1),'58');
+ assert.deepEqual(LESSON_OUTPUTS.sql[1].split('\n').slice(1),rows.filter(row=>Number(row[1])<10).map(row=>row[0]));
+ assert.equal(LESSON_OUTPUTS.sql[9].split('\n').length,6);
 });

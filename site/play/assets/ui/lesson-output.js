@@ -90,15 +90,15 @@ export const LESSON_OUTPUTS = {
   "TYPE            TOTAL   ACTIVE   SIZE\nImages          3       2        240MB\nLocal Volumes   2       1        64MB"
 ],
   sql: [
-  "name     | quantity\nNotebook | 12\nPencil   | 30",
-  "name\nMarker\nFolder",
-  "name     | price\nNotebook | 4.50\nFolder   | 2.00",
+  "name     | quantity\nNotebook | 12\nPencil   | 30\nMarker   | 6\nFolder   | 4\nEraser   | 6",
+  "name\nMarker\nFolder\nEraser",
+  "name     | price\nNotebook | 4.50\nFolder   | 2.00\nMarker   | 1.50\nEraser   | 0.75\nPencil   | 0.50",
   "name\nNotebook\nPencil\nMarker\nFolder\nEraser",
   "category\npaper\nwriting",
   "total\n5",
   "units\n58",
   "category | COUNT(*)\npaper    | 2\nwriting  | 3",
   "name\nPencil",
-  "name     | label\nNotebook | Paper products\nPencil   | Writing supplies"
+  "name     | label\nNotebook | Paper products\nPencil   | Writing supplies\nMarker   | Writing supplies\nFolder   | Paper products\nEraser   | Writing supplies"
 ],
 };
