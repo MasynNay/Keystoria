@@ -189,7 +189,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   function restart({regular=false}={}) {
     const session=state.speed;
     if(!session)return;
-    if(session.survival&&!regular){open({pack:session.pack,survival:restartSurvival(session.survival)});return;}
+    if(session.survival&&!regular){open({pack:session.pack,survival:restartSurvival(session.interrupted&&session.survival.status==='ready'?{...session.survival,status:'interrupted'}:session.survival)});return;}
     if(session.accuracyLadder&&!regular){open({pack:session.pack,accuracyLadder:retryAccuracyLadder(session.accuracyLadder)});return;}
     open({pack:session.pack,seconds:session.seconds,targetKeys:regular?[]:session.targetKeys,keepRoutine:!regular});
   }
@@ -404,6 +404,8 @@ export function createSpeedController({ state, onRender, playSound }) {
       return;
     }
     if(document.hidden){pauseForInterruption();return;}
+    // Challenge submissions after the deadline cannot qualify during a delayed timer tick.
+    if((session.survival||session.accuracyLadder)&&session.status==='running'&&elapsed()>=session.seconds){finish();return;}
     session.typed=(session.pack==='numpad'?value.replace(/[^0-9 ]/g,''):value.replace(/[\r\n]/g,'')).slice(0,session.reference.length);
     const field=node('speed-input');
     if (field && field.value!==session.typed) field.value=session.typed;

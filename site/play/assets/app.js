@@ -2,7 +2,7 @@ import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeComma
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.3";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.3";
 import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel, dailyPracticePanel } from "./ui/speed-view.js?v=0.48.13";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.48.13";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.48.14";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity, readGuidedActivity, recommendDailyPractice } from "./ui/speed-insights.js?v=0.48.13";
 import { readSpeedHistory } from "./ui/speed-engine.js?v=0.40.1";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";

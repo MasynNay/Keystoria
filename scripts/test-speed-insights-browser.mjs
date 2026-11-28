@@ -516,7 +516,17 @@ try {
     await submit(i===0?3:i===1?2:0);
     assert.equal(await survival.getAttribute('data-budget'),i===0?'2':'0');
     assert.equal(await survival.getAttribute('data-survival'),i===4?'complete':'passed');
-    if(i<4)await survival.locator('[data-action="speed-survival-next"]').click();
+    if(i<4){
+      await survival.locator('[data-action="speed-survival-next"]').click();
+      if(i===0){
+       await page.locator('#speed-input').fill((await passage()).slice(0,1));
+       await page.locator('[data-action="speed-pause"]:visible').first().click();
+       await page.locator('#speed-pause-banner').waitFor({state:'visible'});
+       await page.locator('[data-action="speed-restart"]:visible').first().click();
+       assert.equal(await survival.getAttribute('data-wave'),'2','paused restart retains wave');
+       assert.equal(await survival.getAttribute('data-budget'),'2','paused restart retains remaining budget');
+      }
+     }
    }
    assert.equal(await survival.locator('progress').getAttribute('value'),'5');
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),scores);
