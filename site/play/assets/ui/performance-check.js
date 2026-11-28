@@ -11,6 +11,23 @@ const PRACTICE_FIELDS=Object.freeze({
 });
 const round=value=>Number.isFinite(value)?Math.round(value):0;
 
+// Event Timing is available only in some browsers and reports a thresholded
+// subset of events. Retain numeric timing summaries, never event targets,
+// typed characters, keyboard keys, URLs, or interaction identifiers.
+export function recordSlowKeyboardEvent(stats,entry){
+  const mode=PRACTICE_FIELDS[entry?.target?.id];
+  if(!mode || !['keydown','keyup','beforeinput','input'].includes(entry?.name))return false;
+  const duration=Number(entry?.duration);
+  if(!Number.isFinite(duration)||duration<16)return false;
+  const samples=stats.slowKeyboardEvents??(stats.slowKeyboardEvents=[]);
+  if(samples.length>=600)return false;
+  const start=Number(entry?.startTime),processing=Number(entry?.processingStart);
+  const delay=Number.isFinite(start)&&Number.isFinite(processing)
+    ?Math.max(0,processing-start):null;
+  samples.push({mode,duration,delay});
+  return true;
+}
+
 export function percentile(values,p) {
   if(!values.length)return null;
   const sorted=[...values].sort((a,b)=>a-b);
@@ -22,6 +39,18 @@ export function makePerformanceReport(stats,context) {
   const fps=stats.frameMsTotal>0?round(stats.frameIntervals*1000/stats.frameMsTotal):null;
   const delays=stats.inputFrameDelays||[];
   const scrollDelays=stats.scrollFrameDelays||[];
+  const slowEvents=stats.slowKeyboardEvents||[];
+  const slowModes=Object.keys(stats.modes||{}).map(mode=>{
+    const samples=slowEvents.filter(sample=>sample.mode===mode);
+    const duration=samples.map(sample=>sample.duration);
+    const delay=samples.map(sample=>sample.delay).filter(Number.isFinite);
+    const sampleLabel=samples.length?round(percentile(duration,.95))+' ms':'Not measured';
+    const maximum=samples.length?round(Math.max(...duration))+' ms':'Not measured';
+    const delayed=delay.length?round(percentile(delay,.95))+' ms':'Not measured';
+    return 'Slow keyboard event timing by mode — '+mode+': '+samples.length+
+      ' samples; duration p95 '+sampleLabel+'; maximum '+maximum+
+      '; input delay p95 '+delayed;
+  });
   const perMode=Object.keys(stats.modes||{}).map(mode=>{
     const samples=stats.modeFrameDelays?.[mode]||[];
     const p95=samples.length?round(percentile(samples,.95))+' ms':'Not measured';
@@ -45,6 +74,9 @@ export function makePerformanceReport(stats,context) {
     'Input-to-next-frame p95: '+(delays.length?round(percentile(delays,.95))+' ms':'Not measured'),
     'Input-to-next-frame maximum: '+(delays.length?round(Math.max(...delays))+' ms':'Not measured'),
     ...perMode,
+    'Slow keyboard Event Timing (≥16 ms, thresholded): '+(
+      stats.eventTimingSupported?slowEvents.length+' observations':'Not exposed by this browser'),
+    ...(stats.eventTimingSupported?slowModes:[]),
     'Scroll events (including scripted): '+(stats.scrollEvents||0),
     'Scroll-to-next-frame samples: '+scrollDelays.length,
     'Scroll-to-next-frame p95: '+(scrollDelays.length?round(percentile(scrollDelays,.95))+' ms':'Not measured'),
@@ -52,14 +84,14 @@ export function makePerformanceReport(stats,context) {
     'Visual viewport resize events: '+(stats.visualViewportAvailable?(stats.visualViewportResizes||0):'Not exposed by this browser'),
     'Long tasks (>50ms): '+(stats.longTasksSupported?stats.longTasks:'Not exposed by this browser'),
     'Longest long task: '+(stats.longTasksSupported?round(stats.maxLongTask)+' ms':'Unavailable'),
-    'Note: Timing values approximate browser scheduling only; scroll events can also be initiated by scripts. These are not certified FPS, input latency or interaction-to-next-paint measurements.',
+    'Note: Frame scheduling is an approximation, not certified FPS. Event Timing observations cover only browser-reported slow keyboard events (≥16 ms), not every keystroke, a full INP score, or a complete input-latency distribution. Scroll events can include script-driven scrolling.',
     'Privacy: collected locally after an explicit click; no typed text, stored results, or media links were collected or uploaded.'
   ];
   return lines.join('\n');
 }
 
 export function createPerformanceCheck({durationMs=10000}={}) {
-  let panel=null,recording=false,timeout=null,frame=null,observer=null;
+  let panel=null,recording=false,timeout=null,frame=null,observer=null,eventObserver=null;
   let startedAt=0,lastFrame=null,pendingInputAt=null,pendingScrollAt=null,stats=null,report='';
   // At most one pending timestamp per named practice mode per animation frame.
   // Never retain a field value, event target, or individual keystroke history.
@@ -153,6 +185,13 @@ export function createPerformanceCheck({durationMs=10000}={}) {
     frame=null;
     pendingModes.clear();pendingInputAt=null;pendingScrollAt=null;
     observer?.disconnect();observer=null;
+    // Drain last delivered performance entries before dropping the session.
+    // All sample arrays are released as soon as this report is composed.
+    if(eventObserver){
+      for(const entry of eventObserver.takeRecords?.()||[])
+        recordSlowKeyboardEvent(stats,entry);
+      eventObserver.disconnect();eventObserver=null;
+    }
     document.removeEventListener('input',handleInput,true);
     window.removeEventListener('scroll',handleScroll,true);
     window.visualViewport?.removeEventListener('resize',handleViewportResize);
@@ -209,7 +248,8 @@ export function createPerformanceCheck({durationMs=10000}={}) {
     stats={frameIntervals:0,frameMsTotal:0,slowFrames:0,maxFrameGap:0,
       inputEvents:0,inputFrameDelays:[],modeFrameDelays:{},scrollEvents:0,scrollFrameDelays:[],
       visualViewportAvailable:!!window.visualViewport,visualViewportResizes:0,
-      modes:{},longTasksSupported:false,longTasks:0,maxLongTask:0};
+      modes:{},longTasksSupported:false,longTasks:0,maxLongTask:0,
+      eventTimingSupported:false,slowKeyboardEvents:[]};
     showPanel();
     if(typeof PerformanceObserver!=='undefined' &&
         PerformanceObserver.supportedEntryTypes?.includes('longtask')){
@@ -225,6 +265,17 @@ export function createPerformanceCheck({durationMs=10000}={}) {
         observer.observe({entryTypes:['longtask']});
         stats.longTasksSupported=true;
       }catch{observer?.disconnect();observer=null;}
+    }
+    if(typeof PerformanceObserver!=='undefined' &&
+        PerformanceObserver.supportedEntryTypes?.includes('event')){
+      try{
+        eventObserver=new PerformanceObserver(list=>{
+          if(!recording||!stats)return;
+          for(const entry of list.getEntries())recordSlowKeyboardEvent(stats,entry);
+        });
+        eventObserver.observe({type:'event',durationThreshold:16});
+        stats.eventTimingSupported=true;
+      }catch{eventObserver?.disconnect();eventObserver=null;}
     }
     document.addEventListener('input',handleInput,true);
     window.addEventListener('scroll',handleScroll,true);
