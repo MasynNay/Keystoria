@@ -20,7 +20,7 @@ import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
 import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.50.1";
-import { createPerformanceCheck } from "./ui/performance-check.js?v=0.3.0";
+import { createPerformanceCheck } from "./ui/performance-check.js?v=0.4.0";
 
 /** All gameplay authority lives on the server. This module only renders UI. */
 const $ = (selector) => document.querySelector(selector);

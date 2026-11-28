@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
-import {makePerformanceReport} from '../site/play/assets/ui/performance-check.js';
+import {makePerformanceReport,recordSlowKeyboardEvent} from '../site/play/assets/ui/performance-check.js';
 
 // User-activated instrumentation only. Chromium emulation cannot substitute
 // for a real iPhone or Android performance reading.
@@ -20,6 +20,42 @@ const reportFixture=makePerformanceReport({
 assert.match(reportFixture,/Input-to-next-frame by mode — Speed Lab: 2 samples; p95 14 ms; maximum 14 ms/);
 assert.match(reportFixture,/Input-to-next-frame by mode — Lyric Lab: 0 samples; p95 Not measured; maximum Not measured/);
 assert.ok(!reportFixture.includes('undefined'),'missing optional diagnostic stats never leak into report');
+
+// A browser's Event Timing API only reports thresholded slow events; never
+// mistake those for a full interaction histogram or collect typed content.
+const slowStats={
+ frameIntervals:0,frameMsTotal:0,slowFrames:0,maxFrameGap:0,inputEvents:3,
+ inputFrameDelays:[],modes:{'Speed Lab':2,'Lyric Lab':1},modeFrameDelays:{},
+ scrollEvents:0,scrollFrameDelays:[],visualViewportAvailable:false,
+ longTasksSupported:false,eventTimingSupported:true,slowKeyboardEvents:[]
+};
+const event=(name,id,duration,processingStart=7)=>({
+ name,target:{id,value:'NEVER_SHARE_TYPED_TEXT'},
+ duration,startTime:1,processingStart,
+});
+assert.equal(recordSlowKeyboardEvent(slowStats,event('keydown','speed-input',24,9)),true);
+assert.equal(recordSlowKeyboardEvent(slowStats,event('keydown','speed-input',72,16)),true);
+assert.equal(recordSlowKeyboardEvent(slowStats,event('beforeinput','lyric-input',40,12)),true);
+assert.equal(recordSlowKeyboardEvent(slowStats,event('keydown','speed-input',12)),false,
+ 'fast keyboard events cannot appear in the thresholded slow-event sample');
+assert.equal(recordSlowKeyboardEvent(slowStats,event('click','speed-input',96)),false,
+ 'pointer events cannot be reported as keyboard processing');
+assert.equal(recordSlowKeyboardEvent(slowStats,event('keydown','unknown-private-field',96)),false,
+ 'the recorder never tracks inputs outside practice');
+assert.equal(slowStats.slowKeyboardEvents.length,3);
+assert.deepEqual(Object.keys(slowStats.slowKeyboardEvents[0]).sort(),['delay','duration','mode'],
+ 'timing records must not retain DOM nodes, typed content or interaction IDs');
+const timedReport=makePerformanceReport(slowStats,{
+ elapsedMs:10000,reason:'Completed',width:390,height:844,dpr:2,userAgent:'Test browser'
+});
+assert.match(timedReport,/Slow keyboard Event Timing \(≥16 ms, thresholded\): 3 observations/);
+assert.match(timedReport,/Slow keyboard event timing by mode — Speed Lab: 2 samples; duration p95 72 ms; maximum 72 ms; input delay p95 15 ms/);
+assert.match(timedReport,/Slow keyboard event timing by mode — Lyric Lab: 1 samples; duration p95 40 ms; maximum 40 ms; input delay p95 11 ms/);
+assert.ok(!timedReport.includes('NEVER_SHARE_TYPED_TEXT'),'event timing reports never include typed values');
+assert.match(reportFixture,/Slow keyboard Event Timing \(≥16 ms, thresholded\): Not exposed by this browser/);
+const capStats={slowKeyboardEvents:[]};
+for(let i=0;i<700;i++)recordSlowKeyboardEvent(capStats,event('keydown','lesson-input',32));
+assert.equal(capStats.slowKeyboardEvents.length,600,'event timing stores only a bounded number of numeric observations');
 try{
  for(const item of [{width:320,touch:true},{width:390,touch:true},{width:1440,touch:false}]){
   const context=await browser.newContext({
@@ -106,6 +142,7 @@ try{
    assert.match(output,/Scroll events \(including scripted\): [1-9]/);
    assert.match(output,/Scroll-to-next-frame samples: [1-9]/);
    assert.match(output,/Scroll-to-next-frame p95: [0-9]+ ms/);
+   assert.match(output,/Slow keyboard Event Timing \(≥16 ms, thresholded\): (?:Not exposed by this browser|[0-9]+ observations)/);
    assert.match(output,/Visual viewport resize events: /);
    assert.match(output,viewportSupported
      ? /Visual viewport resize events: [1-9]/
