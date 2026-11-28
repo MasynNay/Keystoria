@@ -1,3 +1,4 @@
+import { campaignAtlasTemplate } from "./campaign-atlas.js?v=0.1.0";
 /** Static page composition. View templates depend only on state and shared presentation helpers. */
 import { MISSIONS } from "./missions.js";
 import { missionIcon } from "./mission-icons.js";
@@ -11,7 +12,7 @@ import { THEMES } from "./themes.js";
 import { playerDossierTemplate } from "./player-dossier.js?v=0.1.1";
 import { trainingLibrary } from "./training-view.js?v=0.50.4";
 import { speedLibrary } from "./speed-view.js";
-import { readHistory, readCareer, summarizeHistory, MILESTONES } from "./progression.js";
+import { readHistory, readCareer, summarizeHistory, MILESTONES } from "./progression.js?v=0.2.0";
 import { deploymentDisplay } from "./deployment.js";
 import { sessionRecoveryPanel } from "./session-recovery.js";
 import { storyReelTemplate } from "./story-reel.js";
@@ -86,6 +87,7 @@ function homeTemplate() {
     <div class="mission-gallery-toolbar"><div><strong>${expanded?'ALL 24 OPERATIONS':'FEATURED OPERATIONS'}</strong><span>${expanded?'Explore every story and select a mission.':'Three starting missions · your current selection stays visible.'}</span></div><button type="button" class="mission-gallery-toggle" data-action="toggle-missions" aria-expanded="${expanded}" aria-controls="mission-gallery">${expanded?'SHOW FEWER MISSIONS':'VIEW ALL 24 MISSIONS'} ${ico('arrow',17)}</button></div>
     <div class="mission-grid" id="mission-gallery">${Object.entries(MISSIONS).map(([id,m],i) => `<button ${!expanded && i>=3 && id!==state.selectedMission?'hidden':''} class="mission-card ${state.selectedMission === id ? "active" : ""}" style="${missionColorStyle(id)}" data-action="choose-mission" data-mission="${id}" aria-pressed="${state.selectedMission === id}"><span class="mission-card-top"><span>OPERATION / ${m.no}</span><span class="card-selector">${state.selectedMission === id ? ico("check",14) : "+"}</span></span>${missionArt(id)}<span class="mission-cover-mark">${missionIcon(id)}</span><span class="mission-card-body"><span class="mission-genre">${m.tag}</span><strong>${m.name}</strong><span class="mission-desc">${m.sub}</span>${Number(localStorage.getItem(`panic.best.${id}`)) > 0 ? `<span class="mission-best">YOUR BEST: ${Number(localStorage.getItem(`panic.best.${id}`)).toLocaleString()} PTS</span>` : ""}</span><span class="mission-card-foot"><span>${state.selectedMission === id ? "SELECTED MISSION" : "SELECT OPERATION"}</span>${ico("arrow",17)}</span></button>`).join("")}</div>
   </section>
+  ${campaignAtlasTemplate({career,selectedMission:state.selectedMission})}
   <section class="lyric-home-teaser shell" id="lyric-lab"><div><span>// NEW · RHYTHM TYPING</span><h2>LYRIC <em>LAB.</em></h2><p>Type along with real songs and the original YouTube player. Search for timed lyrics, match the beat, and improve your accuracy—no music files required.</p></div><button class="btn btn-primary btn-large" data-action="lyric-open">${ico("play",20)} ENTER LYRIC LAB ${ico("arrow",18)}</button></section>
   ${trainingLibrary()}
   ${speedLibrary()}

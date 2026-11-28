@@ -15,8 +15,8 @@ import { setCinematicTypingProgress } from "./ui/cinematic-cuts.js?v=0.1.1";
 import { moveStoryReel } from "./ui/story-reel.js";
 import { deploymentDisplay } from "./ui/deployment.js";
 import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";
-import { createViews } from "./ui/views.js?v=0.2.5";
-import { recordResult } from "./ui/progression.js";
+import { createViews } from "./ui/views.js?v=0.2.6";
+import { recordResult } from "./ui/progression.js?v=0.2.0";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
 import { setupMobileTyping, patchMobileTraining, MOBILE_TYPING_MEDIA } from "./ui/mobile-typing.js?v=0.50.1";
@@ -669,6 +669,12 @@ app.addEventListener("click",event=>{
   case "close-modal":dismissModal();break;
   case "edit-mission":state.modal=null;render();document.getElementById("operations")?.scrollIntoView({behavior:"smooth"});break;
   case "toggle-missions":state.missionsExpanded=!state.missionsExpanded;state.layout="";render();document.getElementById("operations")?.scrollIntoView({block:"start",behavior:"instant"});break;
+  case "campaign-select":
+    if(!Object.hasOwn(MISSIONS,item.dataset.mission))break;
+    setTheme(item.dataset.mission);state.layout="";render();
+    document.getElementById("campaign-atlas-heading")?.focus({preventScroll:true});
+    toast("Operation selected. Use Single Player or Two Player to launch it.","success");
+    break;
   case "choose-mission":setTheme(item.dataset.mission);state.layout="";render();break;
   case "set-mission":send({type:"set_mission",mission:item.dataset.mission});break;
   case "ready":send({type:"ready"});break;
