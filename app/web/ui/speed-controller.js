@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.0';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.4';
-import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope } from './speed-insights.js?v=0.48.5';
+import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope, readAccuracyGoal, createFocusRoutine, advanceFocusRoutine } from './speed-insights.js?v=0.48.6';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
 
 const node = id => document.getElementById(id);
@@ -71,7 +71,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     interval=null;
   }
 
-  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[] } = {}) {
+  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[], guidedGoal=null, keepRoutine=false } = {}) {
     const enteringFromAnotherMode=!state.speed;
     const leavingResults=state.speed?.status==='complete';
     const priorSession=state.speed;
@@ -96,11 +96,15 @@ export function createSpeedController({ state, onRender, playSound }) {
     const candidate=priorSession?.focusAttempt&&!priorSession.focusAttempt.interrupted
       ?priorSession.focusAttempt:priorSession?.previousFocusAttempt;
     const previousFocusAttempt=scope.keys.length&&sameFocusScope(scope,candidate)?candidate:null;
+    // Routine state is tied to the exact ordered keys, category and timer.
+    const priorScope=priorSession&&{pack:priorSession.pack,seconds:priorSession.seconds,keys:priorSession.targetKeys??[]};
+    const routine=scope.keys.length?(guidedGoal!==null?createFocusRoutine(guidedGoal)
+      :keepRoutine&&sameFocusScope(scope,priorScope)?priorSession.focusRoutine??null:null):null;
     state.speed={
       pack:selectedPack,
       seconds:DURATIONS.includes(seconds) ? seconds : 30,
       reference:focusedDrill?.reference??createWordStream(selectedPack),
-      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,
+      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,focusRoutine:routine,
       typed:'',startedAt:null,pausedAt:null,interrupted:false,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
       focusPractice:phoneLayout && preferredFocus(),
@@ -137,16 +141,16 @@ export function createSpeedController({ state, onRender, playSound }) {
 
   // Only the current completed result can authorize a follow-up drill.
   // The previous draft and key review never enter browser storage.
-  function startTargeted() {
+  function startTargeted({guided=false}={}) {
     const session=state.speed;
     if(session?.status!=='complete'||!session.keyReview?.keys.length)return;
-    open({pack:session.pack,seconds:session.seconds,targetKeys:session.keyReview.keys.map(row=>row.key)});
+    open({pack:session.pack,seconds:session.seconds,targetKeys:session.keyReview.keys.map(row=>row.key),guidedGoal:guided?readAccuracyGoal():null});
   }
 
   function restart({regular=false}={}) {
     const session=state.speed;
     if(!session)return;
-    open({pack:session.pack,seconds:session.seconds,targetKeys:regular?[]:session.targetKeys});
+    open({pack:session.pack,seconds:session.seconds,targetKeys:regular?[]:session.targetKeys,keepRoutine:!regular});
   }
 
   function close() {
@@ -328,6 +332,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     // Keep it separate from the persisted/exported result object.
     session.keyReview=reviewSpeedKeys(session.reference,session.typed,{numpad:session.pack==='numpad'});
     session.focusAttempt=summarizeFocusedAttempt(session);
+    session.focusRoutine=advanceFocusRoutine(session.focusRoutine,session.focusAttempt);
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.

@@ -231,3 +231,14 @@
 .speed-focus-comparison .speed-focus-delta{font-weight:700}
 .speed-focus-comparison .speed-focus-note{font-size:11px;margin-bottom:0}
 @media(max-width:380px){.speed-focus-comparison{padding:12px}.speed-focus-comparison li{gap:8px}}
+
+/* Optional routine shares existing theme surfaces and native progress semantics. */
+.speed-focus-routine{min-width:0;margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--text)}
+.speed-routine-heading{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.speed-routine-heading h3{font:800 13px/1.4 var(--mono);margin:0;color:var(--text)}
+.speed-routine-heading strong{font:700 12px/1.5 var(--mono);color:var(--accent)}
+.speed-focus-routine progress{width:100%;height:10px;margin:9px 0 0;accent-color:var(--accent)}
+.speed-focus-routine p{font:12px/1.6 var(--body);margin:5px 0 0;color:var(--text)}
+.speed-focus-routine[data-routine-status="complete"]{border-color:var(--accent)}
+.speed-targeted-launch+.speed-targeted-launch{margin-left:6px}
+@media(max-width:480px){.speed-key-review .speed-targeted-launch{display:block;width:100%;margin:8px 0 0}}

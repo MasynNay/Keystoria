@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -333,4 +333,45 @@ test('focused comparison cannot cross scope, keyboard mode, interruption or key 
  const numpad=summary({pack:'numpad',targetKeys:['1',' '],reference:'1 1 1 1 1 1',typed:'1 1 9 1 1 1'});
  assert.equal(numpad.rows[0].correct,5);
  assert.equal(numpad.rows[0].attempted,6);
+});
+
+test('guided accuracy routine requires two consecutive qualifying attempts in the same keyboard mode',()=>{
+ const attempt=(correct=6,attempted=6,overrides={})=>({
+  rows:[{key:'a',correct,attempted},{key:' ',correct:6,attempted:6}],
+  mode:'standard-exact',interrupted:false,...overrides
+ });
+ const initial=createFocusRoutine(95);
+ assert.deepEqual(initial,{goal:95,streak:0,mode:null,status:'ready'});
+ const first=advanceFocusRoutine(initial,attempt());
+ assert.equal(first.streak,1);
+ assert.equal(first.status,'qualified');
+ assert.equal(advanceFocusRoutine(first,attempt(5)).streak,0);
+ assert.equal(advanceFocusRoutine(first,attempt(5)).status,'below-goal');
+ const second=advanceFocusRoutine(first,attempt());
+ assert.equal(second.streak,FOCUS_ROUTINE_ATTEMPTS);
+ assert.equal(second.status,'complete');
+ assert.deepEqual(advanceFocusRoutine(second,attempt(0)),second,'completed routine remains completed');
+ assert.equal(initial.streak,0,'updates do not mutate previous state');
+ const modeChange=advanceFocusRoutine(first,attempt(6,6,{mode:'mobile-assisted'}));
+ assert.equal(modeChange.streak,1,'switching mode cannot count as second qualifying attempt');
+ assert.equal(modeChange.mode,'mobile-assisted');
+ assert.equal(advanceFocusRoutine(modeChange,attempt(6,6,{mode:'mobile-assisted'})).status,'complete');
+ assert.equal(advanceFocusRoutine(first,attempt(4,4)).status,'insufficient');
+ assert.equal(advanceFocusRoutine(first,attempt(4,4)).streak,0);
+ const interrupted=advanceFocusRoutine(first,attempt(0,6,{interrupted:true}));
+ assert.equal(interrupted.status,'interrupted');
+ assert.equal(interrupted.streak,1);
+ assert.equal(advanceFocusRoutine(interrupted,attempt()).status,'complete');
+});
+
+test('routine uses the exact selected goal, requires every key, and never persists results',()=>{
+ assert.equal(createFocusRoutine(20).goal,95);
+ const r=createFocusRoutine(98);
+ const almost={mode:'standard-exact',rows:[{key:'a',correct:97,attempted:99},{key:' ',correct:99,attempted:99}]};
+ assert.equal(Math.round(97/99*100),98,'rounded display can reach 98 despite falling short of exact goal');
+ assert.equal(advanceFocusRoutine(r,almost).status,'below-goal');
+ assert.equal(advanceFocusRoutine(createFocusRoutine(95),almost).status,'qualified');
+ assert.equal(advanceFocusRoutine(r,{...almost,rows:[]}).status,'insufficient');
+ assert.deepEqual(Object.keys(advanceFocusRoutine(r,almost)).sort(),['goal','mode','status','streak']);
+ assert.equal(advanceFocusRoutine(null,almost),null);
 });
