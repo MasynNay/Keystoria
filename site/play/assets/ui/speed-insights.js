@@ -2,7 +2,7 @@
  * Comparisons are restricted to matching pack, duration and input mode;
  * native phone-assisted results are never mixed with exact typing.
  */
-import { readSpeedHistory, PACKS, DURATIONS } from './speed-engine.js';
+import { readSpeedHistory, PACKS, DURATIONS } from './speed-engine.js?v=0.40.1';
 export const ACCURACY_GOALS = Object.freeze([90, 95, 98]);
 const GOAL_KEY = 'keystoria.speed.accuracyGoal.v1';
 const RESULTS_KEY = 'panic.speed.results.v1';

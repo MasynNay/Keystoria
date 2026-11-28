@@ -54,3 +54,27 @@ test('Workplace scoring and local saved history use the original WPM path',()=>{
  assert.match(html,/GOVERNMENT/);
  assert.doesNotMatch(html,/id="speed-wpm">\d+<\/strong><small>CPM/);
 });
+
+const keyboardPacks=['home-row','top-row','bottom-row','shift-keys','symbols','mixed-numbers'];
+test('six keyboard packs are distinct from professional and core categories',()=>{
+ assert.deepEqual(Object.keys(PACKS).filter(id=>PACKS[id].keyboard),keyboardPacks);
+ const patterns={'home-row':/^[asdfghjkl]+$/,'top-row':/^[qwertyuiop]+$/,'bottom-row':/^[zxcvbnm]+$/};
+ for(const id of keyboardPacks){
+  const pack=PACKS[id];
+  assert.ok(!pack.professional);
+  assert.ok(new Set(pack.words).size>=30);
+  assert.ok(pack.words.every(word=>/^[\x21-\x7e]+$/.test(word)&&word.length<=12));
+  if(patterns[id])assert.ok(pack.words.every(word=>patterns[id].test(word)));
+  const stream=createWordStream(id,20,()=>0.5);
+  assert.equal(stream.split(' ').length,20);
+  assert.ok(stream.split(' ').every(word=>pack.words.includes(word)));
+  assert.equal(scoreSpeedRun(stream,stream,30).accuracy,100);
+ }
+ for(const [id,alphabet] of Object.entries({'home-row':'asdfghjkl','top-row':'qwertyuiop','bottom-row':'zxcvbnm','shift-keys':'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz','symbols':'!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~','mixed-numbers':'0123456789'})){
+  for(const ch of alphabet)assert.ok(PACKS[id].words.some(word=>word.includes(ch)),id+' covers '+ch);
+ }
+ const html=speedTemplate({pack:'symbols',seconds:30,status:'idle',reference:'<> []',typed:''},()=>'<header>Test</header>');
+ assert.match(html,/aria-label="Keyboard practice categories"/);
+ assert.match(html,/data-pack="symbols"[^>]*aria-pressed="true"/);
+ assert.match(html,/SYMBOLS &amp; PUNCTUATION/);
+});
