@@ -853,7 +853,7 @@ app.addEventListener("change",event=>{
 // An IME may send multiple input/Enter events while a word is still being
 // composed. Score and validate only committed text; preserve the native input
 // and let the browser complete its composition rather than stealing Enter.
-const practiceFields=new Set(["lyric-input","speed-input","lesson-input"]);
+const practiceFields=new Set(["lyric-input","speed-input","lesson-input","task-input"]);
 let composingPractice=null;
 app.addEventListener("compositionstart",event=>{
  if(!practiceFields.has(event.target?.id))return;
