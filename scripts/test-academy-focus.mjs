@@ -308,6 +308,18 @@ try {
   assert.match(await page.locator('#lyric-rhythm-result').innerText(),/Practice only/);
   await page.locator('[data-action="lyric-retry"]').first().click();
   assert.match(await page.locator('#lyric-rhythm-result').innerText(),/Ready for the challenge/);
+  await page.locator('#lyric-toggle').click();
+  const words=await page.evaluate(async()=>{
+   const {RHYTHM_CHALLENGES}=await import('/play/assets/ui/lyric-rhythm.js?v=0.1.0');
+   const {parseLRC}=await import('/play/assets/ui/lyric-lab-core.js?v=0.52.0');
+   const t=RHYTHM_CHALLENGES[0];
+   return parseLRC(t.syncedLyrics,t.duration).words.map(w=>w.word);
+  });
+  for(const word of words){
+   await page.locator('#lyric-input').fill(word);
+   await page.locator('#lyric-input').press('Space');
+  }
+  assert.match(await page.locator('#lyric-rhythm-result').innerText(),/Challenge passed/);
   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.lyric.history')),historyBefore);
   await page.locator('[data-action="lyric-back"]').click();
   assert.equal(await rhythm.locator('[data-action="lyric-rhythm"]').count(),3);
