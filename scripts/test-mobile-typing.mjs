@@ -106,11 +106,23 @@ try{
   await input.fill(firstWord+' ');
   assert.equal(await spoken.textContent(),'Current word: '+secondWord,
    'a completed word announces the next target');
-  // MutationObserver delivers asynchronously in a microtask. The visible
-  // word can already be updated before its observer callback has fired.
-  await page.waitForFunction(()=>window.__speedSpokenMutations>0);
+  // Random passages may contain identical adjacent words. The live region
+  // deliberately avoids rewriting unchanged text. Exercise the first
+  // distinct boundary as well, without assuming random vocabulary is unique.
+  if(firstWord!==secondWord){
+   await page.waitForFunction(()=>window.__speedSpokenMutations>0);
+  }else{
+   assert.equal(await page.evaluate(()=>window.__speedSpokenMutations),0,
+    'identical next word does not rewrite unchanged spoken text');
+   const words=wordReference.split(/\s+/);
+   const boundary=words.findIndex(word=>word!==firstWord);
+   assert.ok(boundary>0,'long passage contains a distinct target');
+   await input.fill(words.slice(0,boundary).join(' ')+' ');
+   assert.equal(await spoken.textContent(),'Current word: '+words[boundary]);
+   await page.waitForFunction(()=>window.__speedSpokenMutations>0);
+  }
   assert.ok(await page.evaluate(()=>window.__speedSpokenMutations)>0,
-   'word boundary updates the mounted polite live region');
+   'distinct word boundary updates the mounted polite live region');
   assert.equal(await spoken.evaluate(el=>el===window.__spokenNode),true,
    'word transition never remounts the screen-reader status');
   await input.fill(firstWord);
