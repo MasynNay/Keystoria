@@ -94,6 +94,51 @@ export function practiceMode(session = {}) {
   return session.phoneLayout ? 'mobile-exact' : 'standard-exact';
 }
 
+
+/** Session-only focused attempt summaries, based on final submitted text.
+ * Only the requested target positions count, including exact case and Space.
+ * Do not carry the original text, draft, or keystroke history to the next run.
+ */
+export const FOCUS_COMPARISON_MIN_POSITIONS=5;
+export function summarizeFocusedAttempt(session) {
+  if(!session?.targetKeys?.length||!session.result)return null;
+  const keys=[...new Set(session.targetKeys.slice(0,5))];
+  const rows=keys.map(key=>({key,attempted:0,correct:0}));
+  const lookup=new Map(rows.map(row=>[row.key,row]));
+  for(let i=0;i<Math.min(session.reference.length,session.typed.length);i++){
+    const row=lookup.get(session.reference[i]);
+    if(row){row.attempted++;if(session.reference[i]===session.typed[i])row.correct++;}
+  }
+  return {pack:session.pack,seconds:session.seconds,mode:practiceMode(session.result),
+    keys,interrupted:session.interrupted===true,rows};
+}
+
+export function sameFocusScope(a,b) {
+  return Boolean(a&&b&&a.pack===b.pack&&a.seconds===b.seconds
+    &&a.keys.length===b.keys.length&&a.keys.every((key,i)=>key===b.keys[i]));
+}
+
+/** Do not compare different keyboard modes, durations, target lists, or
+ * interrupted attempts. A small-sample threshold is a UI safeguard, not
+ * statistical significance. Rows report their denominators independently.
+ */
+export function compareFocusedAttempts(current,previous) {
+  if(!current)return null;
+  const reason=current.interrupted?'interrupted'
+    :!previous?'first'
+    :previous.interrupted||!sameFocusScope(current,previous)?'scope'
+    :current.mode!==previous.mode?'keyboard':'matched';
+  const rows=current.rows.map(row=>{
+    const prior=reason==='matched'?previous.rows.find(item=>item.key===row.key):null;
+    const comparable=Boolean(prior&&row.attempted>=FOCUS_COMPARISON_MIN_POSITIONS
+      &&prior.attempted>=FOCUS_COMPARISON_MIN_POSITIONS);
+    const rate=row.attempted?Math.round(row.correct/row.attempted*100):null;
+    const priorRate=prior?.attempted?Math.round(prior.correct/prior.attempted*100):null;
+    return {...row,rate,prior:prior??null,priorRate,delta:comparable?rate-priorRate:null};
+  });
+  return {reason,rows};
+}
+
 export function readAccuracyGoal(storage = globalThis.localStorage) {
   try {
     const value = Number(storage?.getItem(GOAL_KEY));
