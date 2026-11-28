@@ -256,8 +256,8 @@ try {
     'clearing unfinished progress must not erase earned badges');
   assert.match(await page.locator('[data-action="learn"][data-os="windows"]').innerText(),/OPEN TERMINAL/,
     'cleared course offers a fresh start');
-  // Exercise four specialist courses on the same real UI without executing commands.
-  for(const courseId of ['git','network','docker','sql']){
+  // Exercise six specialist courses on the same real UI without executing commands.
+  for(const courseId of ['git','network','docker','sql','python','services']){
    const card=page.locator('[data-action="learn"][data-os="'+courseId+'"]');
    await card.click();
    assert.equal(await page.locator('.academy-play').getAttribute('data-lesson'),courseId);
@@ -273,6 +273,8 @@ try {
     if(target==='git branch --show-current')assert.equal(output.trim(),'main');
     if(courseId==='sql')assert.match(target,/^SELECT .*;$/);
     if(courseId==='docker')assert.match(target,/^docker /);
+    if(courseId==='python')assert.match(target,/^python /);
+    if(courseId==='services')assert.match(target,/^(systemctl|journalctl) /);
     await page.locator('#lesson-input').press('Enter');
    }
    assert.equal(commandsSeen.size,10);
