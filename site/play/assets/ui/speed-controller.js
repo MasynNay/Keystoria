@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.0';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.4';
-import { reviewSpeedKeys } from './speed-insights.js?v=0.48.3';
+import { reviewSpeedKeys, createFocusedSpeedDrill } from './speed-insights.js?v=0.48.4';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
 
 const node = id => document.getElementById(id);
@@ -71,8 +71,9 @@ export function createSpeedController({ state, onRender, playSound }) {
     interval=null;
   }
 
-  function open({ pack='everyday', seconds=30, focusChoice=null } = {}) {
+  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[] } = {}) {
     const enteringFromAnotherMode=!state.speed;
+    const leavingResults=state.speed?.status==='complete';
     cancelPendingFocus();
     clearTimer();
     flow?.dispose?.();
@@ -80,7 +81,8 @@ export function createSpeedController({ state, onRender, playSound }) {
     releaseLiveScore();
     focusWordSignature=null;
     lastGuidance=null;
-    const selectedPack=PACKS[pack] ? pack : 'everyday';
+    const selectedPack=Object.hasOwn(PACKS,pack) ? pack : 'everyday';
+    const focusedDrill=createFocusedSpeedDrill(selectedPack,targetKeys);
     const compact=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches ?? false;
     // Browser zoom can shrink a mouse desktop to 320 CSS pixels. Keep the
     // fast compact renderer, but never request phone autocorrect or label
@@ -90,7 +92,8 @@ export function createSpeedController({ state, onRender, playSound }) {
     state.speed={
       pack:selectedPack,
       seconds:DURATIONS.includes(seconds) ? seconds : 30,
-      reference:createWordStream(selectedPack),
+      reference:focusedDrill?.reference??createWordStream(selectedPack),
+      targetKeys:focusedDrill?.keys??[],
       typed:'',startedAt:null,pausedAt:null,interrupted:false,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
       focusPractice:phoneLayout && preferredFocus(),
@@ -109,7 +112,7 @@ export function createSpeedController({ state, onRender, playSound }) {
         : focusChoice==='speed-duration'
           ? document.querySelector('[data-action="speed-duration"][data-seconds="'+launchedSession.seconds+'"]')
           : null;
-      (choice||field).focus({preventScroll:true});
+      (choice||field).focus({preventScroll:!(leavingResults&&!choice&&focusedDrill)});
     };
     if(enteringFromAnotherMode && typeof requestAnimationFrame==='function'){
       focusFrame=requestAnimationFrame(()=>{
@@ -123,6 +126,20 @@ export function createSpeedController({ state, onRender, playSound }) {
       // a second focus jump that can interrupt a quick Enter/Space press.
       focusFreshSession();
     }
+  }
+
+  // Only the current completed result can authorize a follow-up drill.
+  // The previous draft and key review never enter browser storage.
+  function startTargeted() {
+    const session=state.speed;
+    if(session?.status!=='complete'||!session.keyReview?.keys.length)return;
+    open({pack:session.pack,seconds:session.seconds,targetKeys:session.keyReview.keys.map(row=>row.key)});
+  }
+
+  function restart({regular=false}={}) {
+    const session=state.speed;
+    if(!session)return;
+    open({pack:session.pack,seconds:session.seconds,targetKeys:regular?[]:session.targetKeys});
   }
 
   function close() {
@@ -306,7 +323,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.
-    if(!session.interrupted)saveSpeedResult(session.result);
+    if(!session.interrupted&&!session.targetKeys?.length)saveSpeedResult(session.result);
     releaseLiveScore(); // Drop transient previous input after final scoring.
     playSound('success');
     onRender();
@@ -429,5 +446,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
+  return {open,close,startTargeted,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
 }
