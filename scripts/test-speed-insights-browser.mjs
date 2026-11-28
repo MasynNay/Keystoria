@@ -441,7 +441,7 @@ try {
    await page.locator('#speed-input').fill('1');
    await ladder.locator('[data-action="speed-ladder-start"]').click();
    assert.equal(await page.locator('#speed-input').inputValue(),'1','starting ladder cannot replace active draft');
-   await page.locator('[data-action="speed-restart"]').first().click();
+   await page.locator('[data-action="speed-restart"]:visible').first().click();
    await ladder.locator('[data-action="speed-ladder-start"]').click();
    assert.equal(await ladder.getAttribute('data-stage'),'1');
    assert.equal(await ladder.getAttribute('data-ladder'),'ready');
