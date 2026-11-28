@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS, readFocusPlan, focusPlanFromSession, sameFocusScope, readGuidedActivity, summarizeGuidedActivity, recommendDailyPractice } from './speed-insights.js?v=0.48.9';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS, readFocusPlan, focusPlanFromSession, sameFocusScope, readGuidedActivity, summarizeGuidedActivity, recommendDailyPractice, summarizeTrainingMilestones } from './speed-insights.js?v=0.48.10';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -174,13 +174,31 @@ export function savedFocusPlanPanel(session) {
   </section>`;
 }
 
+function trainingMilestonesView(activity) {
+  if(!activity)return '';
+  const dateLabel=day=>day.slice(5).replace('-','/');
+  const periodLabel=period=>`${dateLabel(period.from)}–${dateLabel(period.through)}`;
+  const counts=period=>`${period.routines} ${period.routines===1?'routine':'routines'} · ${period.activeDays} active ${period.activeDays===1?'day':'days'}`;
+  return `<section class="speed-training-milestones" aria-labelledby="speed-training-milestones-heading" data-reached="${activity.reached}">
+    <h4 id="speed-training-milestones-heading">PRACTICE MILESTONES · LAST 30 DAYS</h4>
+    <p>${activity.reached} of ${activity.milestones.length} milestones reached in the current window.</p>
+    <ul>${activity.milestones.map(item=>`<li data-milestone="${item.id}" data-reached="${item.reached}"><div><strong>${item.label}</strong><span>${item.reached?'Reached':`${item.value} of ${item.target}`}</span></div><progress aria-label="${item.label}" max="${item.target}" value="${Math.min(item.value,item.target)}"></progress></li>`).join('')}</ul>
+    <h4>RECENT PRACTICE · TWO SEVEN-DAY WINDOWS</h4>
+    <div class="speed-training-weeks"><div><small>LAST 7 DAYS · ${periodLabel(activity.recent)}</small><strong>${counts(activity.recent)}</strong></div><div><small>PREVIOUS 7 DAYS · ${periodLabel(activity.previous)}</small><strong>${counts(activity.previous)}</strong></div></div>
+    <p>These are optional rolling activity markers, not permanent awards or skill ratings. Practice days need not be consecutive. Older activity naturally leaves the window; no missed-day penalty.</p>
+  </section>`;
+}
+
 export function guidedActivityPanel() {
-  const activity=summarizeGuidedActivity(readGuidedActivity());
+  const now=new Date(), saved=readGuidedActivity(undefined,now);
+  const activity=summarizeGuidedActivity(saved,now);
+  const milestones=summarizeTrainingMilestones(saved,now);
   return `<section id="speed-guided-activity" class="speed-saved-focus-plan speed-guided-activity" aria-labelledby="speed-guided-activity-heading" data-enabled="${activity.enabled}" data-total="${activity.total}">
     <h3 id="speed-guided-activity-heading" tabindex="-1">GUIDED TRAINING ACTIVITY</h3>
     ${activity.enabled?`<div class="speed-guided-stats"><div><small>LAST 30 DAYS</small><strong>${activity.total}</strong><span>Completed routines</span></div><div><small>ACTIVE DAYS</small><strong>${activity.activeDays}</strong><span>of 30 days</span></div><div><small>TODAY</small><strong>${activity.today}</strong><span>Completed routines</span></div></div>
       <div class="speed-guided-days" role="group" aria-label="Last 30 local calendar days of guided training">${activity.days.map(day=>`<span class="${day.count?'has-activity':''}" title="${day.key}: ${day.count} completed routines" aria-label="${day.key}: ${day.count} completed routines" role="img"></span>`).join('')}</div>
       <p>One count when a guided routine first reaches its goal. Ordinary drills, retries of a completed routine and partial attempts do not count. A maximum of 999 completions per day is retained.</p>
+      ${trainingMilestonesView(milestones)}
       <button type="button" class="btn btn-outline" data-action="speed-activity-clear">TURN OFF &amp; CLEAR ACTIVITY</button>`:
       '<p>Optional: remember how many guided routines you finish each day. Tracking is off until you enable it; past routines are not added retroactively.</p><button type="button" class="btn btn-outline" data-action="speed-activity-enable">ENABLE LOCAL ACTIVITY</button>'}
     <p class="speed-plan-note">Local calendar counts only. No typed text, keys, scores or individual attempts are saved. Older days are excluded and pruned on the next completion. This is a training consistency indicator, not a skill rating. Separate from saved plans and personal score exports.</p>
