@@ -101,4 +101,28 @@ export const LESSON_OUTPUTS = {
   "name\nPencil",
   "name     | label\nNotebook | Paper products\nPencil   | Writing supplies\nMarker   | Writing supplies\nFolder   | Paper products\nEraser   | Writing supplies"
 ],
+  python: [
+  "Python 3.12.8",
+  "pip 24.3.1 from /opt/academy/lib/python3.12/site-packages/pip (python 3.12)",
+  "Package    Version\n---------- -------\naiohttp    3.11.11\npip        24.3.1",
+  "Name: aiohttp\nVersion: 3.11.11\nLocation: /opt/academy/lib/python3.12/site-packages",
+  "No broken requirements found.",
+  "aiohttp==3.11.11",
+  "sys.path = [\n    '/opt/academy/lib/python3.12',\n    '/opt/academy/lib/python3.12/site-packages',\n]\nENABLE_USER_SITE: False",
+  "Help on module pathlib:\nNAME\n    pathlib - Object-oriented filesystem paths",
+  "usage: venv [-h] [--system-site-packages] [--clear] ENV_DIR [ENV_DIR ...]",
+  "usage: python -m unittest [-h] [-v] [-q] [tests ...]"
+],
+  services: [
+  "systemd 255",
+  "degraded",
+  "UNIT                 LOAD   ACTIVE SUB    DESCRIPTION\nacademy-web.service  loaded failed failed Academy Web",
+  "academy-web.service - Academy Web\n Loaded: loaded\n Active: failed (Result: exit-code)",
+  "failed",
+  "enabled",
+  "Nov 28 09:15:20 academy academy-web[1204]: Configuration missing\nNov 28 09:15:20 academy systemd[1]: academy-web.service: Failed with result 'exit-code'.",
+  "Nov 28 09:14:52 academy kernel: Example device warning",
+  "IDX BOOT ID                          FIRST ENTRY          LAST ENTRY\n  0 0123456789abcdef0123456789abcdef  2026-11-28 09:14:00  2026-11-28 09:16:00",
+  "Result=exit-code\nExecMainStatus=1"
+],
 };

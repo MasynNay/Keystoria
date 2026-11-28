@@ -425,4 +425,108 @@ export const COMMAND_GUIDES = {
     "caution": "Non-unique matching keys can multiply result rows."
   }
 ],
+  python: [
+  {
+    "use": "Check the interpreter before reproducing an issue.",
+    "benefit": "Distinguishes environments with different language versions.",
+    "caution": "The command name may select a different interpreter on another machine."
+  },
+  {
+    "use": "Check which environment owns pip.",
+    "benefit": "Helps avoid inspecting the wrong environment.",
+    "caution": "pip may not be installed for every interpreter."
+  },
+  {
+    "use": "Inventory dependencies before debugging.",
+    "benefit": "Shows the environment's installed package versions.",
+    "caution": "It is not a list of all available packages."
+  },
+  {
+    "use": "Find which installed release provides a dependency.",
+    "benefit": "Links the version to the environment location.",
+    "caution": "Metadata does not establish that importing the package succeeds."
+  },
+  {
+    "use": "Investigate dependency conflicts after an environment change.",
+    "benefit": "Identifies declared dependency inconsistencies.",
+    "caution": "A clean result cannot guarantee runtime compatibility."
+  },
+  {
+    "use": "Review versions when comparing environments.",
+    "benefit": "Produces a compact dependency snapshot.",
+    "caution": "Output may contain local paths or private URLs; review before sharing."
+  },
+  {
+    "use": "Investigate why an import resolves unexpectedly.",
+    "benefit": "Shows where Python looks for modules.",
+    "caution": "Paths can contain private account or project names."
+  },
+  {
+    "use": "Look up path handling APIs without opening a browser.",
+    "benefit": "Connects documentation to the installed Python version.",
+    "caution": "Only inspect trusted modules; pydoc may import them."
+  },
+  {
+    "use": "Learn options before creating a virtual environment.",
+    "benefit": "Explains supported flags without creating an environment.",
+    "caution": "Do not confuse the help invocation with a real environment creation."
+  },
+  {
+    "use": "Review how to select tests before executing them.",
+    "benefit": "Helps distinguish test discovery from an explicit selection.",
+    "caution": "A real test run can execute project code."
+  }
+],
+  services: [
+  {
+    "use": "Check compatibility before following a troubleshooting guide.",
+    "benefit": "Identifies the installed tool version.",
+    "caution": "Not every Linux distribution uses systemd."
+  },
+  {
+    "use": "Start with a broad health check.",
+    "benefit": "Indicates whether further failed-unit investigation is useful.",
+    "caution": "Degraded does not identify the cause or severity."
+  },
+  {
+    "use": "Identify failures before inspecting individual units.",
+    "benefit": "Narrows investigation to failed units.",
+    "caution": "A failed unit may be unrelated to the reported symptom."
+  },
+  {
+    "use": "Review a failing service before making changes.",
+    "benefit": "Provides a quick summary of state and failure result.",
+    "caution": "Status can contain sensitive command arguments or logs."
+  },
+  {
+    "use": "Check whether a unit currently runs.",
+    "benefit": "Offers a compact runtime state indication.",
+    "caution": "An active service is not necessarily healthy."
+  },
+  {
+    "use": "Determine whether startup configuration is expected.",
+    "benefit": "Separates boot configuration from current failure.",
+    "caution": "Enabled does not guarantee a successful startup."
+  },
+  {
+    "use": "Look for errors near a service failure.",
+    "benefit": "Connects application events to systemd state.",
+    "caution": "Logs may contain secrets; review before sharing."
+  },
+  {
+    "use": "Check for broader warnings during an incident.",
+    "benefit": "Provides context beyond one service.",
+    "caution": "Warnings are not always actionable or related."
+  },
+  {
+    "use": "Determine whether a prior boot can be investigated.",
+    "benefit": "Shows the boot IDs available in retained logs.",
+    "caution": "Retention and permissions can limit history."
+  },
+  {
+    "use": "Confirm the recorded failure before deciding next steps.",
+    "benefit": "Provides a focused, reproducible state summary.",
+    "caution": "An exit status alone does not explain the underlying application error."
+  }
+],
 };

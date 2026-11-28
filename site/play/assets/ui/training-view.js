@@ -1,8 +1,8 @@
 /** Stateless presentation for optional self-paced terminal lessons. */
-import { LESSONS, savedLessons, activeCommandIndex } from "./lessons.js?v=0.2.1";
-import { readAcademyCheckpoints } from "./academy-checkpoint.js?v=0.1.3";
-import { LESSON_OUTPUTS } from "./lesson-output.js?v=0.2.1";
-import { COMMAND_GUIDES } from "./command-guides.js?v=0.2.1";
+import { LESSONS, savedLessons, activeCommandIndex } from "./lessons.js?v=0.2.2";
+import { readAcademyCheckpoints } from "./academy-checkpoint.js?v=0.1.4";
+import { LESSON_OUTPUTS } from "./lesson-output.js?v=0.2.2";
+import { COMMAND_GUIDES } from "./command-guides.js?v=0.2.2";
 import { renderTypingFeedback } from "./typing-feedback.js";
 import { safe, ico, tag } from "./helpers.js";
 
@@ -12,7 +12,7 @@ export function trainingLibrary() {
   return `<section class="academy shell" id="academy">
     <div class="academy-heading">${tag("THE FIELD ACADEMY / NO TIMER, NO PRESSURE")}
       <h2 id="academy-course-heading" tabindex="-1">LEARN THE <em>REAL COMMANDS.</em></h2>
-      <p>${Object.keys(LESSONS).length} hands-on practice courses, including Git, network diagnostics, Docker and SQL. Type everyday commands, consult the optional reference panel, and review a complete command guide when you finish. <strong>Everything is simulated — nothing runs on your machine.</strong> Your course progress resumes on this device; command drafts are never saved.</p></div>
+      <p>${Object.keys(LESSONS).length} hands-on practice courses, including Git, network diagnostics, Docker, SQL, Python tooling and Linux service diagnostics. Type everyday commands, consult the optional reference panel, and review a complete command guide when you finish. <strong>Everything is simulated — nothing runs on your machine.</strong> Your course progress resumes on this device; command drafts are never saved.</p></div>
     <div class="academy-grid">${Object.entries(LESSONS).map(([id,lesson]) => `<button class="academy-card" data-action="learn" data-os="${id}"><span class="academy-number">COURSE ${lesson.number} ${checkpoints[id] ? `· IN PROGRESS ${checkpoints[id].index+(checkpoints[id].answered?1:0)}/${lesson.commands.length}` : completed[id] ? "· COMPLETED ✓" : `· ${lesson.commands.length} COMMANDS`}</span><span class="academy-icon">${lesson.icon}</span><strong>${safe(lesson.name)}</strong><small>${safe(lesson.objective)}</small><span class="academy-open">${checkpoints[id] ? "CONTINUE COURSE" : "OPEN TERMINAL"} ${ico("arrow", 16)}</span></button>`).join("")}</div>
     ${Object.keys(checkpoints).length ? `<div class="academy-progress-controls">
       <button type="button" class="btn btn-outline" data-action="academy-clear-progress">CLEAR UNFINISHED COURSE PROGRESS</button>
