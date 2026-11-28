@@ -1,8 +1,8 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js?v=0.2.2";
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.4";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.4";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel, dailyPracticePanel } from "./ui/speed-view.js?v=0.48.14";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.48.15";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel, dailyPracticePanel } from "./ui/speed-view.js?v=0.48.15";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.48.16";
 import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity, readGuidedActivity, recommendDailyPractice } from "./ui/speed-insights.js?v=0.48.14";
 import { readSpeedHistory } from "./ui/speed-engine.js?v=0.40.1";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";
@@ -14,7 +14,7 @@ import { setCinematicTypingProgress } from "./ui/cinematic-cuts.js?v=0.1.1";
 import { moveStoryReel } from "./ui/story-reel.js";
 import { deploymentDisplay } from "./ui/deployment.js";
 import { safe, norm, timeString, pad, ico, tag } from "./ui/helpers.js";
-import { createViews } from "./ui/views.js?v=0.2.4";
+import { createViews } from "./ui/views.js?v=0.2.5";
 import { recordResult } from "./ui/progression.js";
 import { loadPreferences, savePreferences, applyPreferences } from "./ui/preferences.js";
 import { THEMES, THEME_IDS } from "./ui/themes.js";
@@ -631,6 +631,9 @@ app.addEventListener("click",event=>{
      }else refreshDailyPractice();
      break;
    }
+   case "speed-ghost-start":
+     if(!speedController.launchPaceGhost())toast("Finish a comparable regular drill before launching a pace race.","error");
+     break;
    case "speed-ladder-start":
      if(!speedController.launchAccuracyLadder())toast("Finish or restart the current drill before starting a ladder.","error");
      break;

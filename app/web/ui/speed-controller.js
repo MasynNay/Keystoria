@@ -1,9 +1,10 @@
+import { ghostScope, selectPaceGhost, ghostProgress, ghostMatches } from './pace-ghost.js?v=0.1.0';
 /** Lifecycle for the optional local typing test.
  *
  * This controller owns its one timer and never reaches the multiplayer socket.
  * Story missions can continue to evolve independently of personal training.
  */
-import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.1';
+import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult, readSpeedHistory } from './speed-engine.js?v=0.40.1';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.4';
 import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope, readAccuracyGoal, createFocusRoutine, advanceFocusRoutine, normalizeFocusPlan, recordGuidedCompletion, ACCURACY_LADDER, createAccuracyLadder, retryAccuracyLadder, nextAccuracyLadder, evaluateAccuracyLadder, SURVIVAL_WAVES, SURVIVAL_SECONDS, createSurvival, restartSurvival, nextSurvival, evaluateSurvival, CIRCUIT_TIERS, CIRCUIT_SECONDS, createAdaptiveCircuit, evaluateAdaptiveCircuit, nextAdaptiveCircuit, restartAdaptiveCircuit } from './speed-insights.js?v=0.48.14';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
@@ -71,7 +72,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     interval=null;
   }
 
-  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[], guidedGoal=null, keepRoutine=false, accuracyLadder=null, survival=null, adaptiveCircuit=null } = {}) {
+  function open({ pack='everyday', seconds=30, focusChoice=null, targetKeys=[], guidedGoal=null, keepRoutine=false, accuracyLadder=null, survival=null, adaptiveCircuit=null, ghostRace=null } = {}) {
     const enteringFromAnotherMode=!state.speed;
     const leavingResults=state.speed?.status==='complete';
     const priorSession=state.speed;
@@ -107,7 +108,7 @@ export function createSpeedController({ state, onRender, playSound }) {
       pack:selectedPack,
       seconds:DURATIONS.includes(seconds) ? seconds : 30,
       reference:focusedDrill?.reference??createWordStream(selectedPack,adaptiveCircuit?CIRCUIT_TIERS[adaptiveCircuit.tier]:survival?SURVIVAL_WAVES[survival.wave]:700),
-      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,focusRoutine:routine,accuracyLadder,survival,adaptiveCircuit,
+      targetKeys:focusedDrill?.keys??[],previousFocusAttempt,focusRoutine:routine,accuracyLadder,survival,adaptiveCircuit,ghostRace,ghostInvalid:ghostRace?!ghostMatches(ghostRace,{pack:selectedPack,seconds,practiceMode:phoneLayout?(keyboardAssist?'mobile-assisted':'mobile-exact'):'standard-exact'}):false,
       typed:'',startedAt:null,pausedAt:null,interrupted:false,status:'idle',keystrokes:0,result:null,
       keyboardAssist,keyboardAssistedEver:keyboardAssist,phoneLayout,
       focusPractice:phoneLayout && preferredFocus(),
@@ -146,7 +147,7 @@ export function createSpeedController({ state, onRender, playSound }) {
   // The previous draft and key review never enter browser storage.
   function startTargeted({guided=false}={}) {
     const session=state.speed;
-    if(session?.status!=='complete'||session.accuracyLadder||session.survival||session.adaptiveCircuit||!session.keyReview?.keys.length)return;
+    if(session?.status!=='complete'||session.accuracyLadder||session.survival||session.adaptiveCircuit||session.ghostRace||!session.keyReview?.keys.length)return;
     open({pack:session.pack,seconds:session.seconds,targetKeys:session.keyReview.keys.map(row=>row.key),guidedGoal:guided?readAccuracyGoal():null});
   }
 
@@ -201,9 +202,22 @@ export function createSpeedController({ state, onRender, playSound }) {
     open({pack:session.pack,adaptiveCircuit});
     return true;
   }
+  function launchPaceGhost(){
+    const session=state.speed;
+    if(!session||!['idle','complete'].includes(session.status)||session.targetKeys?.length||session.accuracyLadder||session.survival||session.adaptiveCircuit||session.ghostRace)return false;
+    const compact=window.matchMedia?.(MOBILE_TYPING_MEDIA).matches??false;
+    const phoneLayout=compact&&(window.matchMedia?.('(pointer: coarse)').matches??false);
+    const keyboardAssist=phoneLayout&&session.pack!=='numpad'&&preferredAssist();
+    const ghost=selectPaceGhost(readSpeedHistory(),ghostScope({...session,phoneLayout,keyboardAssist}));
+    if(!ghost)return false;
+    open({pack:session.pack,seconds:session.seconds,ghostRace:ghost});
+    return true;
+  }
+
   function restart({regular=false}={}) {
     const session=state.speed;
     if(!session)return;
+    if(session.ghostRace&&!regular){open({pack:session.pack,seconds:session.seconds,ghostRace:session.ghostRace});return;}
     if(session.adaptiveCircuit&&!regular){open({pack:session.pack,adaptiveCircuit:restartAdaptiveCircuit(session.adaptiveCircuit)});return;}
     if(session.survival&&!regular){open({pack:session.pack,survival:restartSurvival(session.interrupted&&session.survival.status==='ready'?{...session.survival,status:'interrupted'}:session.survival)});return;}
     if(session.accuracyLadder&&!regular){open({pack:session.pack,accuracyLadder:retryAccuracyLadder(session.accuracyLadder)});return;}
@@ -294,6 +308,11 @@ export function createSpeedController({ state, onRender, playSound }) {
     text('speed-wpm',String(seconds ? (session.pack==='numpad'?
       Math.round(metrics.correctDigits/duration*60):
       Math.round(metrics.correct/5/(duration/60))) : 0));
+    if(session.ghostRace){
+      const g=ghostProgress(session.ghostRace,seconds,session.pack==='numpad'?metrics.correctDigits:metrics.correct);
+      text('speed-ghost-player',g.player);text('speed-ghost-target',g.target);
+      text('speed-ghost-status',session.interrupted?'Interrupted — comparison unavailable.':session.ghostInvalid?'Keyboard mode changed — comparison unavailable.':g.delta===0?'Even pace':Math.abs(g.delta)+(g.delta>0?' ahead':' behind'));
+    }
     text('speed-accuracy',`${metrics.accuracy}%`);
     text('speed-raw',String(seconds ? (session.pack==='numpad'?
       Math.round(metrics.rawDigits/duration*60):
@@ -401,7 +420,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.
-    if(!session.interrupted&&!session.targetKeys?.length&&!session.accuracyLadder&&!session.survival&&!session.adaptiveCircuit)saveSpeedResult(session.result);
+    if(!session.interrupted&&!session.targetKeys?.length&&!session.accuracyLadder&&!session.survival&&!session.adaptiveCircuit&&!session.ghostRace)saveSpeedResult(session.result);
     releaseLiveScore(); // Drop transient previous input after final scoring.
     playSound('success');
     onRender();
@@ -480,6 +499,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     const session=state.speed;
     if(!session||!session.phoneLayout||session.pack==='numpad'||session.status==='complete')return;
     session.keyboardAssist=!session.keyboardAssist;
+    if(session.ghostRace){session.ghostInvalid=true;text('speed-ghost-status','Keyboard mode changed — comparison unavailable.');}
     if(session.keyboardAssist)session.keyboardAssistedEver=true;
     storeAssist(session.keyboardAssist);
     const field=node('speed-input');
@@ -526,5 +546,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,startTargeted,launchFocusPlan,launchAccuracyLadder,advanceAccuracyLadder,launchSurvival,advanceSurvival,launchAdaptiveCircuit,advanceAdaptiveCircuit,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
+  return {open,close,startTargeted,launchFocusPlan,launchAccuracyLadder,advanceAccuracyLadder,launchSurvival,advanceSurvival,launchAdaptiveCircuit,advanceAdaptiveCircuit,launchPaceGhost,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
 }

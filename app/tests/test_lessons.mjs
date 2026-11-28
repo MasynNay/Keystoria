@@ -1,3 +1,4 @@
+import { playerMilestones } from '../web/ui/player-milestones.js';
 /** Training reference integrity and isolation: no command execution is exposed. */
 import test from 'node:test';
 import { summarizePlayerDossier, playerDossierTemplate } from '../web/ui/player-dossier.js';
@@ -206,3 +207,21 @@ test('unified player dossier reads existing bounded histories without writes or 
  assert.match(empty,/No saved regular drill yet/);
  assert.match(empty,/0 \/ 9/);
 });
+
+ test('journey achievements derive twelve bounded milestones without adding storage',()=>{
+ const d={courses:Array.from({length:9}),completed:3,speedCount:10,lyricCount:3,storyWins:5,activity:null};
+ const badges=playerMilestones(d), by=id=>badges.find(b=>b.id===id);
+ assert.equal(badges.length,12);
+ assert.equal(by('academy-three').earned,true);
+ assert.equal(by('academy-all').earned,false);
+ assert.equal(by('speed-five').value,5);
+ assert.equal(by('lyric-three').earned,true);
+ assert.equal(by('story-five').earned,true);
+ assert.equal(by('explorer').earned,true);
+ assert.equal(by('guided-three').available,false);
+ assert.equal(by('guided-three').earned,false);
+ const enabled=playerMilestones({...d,activity:{total:3,days:2}}).find(b=>b.id==='guided-three');
+ assert.equal(enabled.earned,true);
+ const cleared=playerMilestones({...d,speedCount:0}).find(b=>b.id==='explorer');
+ assert.equal(cleared.earned,false);
+ });

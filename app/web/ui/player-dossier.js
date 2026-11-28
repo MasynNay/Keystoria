@@ -1,3 +1,4 @@
+import { milestoneTemplate } from './player-milestones.js?v=0.1.0';
 /** Read-only cross-mode dashboard. Existing local records only; no additional storage. */
 import { LESSONS, savedLessons } from './lessons.js?v=0.2.2';
 import { readAcademyCheckpoints } from './academy-checkpoint.js?v=0.1.4';
@@ -21,12 +22,12 @@ export function summarizePlayerDossier(storage=globalThis.localStorage,now=new D
  const recent=records[0];
  const speed=recent?{label:PACKS[recent.pack].title,seconds:recent.seconds,mode:modes[practiceMode(recent)],
   value:Math.round(recent.pack==='numpad'?recent.cpm:recent.wpm),unit:recent.pack==='numpad'?'CPM':'WPM',accuracy:Math.round(recent.accuracy)}:null;
- const lyric=readRecentLyricResults(storage,1)[0]??null;
+ const lyrics=readRecentLyricResults(storage,5),lyric=lyrics[0]??null;
  const career=readCareer(storage);
  const activity=summarizeGuidedActivity(readGuidedActivity(storage,now),now);
  return {courses,completed:courses.filter(c=>c.completed).length,
   unfinished:courses.filter(c=>c.progress!==null),speed,speedCount:records.length,
-  lyric,activity:activity.enabled?{days:activity.activeDays,total:activity.total}:null,
+  lyric,lyricCount:lyrics.length,activity:activity.enabled?{days:activity.activeDays,total:activity.total}:null,
   focusSaved:Boolean(readFocusPlan(storage)),
   storyRuns:Number.isSafeInteger(career.runs)?career.runs:0,
   storyWins:Number.isSafeInteger(career.wins)?Math.min(career.runs,career.wins):0};
@@ -63,5 +64,6 @@ export function playerDossierTemplate({storage=globalThis.localStorage,browserEd
     <a href="#career-record">View story field record</a>
    </article>
   </div>
+  ${milestoneTemplate(d,browserEdition)}
  </section>`;
 }

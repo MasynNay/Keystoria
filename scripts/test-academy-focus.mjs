@@ -24,6 +24,9 @@ try {
   if(await welcome.count()&&await welcome.isVisible())await welcome.click();
   const dossier=page.locator('#player-dossier');
   assert.equal(await dossier.locator('.dossier-card').count(),4);
+  assert.equal(await dossier.locator('.dossier-milestone').count(),12);
+  assert.equal(await dossier.locator('[data-milestone="academy-first"]').getAttribute('data-earned'),'false');
+  assert.equal(await dossier.locator('[data-milestone="guided-three"]').getAttribute('data-available'),'false');
   assert.match(await dossier.locator('[data-dossier="academy"]').innerText(),/0 \/ 9/);
   assert.match(await dossier.locator('[data-dossier="story"]').innerText(),/local Python edition/);
   assert.ok(await dossier.evaluate(el=>el.scrollWidth<=el.clientWidth+2));

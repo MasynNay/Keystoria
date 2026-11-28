@@ -566,6 +566,35 @@ try {
    await circuit.locator('[data-action="speed-regular"]').click();
    assert.equal(await arcade.count(),1);
   }
+  // Pace race uses existing saved records, never saves a race score, and retains native input.
+  await page.evaluate(mobile=>localStorage.setItem('panic.speed.results.v1',JSON.stringify([
+    {pack:'numpad',seconds:30,wpm:40,cpm:200,accuracy:96,practiceMode:mobile?'mobile-exact':'standard-exact'}
+  ])),mobile);
+  await page.locator('[data-action="speed-pack"][data-pack="numpad"]').click();
+  await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();
+  const ghost=page.locator('#speed-pace-ghost');
+  assert.match(await ghost.innerText(),/200 CPM/);
+  const beforeGhost=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
+  await ghost.locator('[data-action="speed-ghost-start"]').click();
+  assert.match(await ghost.innerText(),/PERSONAL PACE RACE · 200 CPM/);
+  const native=page.locator('#speed-input');
+  const passage=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+  await native.evaluate(el=>window.__ghostInput=el);
+  await native.fill(passage.slice(0,3));
+  assert.equal(await native.evaluate(el=>el===window.__ghostInput),true);
+  assert.equal(await page.locator('#speed-ghost-player').innerText(),'3');
+  await page.locator('[data-action="speed-pause"]:visible').first().click();
+  assert.match(await page.locator('#speed-ghost-status').innerText(),/Interrupted/);
+  await page.locator('[data-action="speed-restart"]:visible').first().click();
+  assert.match(await ghost.innerText(),/200 CPM/);
+  const ref=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+  await native.fill(ref);
+  await page.locator('#speed-results-heading').waitFor();
+  assert.match(await page.locator('#speed-ghost-result').innerText(),/Finish:/);
+  assert.match(await page.locator('.speed-results').innerText(),/PACE RACE \(NOT SAVED\)/);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),beforeGhost);
+  await ghost.locator('[data-action="speed-regular"]').click();
+  assert.equal(await ghost.locator('[data-action="speed-ghost-start"]').count(),1);
   await context.close();
  }
  assert.deepEqual(errors,[],'practice progress browser actions must be error-free');
