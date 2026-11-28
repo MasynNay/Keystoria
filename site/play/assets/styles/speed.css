@@ -268,3 +268,17 @@
 .speed-daily-practice .speed-daily-title{margin-top:10px;color:var(--accent);font:800 15px/1.4 var(--mono)}
 .speed-daily-practice button{margin:7px 0}
 @media(max-width:480px){.speed-daily-practice button{width:100%}}
+
+/* Rolling milestones reuse the optional local activity panel, not the game HUD. */
+.speed-training-milestones{margin:14px 0;padding:12px 0;border-top:1px solid var(--line)}
+.speed-training-milestones h4{margin:8px 0;color:var(--text);font:800 12px/1.5 var(--mono)}
+.speed-training-milestones ul{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0;margin:10px 0 16px}
+.speed-training-milestones li,.speed-training-weeks>div{min-width:0;border:1px solid var(--line);border-radius:6px;padding:10px}
+.speed-training-milestones li[data-reached="true"]{border-color:var(--accent)}
+.speed-training-milestones li>div{display:flex;align-items:baseline;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.speed-training-milestones strong,.speed-training-milestones span,.speed-training-weeks small{font:12px/1.5 var(--body);overflow-wrap:anywhere}
+.speed-training-milestones li[data-reached="true"] span{color:var(--accent);font-weight:700}
+.speed-training-milestones progress{display:block;width:100%;height:8px;margin-top:8px;accent-color:var(--accent)}
+.speed-training-weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.speed-training-weeks>div{display:grid;gap:5px}
+@media(max-width:400px){.speed-training-milestones ul,.speed-training-weeks{grid-template-columns:1fr}}

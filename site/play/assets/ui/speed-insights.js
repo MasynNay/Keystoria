@@ -287,6 +287,31 @@ export function recommendDailyPractice(session,plan,activity,now=new Date()){
     seconds:DURATIONS.includes(session?.seconds)?session.seconds:30};
 }
 
+
+/** Describe rolling practice milestones from the existing opt-in calendar.
+ * These are not permanent achievements, skill grades, or daily streaks.
+ * No extra storage, qualification rules or timing loop is required. */
+const GUIDED_MILESTONES=Object.freeze([
+  ['first-routine','First routine','total',1],
+  ['three-days','Three practice days','activeDays',3],
+  ['five-routines','Five routines','total',5],
+  ['seven-days','Seven practice days','activeDays',7],
+  ['ten-routines','Ten routines','total',10],
+  ['fourteen-days','Fourteen practice days','activeDays',14],
+]);
+export function summarizeTrainingMilestones(activity,now=new Date()){
+  const summary=summarizeGuidedActivity(activity,now);
+  if(!summary.enabled)return null;
+  const window=days=>({routines:days.reduce((sum,day)=>sum+day.count,0),
+    activeDays:days.filter(day=>day.count>0).length,
+    from:days[0]?.key??'',through:days.at(-1)?.key??''});
+  const milestones=GUIDED_MILESTONES.map(([id,label,metric,target])=>({
+    id,label,metric,target,value:summary[metric],reached:summary[metric]>=target
+  }));
+  return {milestones,reached:milestones.filter(item=>item.reached).length,
+    recent:window(summary.days.slice(-7)),previous:window(summary.days.slice(-14,-7))};
+}
+
 export function readAccuracyGoal(storage = globalThis.localStorage) {
   try {
     const value = Number(storage?.getItem(GOAL_KEY));

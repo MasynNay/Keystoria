@@ -327,6 +327,9 @@ try {
    assert.equal(await activity.getAttribute('data-enabled'),'false');
    await page.locator('[data-action="speed-activity-enable"]').click();
    assert.equal(await activity.getAttribute('data-total'),'0');
+   const milestones=activity.locator('.speed-training-milestones');
+   assert.equal(await milestones.getAttribute('data-reached'),'0');
+   assert.equal(await milestones.locator('progress').count(),6);
    assert.equal(await routine.getAttribute('data-streak'),'0');
    assert.equal(await routine.getAttribute('data-routine-status'),'ready');
    assert.match(await routine.innerText(),/Goal: 98% or higher/);
@@ -352,6 +355,11 @@ try {
    }
    assert.equal(await routine.getAttribute('data-routine-status'),'complete');
    assert.equal(await activity.getAttribute('data-total'),'1');
+   assert.equal(await milestones.getAttribute('data-reached'),'1');
+   assert.equal(await milestones.locator('[data-milestone="first-routine"]').getAttribute('data-reached'),'true');
+   assert.equal(await milestones.locator('[data-milestone="three-days"] progress').getAttribute('value'),'1');
+   assert.match(await milestones.locator('.speed-training-weeks strong').first().innerText(),/1 routine · 1 active day/);
+   assert.match(await milestones.locator('.speed-training-weeks strong').last().innerText(),/0 routines · 0 active days/);
    assert.equal(await daily.getAttribute('data-suggestion'),'done-today');
    assert.equal(await daily.locator('button').count(),0,'no obligation to continue after daily suggestion is satisfied');
    assert.equal(await activity.locator('.speed-guided-days span').count(),30);
@@ -383,10 +391,12 @@ try {
    await page.locator('[data-action="speed-open"]').first().click();
    assert.equal(await planPanel.getAttribute('data-saved'),'true');
    assert.equal(await activity.getAttribute('data-total'),'1','completion counts survive reload');
+   assert.equal(await milestones.getAttribute('data-reached'),'1','milestones derive from existing local counts after reload');
    assert.equal(await daily.getAttribute('data-suggestion'),'done-today');
    page.once('dialog',d=>d.accept());
    await page.locator('[data-action="speed-activity-clear"]').click();
    assert.equal(await daily.getAttribute('data-suggestion'),'saved','saved plan is suggested when tracking is off');
+   assert.equal(await milestones.count(),0,'disabled activity hides all milestones');
    assert.match(await planPanel.innerText(),/30s · 98% goal/);
    await daily.locator('[data-action="speed-daily-start"]').click();
    assert.equal(await daily.getAttribute('data-suggestion'),'continue');

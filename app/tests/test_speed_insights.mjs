@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity, recommendDailyPractice
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity, recommendDailyPractice, summarizeTrainingMilestones
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -468,4 +468,28 @@ test('daily practice prefers completed activity, ongoing routines, saved plans, 
  assert.deepEqual(recommendDailyPractice(null,{...plan,keys:['<']},null,now),{kind:'regular',pack:'everyday',seconds:30});
  assert.equal(recommendDailyPractice(session,plan,activity,new Date(2026,10,28,12)).kind,'saved','previous calendar day does not satisfy today');
  assert.equal(recommendDailyPractice(session,plan,{enabled:false,days:activity.days},now).kind,'saved','disabled tracking cannot infer today was completed');
+});
+
+test('milestones are rolling, optional, distinct from skill ratings, and do not require consecutive days',()=>{
+ const now=new Date(2026,10,27,12);
+ const data={enabled:true,days:{'2026-11-27':3,'2026-11-24':1,'2026-11-19':1,'2026-11-15':2,'2026-10-29':1,'2026-10-28':99,'2026-11-28':99}};
+ const summary=summarizeTrainingMilestones(data,now);
+ assert.equal(summary.reached,3);
+ assert.deepEqual(summary.milestones.map(({id,reached})=>[id,reached]),[
+  ['first-routine',true],['three-days',true],['five-routines',true],['seven-days',false],['ten-routines',false],['fourteen-days',false]
+ ]);
+ assert.deepEqual(summary.recent,{routines:4,activeDays:2,from:'2026-11-21',through:'2026-11-27'});
+ assert.deepEqual(summary.previous,{routines:3,activeDays:2,from:'2026-11-14',through:'2026-11-20'});
+ assert.equal(summarizeTrainingMilestones(null,now),null);
+ assert.equal(summarizeTrainingMilestones({enabled:false,days:data.days},now),null);
+ assert.equal(summarizeTrainingMilestones({enabled:true,days:{}},now).reached,0);
+ assert.equal(summarizeTrainingMilestones(data,new Date(2027,0,1,12)).reached,0,'old activity leaves the rolling window');
+ assert.equal(data.days['2026-10-28'],99,'derived summary does not mutate input');
+});
+test('milestone windows are seven local calendar days across year and month boundaries',()=>{
+ const now=new Date(2027,0,3,12);
+ const summary=summarizeTrainingMilestones({enabled:true,days:{'2026-12-21':2,'2026-12-27':3,'2026-12-28':4,'2027-01-03':1}},now);
+ assert.deepEqual(summary.recent,{routines:5,activeDays:2,from:'2026-12-28',through:'2027-01-03'});
+ assert.deepEqual(summary.previous,{routines:5,activeDays:2,from:'2026-12-21',through:'2026-12-27'});
+ assert.equal(summary.milestones.find(m=>m.id==='ten-routines').reached,true);
 });
