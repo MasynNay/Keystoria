@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY, GUIDED_ACTIVITY_KEY, readGuidedActivity, enableGuidedActivity, clearGuidedActivity, recordGuidedCompletion, summarizeGuidedActivity
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -414,4 +414,43 @@ test('plan candidates use the completed focus scope and fixed routine goal, not 
  assert.deepEqual(focusPlanFromSession({...base,targetKeys:['t',' '],focusRoutine:{goal:98}},90),{pack:'everyday',seconds:30,goal:98,keys:['t',' ']});
  assert.equal(focusPlanFromSession({...base,status:'running'},90),null);
  assert.equal(focusPlanFromSession({...base,keyReview:{keys:[]}},90),null);
+});
+
+test('guided activity is opt-in, counts completion transitions only, and clears independently',()=>{
+ const s=storage(), now=new Date(2026,10,27,12), before={status:'qualified'}, after={status:'complete'};
+ assert.equal(recordGuidedCompletion(before,after,s,now),false);
+ assert.equal(s.getItem(GUIDED_ACTIVITY_KEY),null);
+ assert.equal(enableGuidedActivity(s,now),true);
+ assert.equal(recordGuidedCompletion(before,after,s,now),true);
+ assert.equal(recordGuidedCompletion(after,after,s,now),false);
+ assert.equal(recordGuidedCompletion(null,after,s,now),false);
+ assert.equal(recordGuidedCompletion(before,before,s,now),false);
+ assert.equal(enableGuidedActivity(s,now),true);
+ assert.deepEqual(readGuidedActivity(s,now),{enabled:true,days:{'2026-11-27':1}});
+ assert.equal(summarizeGuidedActivity(readGuidedActivity(s,now),now).today,1);
+ s.setItem(SAVED_FOCUS_PLAN_KEY,'plan');
+ s.setItem('panic.speed.results.v1','[]');
+ assert.equal(clearGuidedActivity(s),true);
+ assert.equal(s.getItem(SAVED_FOCUS_PLAN_KEY),'plan');
+ assert.equal(s.getItem('panic.speed.results.v1'),'[]');
+ assert.equal(readGuidedActivity(s,now),null);
+});
+test('guided activity bounds calendar data and ignores invalid counts and future days',()=>{
+ const s=storage(), now=new Date(2026,10,27,12);
+ s.setItem(GUIDED_ACTIVITY_KEY,JSON.stringify({enabled:true,days:{
+  '2026-10-28':3,'2026-10-29':2,'2026-11-26':1,'2026-11-27':999,
+  '2026-11-28':7,'2026-11-25':-2,'2026-11-24':'5','2026-11-23':1000},typed:'private'}));
+ const summary=summarizeGuidedActivity(readGuidedActivity(s,now),now);
+ assert.equal(summary.days.length,30);
+ assert.equal(summary.days[0].key,'2026-10-29');
+ assert.equal(summary.total,1002);
+ assert.equal(summary.activeDays,3);
+ assert.equal(recordGuidedCompletion({status:'qualified'},{status:'complete'},s,now),true);
+ assert.deepEqual(JSON.parse(s.getItem(GUIDED_ACTIVITY_KEY)),{enabled:true,days:{'2026-10-29':2,'2026-11-26':1,'2026-11-27':999}});
+ s.setItem(GUIDED_ACTIVITY_KEY,'x'.repeat(4097));
+ assert.equal(readGuidedActivity(s,now),null);
+ const denied={getItem(){throw Error('blocked')},setItem(){throw Error('blocked')},removeItem(){throw Error('blocked')}};
+ assert.equal(readGuidedActivity(denied,now),null);
+ assert.equal(enableGuidedActivity(denied,now),false);
+ assert.equal(clearGuidedActivity(denied),false);
 });

@@ -254,3 +254,12 @@
 .speed-plan-save{margin:4px 0}
 .speed-saved-focus-plan .speed-plan-note{font-size:11px;margin-bottom:0}
 @media(max-width:480px){.speed-plan-actions{display:grid}.speed-plan-save{width:100%}}
+
+/* Local completion counts, outside the typing console. */
+.speed-guided-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.speed-guided-stats>div{min-width:0;display:grid;gap:4px;padding:10px;border:1px solid var(--line);border-radius:6px}
+.speed-guided-stats small,.speed-guided-stats span{font:11px/1.4 var(--body);overflow-wrap:anywhere}
+.speed-guided-stats strong{font:800 21px/1.2 var(--mono);color:var(--accent)}
+.speed-guided-days{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:4px;margin:10px 0}
+.speed-guided-days span{aspect-ratio:1;max-width:18px;border:1px solid var(--line);border-radius:3px;background:var(--panel-2)}
+.speed-guided-days .has-activity{background:var(--accent);border-color:var(--accent)}

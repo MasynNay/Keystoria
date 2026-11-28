@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.0';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.4';
-import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope, readAccuracyGoal, createFocusRoutine, advanceFocusRoutine, normalizeFocusPlan } from './speed-insights.js?v=0.48.7';
+import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope, readAccuracyGoal, createFocusRoutine, advanceFocusRoutine, normalizeFocusPlan, recordGuidedCompletion } from './speed-insights.js?v=0.48.8';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
 
 const node = id => document.getElementById(id);
@@ -339,7 +339,9 @@ export function createSpeedController({ state, onRender, playSound }) {
     // Keep it separate from the persisted/exported result object.
     session.keyReview=reviewSpeedKeys(session.reference,session.typed,{numpad:session.pack==='numpad'});
     session.focusAttempt=summarizeFocusedAttempt(session);
-    session.focusRoutine=advanceFocusRoutine(session.focusRoutine,session.focusAttempt);
+    const previousRoutine=session.focusRoutine;
+    session.focusRoutine=advanceFocusRoutine(previousRoutine,session.focusAttempt);
+    recordGuidedCompletion(previousRoutine,session.focusRoutine);
     session.status='complete';
     // Background pauses make timed scores non-comparable; never persist them
     // or include them in personal best / Practice Compass calculations.

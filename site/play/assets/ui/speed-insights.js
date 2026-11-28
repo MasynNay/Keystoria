@@ -204,6 +204,68 @@ export function clearFocusPlan(storage) {
   catch{return false;}
 }
 
+
+/** Opt-in local calendar counts, separate from saved plans and score history.
+ * No target keys, passages, scores, attempt rows or per-event timestamps.
+ * Retain at most 30 local calendar days; a day count is capped at 999.
+ */
+export const GUIDED_ACTIVITY_KEY='keystoria.speed.guidedActivity.v1';
+export const GUIDED_ACTIVITY_DAYS=30;
+function guidedDayKey(date){
+  return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+}
+function guidedCalendar(now){
+  if(!(now instanceof Date)||!Number.isFinite(now.getTime()))return [];
+  return Array.from({length:GUIDED_ACTIVITY_DAYS},(_,i)=>guidedDayKey(
+    new Date(now.getFullYear(),now.getMonth(),now.getDate()-GUIDED_ACTIVITY_DAYS+1+i,12)));
+}
+function normalizedGuidedActivity(value,now){
+  if(!value||value.enabled!==true||!value.days||typeof value.days!=='object'||Array.isArray(value.days))return null;
+  const calendar=guidedCalendar(now);
+  if(!calendar.length)return null;
+  const days={};
+  for(const key of calendar){
+    const count=Object.hasOwn(value.days,key)?value.days[key]:0;
+    if(Number.isInteger(count)&&count>0&&count<=999)days[key]=count;
+  }
+  return {enabled:true,days};
+}
+export function readGuidedActivity(storage,now=new Date()){
+  try{
+    const raw=(storage===undefined?globalThis.localStorage:storage)?.getItem(GUIDED_ACTIVITY_KEY);
+    return typeof raw==='string'&&raw.length<=4096?normalizedGuidedActivity(JSON.parse(raw),now):null;
+  }catch{return null;}
+}
+export function enableGuidedActivity(storage,now=new Date()){
+  try{
+    const target=storage===undefined?globalThis.localStorage:storage;
+    if(!readGuidedActivity(target,now))target.setItem(GUIDED_ACTIVITY_KEY,JSON.stringify({enabled:true,days:{}}));
+    return true;
+  }catch{return false;}
+}
+export function clearGuidedActivity(storage){
+  try{(storage===undefined?globalThis.localStorage:storage).removeItem(GUIDED_ACTIVITY_KEY);return true;}
+  catch{return false;}
+}
+export function recordGuidedCompletion(previous,current,storage,now=new Date()){
+  if(!previous||previous.status==='complete'||current?.status!=='complete')return false;
+  try{
+    const target=storage===undefined?globalThis.localStorage:storage;
+    const activity=readGuidedActivity(target,now);
+    if(!activity)return false;
+    const key=guidedDayKey(now);
+    activity.days[key]=Math.min(999,(activity.days[key]??0)+1);
+    target.setItem(GUIDED_ACTIVITY_KEY,JSON.stringify(activity));
+    return true;
+  }catch{return false;}
+}
+export function summarizeGuidedActivity(activity,now=new Date()){
+  const clean=normalizedGuidedActivity(activity,now);
+  const days=guidedCalendar(now).map(key=>({key,count:clean?.days[key]??0}));
+  return {enabled:Boolean(clean),days,total:days.reduce((sum,day)=>sum+day.count,0),
+    activeDays:days.filter(day=>day.count>0).length,today:days.at(-1)?.count??0};
+}
+
 export function readAccuracyGoal(storage = globalThis.localStorage) {
   try {
     const value = Number(storage?.getItem(GOAL_KEY));

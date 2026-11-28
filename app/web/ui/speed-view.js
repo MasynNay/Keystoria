@@ -2,7 +2,7 @@
 import { safe, ico, tag } from './helpers.js';
 import { DURATIONS, PACKS, readSpeedHistory } from './speed-engine.js';
 import { speedSpokenTarget } from './mobile-typing.js?v=0.42.0';
-import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS, readFocusPlan, focusPlanFromSession, sameFocusScope } from './speed-insights.js?v=0.48.7';
+import { ACCURACY_GOALS, readAccuracyGoal, summarizeSpeedPractice, summarizeSpeedActivity, practiceMode, compareFocusedAttempts, FOCUS_ROUTINE_ATTEMPTS, readFocusPlan, focusPlanFromSession, sameFocusScope, readGuidedActivity, summarizeGuidedActivity } from './speed-insights.js?v=0.48.8';
 
 export function speedLibrary() {
   return `<section class="speed-promo shell" id="speed-lab">
@@ -157,7 +157,7 @@ function speedFocusRoutine(session) {
     <progress max="${FOCUS_ROUTINE_ATTEMPTS}" value="${routine.streak}" aria-label="Qualifying attempts"></progress>
     <p>Goal: ${routine.goal}% or higher on each focus key, with at least five positions per key in each attempt. This goal is fixed for the routine. Changing the duration or category ends it.</p>
     <p role="status">${message}</p>
-    ${done&&routine.status==='complete'?'<p>Return to a regular drill whenever you are ready. No practice records or mastery awards are saved.</p>':''}
+    ${done&&routine.status==='complete'?'<p>Return to a regular drill whenever you are ready. No scores or mastery awards are saved. Optional local activity counts completed routines only.</p>':''}
   </section>`;
 }
 
@@ -171,6 +171,19 @@ export function savedFocusPlanPanel(session) {
       :'<p>No plan saved. Finish a drill with missed keys, or complete a focused attempt, to save a practice goal for next time.</p>'}
     ${candidate?`<button type="button" class="btn btn-outline speed-plan-save" data-action="speed-plan-save" ${matches?'disabled':''}>${matches?'PLAN SAVED':plan?'REPLACE SAVED PLAN':'SAVE FOCUS PLAN'}</button>`:''}
     <p class="speed-plan-note">One optional plan on this browser. Only category, duration, goal and up to five target keys are saved. Starting it creates a fresh routine; attempt progress and typed text are never stored. Score export and clear-results controls do not include this plan. Remove it here.</p>
+  </section>`;
+}
+
+export function guidedActivityPanel() {
+  const activity=summarizeGuidedActivity(readGuidedActivity());
+  return `<section id="speed-guided-activity" class="speed-saved-focus-plan speed-guided-activity" aria-labelledby="speed-guided-activity-heading" data-enabled="${activity.enabled}" data-total="${activity.total}">
+    <h3 id="speed-guided-activity-heading" tabindex="-1">GUIDED TRAINING ACTIVITY</h3>
+    ${activity.enabled?`<div class="speed-guided-stats"><div><small>LAST 30 DAYS</small><strong>${activity.total}</strong><span>Completed routines</span></div><div><small>ACTIVE DAYS</small><strong>${activity.activeDays}</strong><span>of 30 days</span></div><div><small>TODAY</small><strong>${activity.today}</strong><span>Completed routines</span></div></div>
+      <div class="speed-guided-days" role="group" aria-label="Last 30 local calendar days of guided training">${activity.days.map(day=>`<span class="${day.count?'has-activity':''}" title="${day.key}: ${day.count} completed routines" aria-label="${day.key}: ${day.count} completed routines" role="img"></span>`).join('')}</div>
+      <p>One count when a guided routine first reaches its goal. Ordinary drills, retries of a completed routine and partial attempts do not count. A maximum of 999 completions per day is retained.</p>
+      <button type="button" class="btn btn-outline" data-action="speed-activity-clear">TURN OFF &amp; CLEAR ACTIVITY</button>`:
+      '<p>Optional: remember how many guided routines you finish each day. Tracking is off until you enable it; past routines are not added retroactively.</p><button type="button" class="btn btn-outline" data-action="speed-activity-enable">ENABLE LOCAL ACTIVITY</button>'}
+    <p class="speed-plan-note">Local calendar counts only. No typed text, keys, scores or individual attempts are saved. Older days are excluded and pruned on the next completion. This is a training consistency indicator, not a skill rating. Separate from saved plans and personal score exports.</p>
   </section>`;
 }
 
@@ -209,6 +222,7 @@ export function speedTemplate(session, header) {
         <div class="speed-controls"><span>TIME STARTS ON FIRST KEY · PAUSE MAKES A RUN PRACTICE-ONLY · CTRL + ENTER TO RESTART</span><button type="button" class="btn btn-outline" data-action="speed-pause" aria-label="Pause for practice. This session will not be saved." disabled>PAUSE PRACTICE</button><button class="btn btn-outline" data-action="speed-restart">${ico('refresh',16)} RESTART</button></div>`}
     </section>
     ${savedFocusPlanPanel(session)}
+    ${guidedActivityPanel()}
     <div class="speed-bottom"><section><span>// YOUR RECENT RESULTS</span><h2>PERSONAL RECORDS.</h2><div id="speed-history-panel">${speedHistoryPanel()}</div>${speedInsightsPanel(session)}</section><aside><span>// PRACTICE PROFILE</span><h2>${safe(PACKS[session.pack].title)}</h2><p>${safe(PACKS[session.pack].description)}</p><p>Timed solo drills use local browser storage, so you can train without an account. None of these words are shell commands.</p></aside></div>
   </main>`;
 }
