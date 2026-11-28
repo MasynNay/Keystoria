@@ -296,3 +296,21 @@
 .speed-survival-rounds{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media(max-width:760px){.speed-survival-rounds{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:400px){.speed-survival-rounds{grid-template-columns:1fr}}
+
+/* Challenge Arcade: distinct choices, existing visual language and theme tokens. */
+.speed-challenge-arcade{margin:22px 0;min-width:0}
+.speed-arcade-head{margin:0 0 12px}
+.speed-arcade-head>span{color:var(--accent);font:11px var(--mono);letter-spacing:.7px}
+.speed-arcade-head h2{font-size:clamp(20px,3vw,28px);margin:6px 0}
+.speed-arcade-head p{font:13px/1.6 var(--body);color:var(--muted)}
+.speed-arcade-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.speed-arcade-grid>.speed-saved-focus-plan{min-width:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.speed-arcade-grid>.speed-saved-focus-plan>button,.speed-arcade-grid .speed-circuit-starts{margin-top:auto}
+.speed-circuit-starts{display:flex;flex-wrap:wrap;gap:6px}
+.speed-circuit-starts button{flex:1 1 auto}
+.speed-circuit-difficulty{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;margin:8px 0;font:12px/1.5 var(--mono)}
+.speed-circuit-difficulty strong{color:var(--accent)}
+.speed-circuit-results{list-style:none;padding:0;display:grid;gap:6px;margin:8px 0}
+.speed-circuit-results li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;border:1px solid var(--line);padding:8px;border-radius:6px;font:12px/1.5 var(--body);min-width:0;overflow-wrap:anywhere}
+.speed-circuit-results small{font:10px/1.5 var(--mono);color:var(--accent)}
+@media(max-width:900px){.speed-arcade-grid{grid-template-columns:1fr}}

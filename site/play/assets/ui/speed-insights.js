@@ -179,7 +179,7 @@ export function normalizeFocusPlan(value) {
 }
 
 export function focusPlanFromSession(session,goal=95) {
-  if(session?.status!=='complete'||session.accuracyLadder||session.survival)return null;
+  if(session?.status!=='complete'||session.accuracyLadder||session.survival||session.adaptiveCircuit)return null;
   const keys=session.targetKeys?.length?session.targetKeys:session.keyReview?.keys.map(row=>row.key);
   return normalizeFocusPlan({pack:session.pack,seconds:session.seconds,
     goal:session.focusRoutine?.goal??goal,keys});
@@ -364,6 +364,39 @@ export function evaluateSurvival(run,metrics,referenceLength,interrupted=false){
  const remaining=run.remaining-(characters-correct);
  if(remaining<0)return {...run,remaining:0,status:'depleted'};
  return {...run,remaining,status:run.wave===SURVIVAL_WAVES.length-1?'complete':'passed'};
+}
+
+
+/** Session-only adaptive challenge. The next passage length is determined
+ * exclusively by the last completed round, never by personal history.
+ * Interrupted rounds do not count or change difficulty. */
+export const CIRCUIT_TIERS=Object.freeze([6,10,14,18,22]);
+export const CIRCUIT_ROUNDS=5;
+export const CIRCUIT_SECONDS=30;
+export function createAdaptiveCircuit(tier=1){
+ return {tier:Number.isInteger(tier)&&tier>=0&&tier<CIRCUIT_TIERS.length?tier:1,results:[],status:'ready'};
+}
+export function evaluateAdaptiveCircuit(run,metrics,referenceLength,interrupted=false){
+ if(!run||run.status!=='ready'||!Number.isInteger(run.tier)||!CIRCUIT_TIERS[run.tier]||
+   !Array.isArray(run.results)||run.results.length>=CIRCUIT_ROUNDS)return run;
+ if(interrupted)return {...run,status:'interrupted'};
+ const {correct,characters}=metrics??{};
+ if(!Number.isInteger(referenceLength)||referenceLength<1||!Number.isInteger(characters)||
+   !Number.isInteger(correct)||characters<0||characters>referenceLength||correct<0||correct>characters)return run;
+ const finished=characters===referenceLength;
+ const rise=finished&&correct*100>=98*characters;
+ const fall=!finished||correct*100<90*characters;
+ const nextTier=Math.max(0,Math.min(CIRCUIT_TIERS.length-1,run.tier+(rise?1:fall?-1:0)));
+ const results=[...run.results,{tier:run.tier,tokens:CIRCUIT_TIERS[run.tier],correct,characters,finished,nextTier}];
+ return {...run,results,status:results.length===CIRCUIT_ROUNDS?'complete':'review'};
+}
+export function nextAdaptiveCircuit(run){
+ if(run?.status!=='review'||!run.results.length)return null;
+ return {tier:run.results.at(-1).nextTier,results:[...run.results],status:'ready'};
+}
+export function restartAdaptiveCircuit(run){
+ if(run?.status==='interrupted'||run?.status==='ready')return {...run,status:'ready'};
+ return createAdaptiveCircuit();
 }
 
 export function readAccuracyGoal(storage = globalThis.localStorage) {
