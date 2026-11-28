@@ -348,6 +348,7 @@ try {
    const planPanel=page.locator('#speed-saved-focus-plan');
    assert.equal(await planPanel.getAttribute('data-saved'),'true');
    assert.equal(await page.locator('[data-action="speed-plan-save"]').isDisabled(),true);
+   assert.ok(await page.evaluate(()=>document.querySelector('.speed-console').compareDocumentPosition(document.getElementById('speed-saved-focus-plan'))&Node.DOCUMENT_POSITION_FOLLOWING),'saved-plan management does not occupy the active typing console');
    const savedPlan=await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.speed.focusPlan.v1')));
    assert.deepEqual(savedPlan,{pack,seconds:30,goal:98,keys:[focusKey]});
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),savedBeforeRoutine);

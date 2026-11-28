@@ -123,7 +123,7 @@ export function createSpeedController({ state, onRender, playSound }) {
         : focusChoice==='speed-duration'
           ? document.querySelector('[data-action="speed-duration"][data-seconds="'+launchedSession.seconds+'"]')
           : null;
-      (choice||field).focus({preventScroll:!(leavingResults&&!choice&&focusedDrill)});
+      (choice||field).focus({preventScroll:!(!choice&&focusedDrill&&(leavingResults||guidedGoal!==null))});
     };
     if(enteringFromAnotherMode && typeof requestAnimationFrame==='function'){
       focusFrame=requestAnimationFrame(()=>{

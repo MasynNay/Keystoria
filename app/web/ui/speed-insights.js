@@ -167,7 +167,7 @@ export function advanceFocusRoutine(routine,attempt) {
 export const SAVED_FOCUS_PLAN_KEY='keystoria.speed.focusPlan.v1';
 export function normalizeFocusPlan(value) {
   if(!value||typeof value!=='object'||Array.isArray(value)
-      ||!Object.hasOwn(PACKS,value.pack)||!DURATIONS.includes(value.seconds)
+      ||typeof value.pack!=='string'||!Object.hasOwn(PACKS,value.pack)||!DURATIONS.includes(value.seconds)
       ||!ACCURACY_GOALS.includes(value.goal)||!Array.isArray(value.keys)
       ||value.keys.length<1||value.keys.length>5)return null;
   const drill=createFocusedSpeedDrill(value.pack,value.keys,2,()=>0);
@@ -185,22 +185,22 @@ export function focusPlanFromSession(session,goal=95) {
     goal:session.focusRoutine?.goal??goal,keys});
 }
 
-export function readFocusPlan(storage=globalThis.localStorage) {
+export function readFocusPlan(storage) {
   try{
-    const raw=storage?.getItem(SAVED_FOCUS_PLAN_KEY);
+    const raw=(storage===undefined?globalThis.localStorage:storage)?.getItem(SAVED_FOCUS_PLAN_KEY);
     return typeof raw==='string'&&raw.length<=512?normalizeFocusPlan(JSON.parse(raw)):null;
   }catch{return null;}
 }
 
-export function saveFocusPlan(value,storage=globalThis.localStorage) {
+export function saveFocusPlan(value,storage) {
   const plan=normalizeFocusPlan(value);
   if(!plan)return false;
-  try{storage.setItem(SAVED_FOCUS_PLAN_KEY,JSON.stringify(plan));return true;}
+  try{(storage===undefined?globalThis.localStorage:storage).setItem(SAVED_FOCUS_PLAN_KEY,JSON.stringify(plan));return true;}
   catch{return false;}
 }
 
-export function clearFocusPlan(storage=globalThis.localStorage) {
-  try{storage.removeItem(SAVED_FOCUS_PLAN_KEY);return true;}
+export function clearFocusPlan(storage) {
+  try{(storage===undefined?globalThis.localStorage:storage).removeItem(SAVED_FOCUS_PLAN_KEY);return true;}
   catch{return false;}
 }
 
