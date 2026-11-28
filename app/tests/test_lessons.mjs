@@ -16,10 +16,10 @@ const session = (os, overrides = {}) => ({
   os, index:0, answered:false, errors:0, completed:false, review:false, errorMessage:'', draft:'', ...overrides,
 });
 
-test('seven separate courses teach curated real commands with context', () => {
-  assert.deepEqual(Object.keys(LESSONS).sort(), ['docker','git','linux','macos','network','sql','windows']);
+test('nine separate courses teach curated real commands with context', () => {
+  assert.deepEqual(Object.keys(LESSONS).sort(), ['docker','git','linux','macos','network','python','services','sql','windows']);
   for (const [id,lesson] of Object.entries(LESSONS)) {
-    const count=['git','network','docker','sql'].includes(id)?10:14;
+    const count=['git','network','docker','sql','python','services'].includes(id)?10:14;
     assert.equal(lesson.commands.length,count);
     assert.ok(lesson.story.length>60);
     for (const command of lesson.commands) {
@@ -47,7 +47,7 @@ test('typing preserves meaningful case, ignores only accidental whitespace', () 
   assert.equal(matchesCommand('rm -rf /','pwd'),false);
 });
 
-test('all 82 real commands have clearly fictionalized example output', () => {
+test('all 102 real commands have clearly fictionalized example output', () => {
   for (const [os, lesson] of Object.entries(LESSONS)) {
     assert.equal(LESSON_OUTPUTS[os].length, lesson.commands.length);
     for (const output of LESSON_OUTPUTS[os]) assert.ok(output.length >= 4);
@@ -111,7 +111,7 @@ test('Git and network lessons retain exact command case and platform context',()
  assert.ok(LESSONS.network.commands.some(c=>c.text==='ping -n 4 192.0.2.1'));
  assert.ok(LESSONS.network.commands.some(c=>c.text==='ping -c 4 192.0.2.1'));
  assert.ok(LESSONS.git.commands.some(c=>c.text==='git diff --staged'));
- assert.match(trainingLibrary(),/7 hands-on practice courses/);
+ assert.match(trainingLibrary(),/9 hands-on practice courses/);
 });
 
 test('Docker and SQL courses teach inspection only, with aligned simulated output and reference',()=>{
@@ -133,7 +133,7 @@ test('Docker and SQL courses teach inspection only, with aligned simulated outpu
  }
  assert.ok(LESSONS.docker.commands.some(c=>c.text==='docker compose ps -a'));
  assert.ok(LESSONS.sql.commands.some(c=>c.text.includes(' JOIN ')));
- assert.match(trainingLibrary(),/7 hands-on practice courses/);
+ assert.match(trainingLibrary(),/9 hands-on practice courses/);
 });
 
 test('every Academy command has one matching guide and nonempty illustrative output',()=>{
@@ -155,4 +155,25 @@ test('SQL sample outputs refer to the same five fictional inventory records',()=
  assert.equal(LESSON_OUTPUTS.sql[6].trim().split('\n').at(-1),'58');
  assert.deepEqual(LESSON_OUTPUTS.sql[1].split('\n').slice(1),rows.filter(row=>Number(row[1])<10).map(row=>row[0]));
  assert.equal(LESSON_OUTPUTS.sql[9].split('\n').length,6);
+});
+
+
+test('Python tooling and systemd diagnostics provide ten simulated independent steps each',()=>{
+ for(const id of ['python','services']){
+  const lesson=LESSONS[id];
+  assert.equal(lesson.commands.length,10);
+  assert.match(lesson.note,/simulated/);
+  for(let index=0;index<10;index++){
+   const task=lesson.commands[index];
+   assert.match(task.text,id==='python'?/^python /:/^(systemctl|journalctl) /);
+   assert.equal(matchesCommand(task.text,task.text),true);
+   const html=trainingTemplate(session(id,{index,answered:true,referenceIndex:index}),header);
+   assert.match(html,/SIMULATED TERMINAL OUTPUT/);
+   assert.match(html,/WHAT DOES IT DO/);
+  }
+  assert.match(trainingTemplate(session(id,{completed:true,index:9}),header),/All 10 commands completed/);
+ }
+ assert.ok(LESSONS.python.commands.some(c=>c.text==='python -m pip check'));
+ assert.ok(LESSONS.services.commands.some(c=>c.text==='systemctl --failed'));
+ assert.match(trainingLibrary(),/9 hands-on practice courses/);
 });

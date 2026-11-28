@@ -1,5 +1,5 @@
 /** Small, local-only Field Academy checkpoints. Never persist typed drafts. */
-import { LESSONS } from './lessons.js?v=0.2.1';
+import { LESSONS } from './lessons.js?v=0.2.2';
 
 const KEY='keystoria.academy.checkpoints.v1';
 const MAX_ERRORS=10000;

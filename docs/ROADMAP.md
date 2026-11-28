@@ -1,3 +1,7 @@
+## Python tooling and Linux service diagnostics — November 28, 2026
+
+**Proposed; CI not yet verified.** Two new independent Field Academy courses add twenty simulated exercises, bringing the curriculum to nine courses and 102 commands. Python covers interpreter, package metadata, dependency checks and built-in help; Linux service diagnostics covers systemd state, unit status, journal filters and recorded exit results. Existing randomization, checkpoints, badges and guide UI are reused without per-input work or real execution. Expanded unit and browser tests cover completion and aligned examples. Physical phone QA remains open.
+
 ## Accuracy Ladder — November 27, 2026
 
 **Under CI review.** Optional three-round challenge in the selected Speed Lab category. Warm-up 15s/90%/20 submitted positions; Precision 30s/95%/40; Endurance 60s/98%/60. Exact final accuracy fraction and sufficient submitted positions (including spaces) are required. A paused/interrupted round does not qualify; retry keeps earlier rounds, explicit next advances, and completion permits a fresh ladder. Category or duration change and exit end the challenge. No score or activity records, persisted ladder state, mastery rating or extra per-input work. Original timer, native field and scoring remain intact. Unit and browser tests cover qualification, retry, mode exit, Numpad, phone/desktop and storage isolation. Physical-device QA remains open.
