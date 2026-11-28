@@ -19,6 +19,8 @@ try {
   const input=page.locator('#speed-input');
   assert.equal(await insight.getAttribute('data-matches'),'0','new visitors have no comparable progress yet');
   assert.equal(await page.locator('#speed-saved-focus-plan').getAttribute('data-saved'),'false');
+  assert.equal(await page.locator('#speed-guided-activity').getAttribute('data-enabled'),'false');
+  assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1')),null);
   assert.equal(await page.locator('[data-action="speed-plan-save"]').count(),0);
   const week=insight.locator('.speed-week-activity');
   assert.equal(await week.getAttribute('data-active-days'),'0');
@@ -317,6 +319,10 @@ try {
    const savedBeforeRoutine=await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1'));
    await page.locator('[data-action="speed-guided"]').click();
    const routine=page.locator('#speed-focus-routine');
+   const activity=page.locator('#speed-guided-activity');
+   assert.equal(await activity.getAttribute('data-enabled'),'false');
+   await page.locator('[data-action="speed-activity-enable"]').click();
+   assert.equal(await activity.getAttribute('data-total'),'0');
    assert.equal(await routine.getAttribute('data-streak'),'0');
    assert.equal(await routine.getAttribute('data-routine-status'),'ready');
    assert.match(await routine.innerText(),/Goal: 98% or higher/);
@@ -341,6 +347,11 @@ try {
     assert.equal(await routine.getAttribute('data-streak'),expected);
    }
    assert.equal(await routine.getAttribute('data-routine-status'),'complete');
+   assert.equal(await activity.getAttribute('data-total'),'1');
+   assert.equal(await activity.locator('.speed-guided-days span').count(),30);
+   const activityData=await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.speed.guidedActivity.v1')));
+   assert.deepEqual(Object.keys(activityData).sort(),['days','enabled']);
+   assert.deepEqual(Object.values(activityData.days),[1]);
    assert.match(await routine.innerText(),/ROUTINE COMPLETE/);
    assert.equal(await routine.locator('progress').getAttribute('value'),'2');
    assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.focusPlan.v1')),null,'no automatic persistence of focus keys');
@@ -365,6 +376,7 @@ try {
    if(await welcome.count()&&await welcome.isVisible())await welcome.click();
    await page.locator('[data-action="speed-open"]').first().click();
    assert.equal(await planPanel.getAttribute('data-saved'),'true');
+   assert.equal(await activity.getAttribute('data-total'),'1','completion counts survive reload');
    assert.match(await planPanel.innerText(),/30s · 98% goal/);
    await page.locator('[data-action="speed-plan-launch"]').click();
    assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),pack);
@@ -381,6 +393,12 @@ try {
    assert.equal(await planPanel.getAttribute('data-saved'),'false');
    assert.equal(await page.locator('#speed-input').inputValue(),launched.slice(0,1),'clearing a plan never detaches the draft');
    assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.focusPlan.v1')),null);
+   assert.equal(await activity.getAttribute('data-total'),'1','plan removal does not erase activity');
+   page.once('dialog',d=>d.accept());
+   await page.locator('[data-action="speed-activity-clear"]').click();
+   assert.equal(await activity.getAttribute('data-enabled'),'false');
+   assert.equal(await page.locator('#speed-input').inputValue(),launched.slice(0,1),'activity removal preserves active draft');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.guidedActivity.v1')),null);
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),savedBeforeRoutine);
    await page.locator('[data-action="speed-regular"]').click();
    await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();

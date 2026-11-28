@@ -1,9 +1,9 @@
 import { LESSONS, matchesCommand, saveLesson, randomizedCourseOrder, activeCommandIndex } from "./ui/lessons.js";
 import { readAcademyCheckpoint, saveAcademyCheckpoint, clearAcademyCheckpoint, readAcademyCheckpoints, clearAllAcademyCheckpoints } from "./ui/academy-checkpoint.js?v=0.1.1";
 import { trainingTemplate } from "./ui/training-view.js?v=0.50.1";
-import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel } from "./ui/speed-view.js?v=0.48.7";
-import { createSpeedController } from "./ui/speed-controller.js?v=0.48.9";
-import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession } from "./ui/speed-insights.js?v=0.48.7";
+import { speedTemplate, speedInsightsPanel, speedHistoryPanel, savedFocusPlanPanel, guidedActivityPanel } from "./ui/speed-view.js?v=0.48.8";
+import { createSpeedController } from "./ui/speed-controller.js?v=0.48.10";
+import { readAccuracyGoal, saveAccuracyGoal, clearSpeedResults, exportSpeedResults, parseSpeedHistoryExport, restoreSpeedHistory, SPEED_IMPORT_MAX_BYTES, readFocusPlan, saveFocusPlan, clearFocusPlan, focusPlanFromSession, enableGuidedActivity, clearGuidedActivity } from "./ui/speed-insights.js?v=0.48.8";
 import { readSpeedHistory } from "./ui/speed-engine.js";
 import { createLyricLabController } from "./ui/lyric-lab-controller.js?v=0.53.0";
 import { paintTypingFeedback } from "./ui/typing-feedback.js?v=0.2.1";
@@ -594,6 +594,18 @@ app.addEventListener("click",event=>{
      if(panel)panel.outerHTML=savedFocusPlanPanel(state.speed);
      document.getElementById("speed-saved-focus-heading")?.focus({preventScroll:true});
      toast("Saved focus plan removed.");
+     break;
+   }
+   case "speed-activity-enable":
+   case "speed-activity-clear": {
+     if(!state.speed)break;
+     const clear=item.dataset.action==="speed-activity-clear";
+     if(clear&&!window.confirm("Turn off guided training activity and clear its local calendar counts? Saved plans and scores are unchanged."))break;
+     if(!(clear?clearGuidedActivity():enableGuidedActivity())){toast("Could not update local training activity.","error");break;}
+     const panel=document.getElementById("speed-guided-activity");
+     if(panel)panel.outerHTML=guidedActivityPanel();
+     document.getElementById("speed-guided-activity-heading")?.focus({preventScroll:true});
+     toast(clear?"Guided activity turned off and cleared.":"Local guided activity enabled.");
      break;
    }
    case "speed-regular":speedController.restart({regular:true});break;
