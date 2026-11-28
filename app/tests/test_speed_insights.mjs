@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   practiceMode, readAccuracyGoal, saveAccuracyGoal,
-  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS
+  summarizeSpeedPractice, exportSpeedResults, clearSpeedResults, reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, compareFocusedAttempts, sameFocusScope, createFocusRoutine, advanceFocusRoutine, FOCUS_ROUTINE_ATTEMPTS, normalizeFocusPlan, focusPlanFromSession, readFocusPlan, saveFocusPlan, clearFocusPlan, SAVED_FOCUS_PLAN_KEY
 } from '../web/ui/speed-insights.js';
 
 const storage=()=>({
@@ -374,4 +374,44 @@ test('routine uses the exact selected goal, requires every key, and never persis
  assert.equal(advanceFocusRoutine(r,{...almost,rows:[]}).status,'insufficient');
  assert.deepEqual(Object.keys(advanceFocusRoutine(r,almost)).sort(),['goal','mode','status','streak']);
  assert.equal(advanceFocusRoutine(null,almost),null);
+});
+
+test('saved focus plan is opt-in configuration only and is independent of result history',()=>{
+ const s=storage(), plan={pack:'everyday',seconds:30,goal:98,keys:['a',' ']};
+ assert.equal(readFocusPlan(s),null);
+ assert.equal(saveFocusPlan({...plan,reference:'private',typed:'draft',streak:2,at:'date'},s),true);
+ assert.deepEqual(readFocusPlan(s),plan);
+ assert.deepEqual(JSON.parse(s.getItem(SAVED_FOCUS_PLAN_KEY)),plan);
+ s.setItem('panic.speed.results.v1','[]');
+ assert.equal(clearSpeedResults(s),true);
+ assert.deepEqual(readFocusPlan(s),plan);
+ assert.equal(saveFocusPlan({pack:'numpad',seconds:15,goal:95,keys:['7',' ']},s),true);
+ assert.equal(readFocusPlan(s).pack,'numpad');
+ assert.equal(clearFocusPlan(s),true);
+ assert.equal(readFocusPlan(s),null);
+});
+
+test('saved focus plans reject malformed, oversized, unsupported or out-of-scope configuration',()=>{
+ const s=storage(), plan={pack:'everyday',seconds:30,goal:98,keys:['a',' ']};
+ for(const invalid of [null,[],{...plan,pack:'__proto__'},{...plan,keys:[]},{...plan,keys:['a','a']},{...plan,keys:['<']},{...plan,keys:['a','b','c','d','e','f']},{...plan,seconds:17},{...plan,goal:99},{...plan,goal:'98'},{...plan,pack:'numpad'}]){
+  assert.equal(normalizeFocusPlan(invalid),null);
+  assert.equal(saveFocusPlan(invalid,s),false);
+ }
+ for(const value of ['bad JSON','x'.repeat(513),JSON.stringify({...plan,keys:['<']})]){
+  s.setItem(SAVED_FOCUS_PLAN_KEY,value);
+  assert.equal(readFocusPlan(s),null);
+ }
+ const denied={getItem(){throw Error('blocked')},setItem(){throw Error('blocked')},removeItem(){throw Error('blocked')}};
+ assert.equal(readFocusPlan(denied),null);
+ assert.equal(saveFocusPlan(plan,denied),false);
+ assert.equal(clearFocusPlan(denied),false);
+ assert.deepEqual(normalizeFocusPlan({pack:'atmosphere',seconds:60,goal:90,keys:['.',',']}),{pack:'atmosphere',seconds:60,goal:90,keys:['.',',']});
+});
+
+test('plan candidates use the completed focus scope and fixed routine goal, not a draft',()=>{
+ const base={status:'complete',pack:'everyday',seconds:30,keyReview:{keys:[{key:'a',attempted:20,mistakes:2}]}};
+ assert.deepEqual(focusPlanFromSession(base,90),{pack:'everyday',seconds:30,goal:90,keys:['a']});
+ assert.deepEqual(focusPlanFromSession({...base,targetKeys:['t',' '],focusRoutine:{goal:98}},90),{pack:'everyday',seconds:30,goal:98,keys:['t',' ']});
+ assert.equal(focusPlanFromSession({...base,status:'running'},90),null);
+ assert.equal(focusPlanFromSession({...base,keyReview:{keys:[]}},90),null);
 });

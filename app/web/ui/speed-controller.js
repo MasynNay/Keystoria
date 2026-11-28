@@ -5,7 +5,7 @@
  */
 import { DURATIONS, PACKS, createWordStream, scoreSpeedRun, createIncrementalSpeedScorer, saveSpeedResult } from './speed-engine.js?v=0.40.0';
 import { createSpeedFlow } from './speed-flow.js?v=0.41.4';
-import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope, readAccuracyGoal, createFocusRoutine, advanceFocusRoutine } from './speed-insights.js?v=0.48.6';
+import { reviewSpeedKeys, createFocusedSpeedDrill, summarizeFocusedAttempt, sameFocusScope, readAccuracyGoal, createFocusRoutine, advanceFocusRoutine, normalizeFocusPlan } from './speed-insights.js?v=0.48.7';
 import { MOBILE_TYPING_MEDIA, nextSpeedCue, previousWordRange, speedSpokenTarget, speedFocusWord, paintSpeedFocusWord } from './mobile-typing.js?v=0.50.1';
 
 const node = id => document.getElementById(id);
@@ -95,7 +95,7 @@ export function createSpeedController({ state, onRender, playSound }) {
     // A canceled/interrupted attempt does not replace a valid baseline.
     const candidate=priorSession?.focusAttempt&&!priorSession.focusAttempt.interrupted
       ?priorSession.focusAttempt:priorSession?.previousFocusAttempt;
-    const previousFocusAttempt=scope.keys.length&&sameFocusScope(scope,candidate)?candidate:null;
+    const previousFocusAttempt=scope.keys.length&&guidedGoal===null&&sameFocusScope(scope,candidate)?candidate:null;
     // Routine state is tied to the exact ordered keys, category and timer.
     const priorScope=priorSession&&{pack:priorSession.pack,seconds:priorSession.seconds,keys:priorSession.targetKeys??[]};
     const routine=scope.keys.length?(guidedGoal!==null?createFocusRoutine(guidedGoal)
@@ -145,6 +145,13 @@ export function createSpeedController({ state, onRender, playSound }) {
     const session=state.speed;
     if(session?.status!=='complete'||!session.keyReview?.keys.length)return;
     open({pack:session.pack,seconds:session.seconds,targetKeys:session.keyReview.keys.map(row=>row.key),guidedGoal:guided?readAccuracyGoal():null});
+  }
+
+  function launchFocusPlan(value) {
+    const plan=normalizeFocusPlan(value);
+    if(!plan||!state.speed||!['idle','complete'].includes(state.speed.status))return false;
+    open({pack:plan.pack,seconds:plan.seconds,targetKeys:plan.keys,guidedGoal:plan.goal});
+    return true;
   }
 
   function restart({regular=false}={}) {
@@ -459,5 +466,5 @@ export function createSpeedController({ state, onRender, playSound }) {
     if (state.speed?.status==='running' || state.speed?.status==='idle') state.speed.keystrokes++;
   }
 
-  return {open,close,startTargeted,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
+  return {open,close,startTargeted,launchFocusPlan,restart,paint,updateCaretGuidance,input,keystroke,insertSpace,backWord,toggleKeyboardAssist,toggleWordFocus,onVisibilityChange,onPageHide,pauseManually,resume,finish,tick};
 }

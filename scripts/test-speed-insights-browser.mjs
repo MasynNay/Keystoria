@@ -18,6 +18,8 @@ try {
   const insight=page.locator('#speed-practice-insights');
   const input=page.locator('#speed-input');
   assert.equal(await insight.getAttribute('data-matches'),'0','new visitors have no comparable progress yet');
+  assert.equal(await page.locator('#speed-saved-focus-plan').getAttribute('data-saved'),'false');
+  assert.equal(await page.locator('[data-action="speed-plan-save"]').count(),0);
   const week=insight.locator('.speed-week-activity');
   assert.equal(await week.getAttribute('data-active-days'),'0');
   assert.equal(await week.getAttribute('data-saved-runs'),'0');
@@ -341,6 +343,13 @@ try {
    assert.equal(await routine.getAttribute('data-routine-status'),'complete');
    assert.match(await routine.innerText(),/ROUTINE COMPLETE/);
    assert.equal(await routine.locator('progress').getAttribute('value'),'2');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.focusPlan.v1')),null,'no automatic persistence of focus keys');
+   await page.locator('[data-action="speed-plan-save"]').click();
+   const planPanel=page.locator('#speed-saved-focus-plan');
+   assert.equal(await planPanel.getAttribute('data-saved'),'true');
+   assert.equal(await page.locator('[data-action="speed-plan-save"]').isDisabled(),true);
+   const savedPlan=await page.evaluate(()=>JSON.parse(localStorage.getItem('keystoria.speed.focusPlan.v1')));
+   assert.deepEqual(savedPlan,{pack,seconds:30,goal:98,keys:[focusKey]});
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),savedBeforeRoutine);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=2);
    await page.locator('[data-action="speed-duration"][data-seconds="15"]').click();
@@ -349,6 +358,30 @@ try {
    await page.locator('[data-action="speed-regular"]').click();
    assert.equal(await banner.count(),0);
    assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),savedBeforeRoutine);
+   // Reload from the same browser: configuration survives, results do not.
+   await page.reload({waitUntil:'domcontentloaded'});
+   await page.locator('#app .brand-name').waitFor();
+   if(await welcome.count()&&await welcome.isVisible())await welcome.click();
+   await page.locator('[data-action="speed-open"]').first().click();
+   assert.equal(await planPanel.getAttribute('data-saved'),'true');
+   assert.match(await planPanel.innerText(),/30s · 98% goal/);
+   await page.locator('[data-action="speed-plan-launch"]').click();
+   assert.equal(await page.locator('.speed-page').getAttribute('data-speed'),pack);
+   assert.equal(await routine.getAttribute('data-streak'),'0','saved plan launches a fresh routine');
+   assert.equal(await routine.getAttribute('data-routine-status'),'ready');
+   assert.equal(await page.locator('#speed-focus-comparison').count(),0);
+   const launched=await page.locator('#speed-letters').evaluate(el=>el.dataset.fullReference||el.textContent);
+   assert.ok(launched.split(' ').every(word=>word.includes(focusKey)));
+   await page.locator('#speed-input').fill(launched.slice(0,1));
+   await page.locator('[data-action="speed-plan-launch"]').click();
+   assert.equal(await page.locator('#speed-input').inputValue(),launched.slice(0,1),'plan launch cannot abandon active typing');
+   page.once('dialog',d=>d.accept());
+   await page.locator('[data-action="speed-plan-clear"]').click();
+   assert.equal(await planPanel.getAttribute('data-saved'),'false');
+   assert.equal(await page.locator('#speed-input').inputValue(),launched.slice(0,1),'clearing a plan never detaches the draft');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('keystoria.speed.focusPlan.v1')),null);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('panic.speed.results.v1')),savedBeforeRoutine);
+   await page.locator('[data-action="speed-regular"]').click();
    await page.locator('[data-action="speed-duration"][data-seconds="30"]').click();
   }
   await context.close();
