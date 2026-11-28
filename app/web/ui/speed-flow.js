@@ -78,11 +78,19 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
         }
         first = Math.max(start, first);
       }
-      const last = Math.min(end, Math.max(old.length, value.length));
+      let last = Math.min(end, Math.max(old.length, value.length));
+      // Same-length autocorrect, selection replacement and typo fixes can
+      // change just one glyph. Do not touch an unchanged suffix of spans.
+      // Length-changing edits still need the original shifted-position path.
+      if (!rebuilt && old.length === value.length) {
+        while (last > first && old[last - 1] === value[last - 1]) last--;
+      }
       for (let k = first; k < last; k++) {
         const letter = letters[k - start];
-        letter.className = k >= value.length ? 'type-char pending'
-          : value[k] === reference[k] ? 'type-char correct' : 'type-char incorrect';
+        const className = (k >= value.length ? 'type-char pending'
+          : value[k] === reference[k] ? 'type-char correct' : 'type-char incorrect') +
+          (k === cursor ? ' current' : '');
+        if (letter.className !== className) letter.className = className;
       }
       if (contentChanged) {
         // The Speed controller supplies an accuracy snapshot already computed
@@ -99,10 +107,15 @@ export function createSpeedFlow(container, reference, { windowed = false } = {})
       }
     }
 
-    if (!rebuilt && previousCaret !== null && previousCaret >= start && previousCaret < end)
+    // A correction can leave selection unchanged. Avoid removing/re-adding
+    // the same caret and reflecting unchanged hidden attributes to the DOM.
+    if (!rebuilt && previousCaret !== cursor &&
+        previousCaret !== null && previousCaret >= start && previousCaret < end)
       letters[previousCaret - start]?.classList.remove('current');
-    if (cursor >= start && cursor < end) letters[cursor - start]?.classList.add('current');
-    endCaret.hidden = value.length < reference.length;
+    if ((rebuilt || previousCaret !== cursor) && cursor >= start && cursor < end)
+      letters[cursor - start]?.classList.add('current');
+    const hideEndCaret = value.length < reference.length;
+    if (endCaret.hidden !== hideEndCaret) endCaret.hidden = hideEndCaret;
     previous = value;
     previousCaret = cursor;
 
